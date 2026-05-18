@@ -220,26 +220,26 @@ else:
         # EXPORTAR A EXCEL
         # =========================
 
-buffer = BytesIO()
+        buffer = BytesIO()
 
-with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-    resumen_mostrar.to_excel(
-        writer,
-        sheet_name="Resumen por personal",
-        index=False
-    )
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            resumen_mostrar.to_excel(
+                writer,
+                sheet_name="Resumen por personal",
+                index=False
+            )
 
-    df_mostrar.to_excel(
-        writer,
-        sheet_name="Historial detallado",
-        index=False
-    )
+            df_mostrar.to_excel(
+                writer,
+                sheet_name="Historial detallado",
+                index=False
+            )
 
-buffer.seek(0)
+        buffer.seek(0)
 
-st.download_button(
-    label="Descargar historial en Excel",
-    data=buffer,
-    file_name=f"historial_lavado_motos_{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+        st.download_button(
+            label="Descargar historial en Excel",
+            data=buffer,
+            file_name=f"historial_lavado_motos_{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
