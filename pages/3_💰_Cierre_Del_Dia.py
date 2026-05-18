@@ -209,7 +209,7 @@ else:
         # EXPORTAR A EXCEL
         # =========================
 
-        buffer = BytesIO()
+buffer = BytesIO()
 
 with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
     resumen_mostrar.to_excel(
@@ -218,17 +218,17 @@ with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
         index=False
     )
 
-    df_mostrar.to_excel(
+    df_detalle.to_excel(
         writer,
-        sheet_name="Historial detallado",
+        sheet_name="Lavadas del dia",
         index=False
     )
 
 buffer.seek(0)
 
 st.download_button(
-    label="Descargar historial en Excel",
+    label="Descargar cierre en Excel",
     data=buffer,
-    file_name=f"historial_lavado_motos_{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx",
+    file_name=f"cierre_lavado_motos_{fecha_texto}.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
