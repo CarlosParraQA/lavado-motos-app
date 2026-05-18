@@ -220,8 +220,6 @@ else:
         # EXPORTAR A EXCEL
         # =========================
 
-        from io import BytesIO
-
 buffer = BytesIO()
 
 with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
