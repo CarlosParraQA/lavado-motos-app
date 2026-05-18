@@ -1,0 +1,6 @@
+.streamlit/secrets.toml
+.venv/
+__pycache__/
+*.pyc
+lavado_motos.db
+exports/
