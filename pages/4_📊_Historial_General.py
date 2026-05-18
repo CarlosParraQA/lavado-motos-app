@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import date
 from database import obtener_lavados
 from utils import formato_pesos
+from io import BytesIO
 
 st.header("Historial general de lavadas")
 
@@ -219,25 +220,28 @@ else:
         # EXPORTAR A EXCEL
         # =========================
 
-        archivo_excel = f"exports/historial_lavado_motos_{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx"
+        from io import BytesIO
 
-        with pd.ExcelWriter(archivo_excel, engine="openpyxl") as writer:
-            resumen_mostrar.to_excel(
-                writer,
-                sheet_name="Resumen por personal",
-                index=False
-            )
+buffer = BytesIO()
 
-            df_mostrar.to_excel(
-                writer,
-                sheet_name="Historial detallado",
-                index=False
-            )
+with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+    resumen_mostrar.to_excel(
+        writer,
+        sheet_name="Resumen por personal",
+        index=False
+    )
 
-        with open(archivo_excel, "rb") as file:
-            st.download_button(
-                label="Descargar historial en Excel",
-                data=file,
-                file_name=f"historial_lavado_motos_{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+    df_mostrar.to_excel(
+        writer,
+        sheet_name="Historial detallado",
+        index=False
+    )
+
+buffer.seek(0)
+
+st.download_button(
+    label="Descargar historial en Excel",
+    data=buffer,
+    file_name=f"historial_lavado_motos_{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
