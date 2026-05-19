@@ -209,14 +209,14 @@ else:
 
         st.divider()
 
-        st.divider()
-
         # =========================
         # ELIMINAR REGISTRO
         # Solo admin puede eliminar
         # =========================
 
-        if st.session_state.get("usuario") == "admin":
+        usuario_actual = st.session_state.get("usuario", "").strip().lower()
+
+        if usuario_actual == "admin":
             st.subheader("Eliminar registro del cierre")
 
             st.info("Para eliminar una lavada, copia el número de la columna Lavada # y escríbelo abajo.")
