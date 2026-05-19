@@ -21,7 +21,7 @@ with col1:
 with col2:
     valor_lavada = st.selectbox(
         "Valor de la lavada",
-        [15000, 20000, 30000, 35000],
+        [6000, 15000, 20000, 30000, 35000],
         format_func=lambda x: formato_pesos(x)
     )
 
