@@ -1,6 +1,10 @@
 import streamlit as st
 from database import guardar_lavada
 from utils import formato_pesos
+from auth import login, logout
+
+login()
+logout()
 
 st.header("Registrar nueva lavada")
 

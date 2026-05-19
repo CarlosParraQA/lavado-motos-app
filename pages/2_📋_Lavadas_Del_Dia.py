@@ -3,6 +3,10 @@ import pandas as pd
 from datetime import datetime
 from database import obtener_lavados, eliminar_registro
 from utils import formato_pesos
+from auth import login, logout
+
+login()
+logout()
 
 # =========================
 # ENCABEZADO

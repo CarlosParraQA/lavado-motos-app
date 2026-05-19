@@ -4,6 +4,10 @@ from datetime import date
 from database import obtener_lavados
 from utils import formato_pesos
 from io import BytesIO
+from auth import login, logout
+
+login()
+logout()
 
 st.header("Cierre del día")
 

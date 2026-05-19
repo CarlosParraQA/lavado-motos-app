@@ -1,11 +1,16 @@
 import streamlit as st
 from database import crear_tabla
+from auth import login, logout
+
 
 st.set_page_config(
     page_title="Registro Lavado de Motos",
     page_icon="🏍️",
     layout="wide"
 )
+
+login()
+logout()
 
 crear_tabla()
 
