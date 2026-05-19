@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import date
-from database import obtener_lavados
+from database import obtener_lavados, eliminar_registro
 from utils import formato_pesos
 from io import BytesIO
 from auth import login, logout
@@ -208,6 +208,36 @@ else:
         )
 
         st.divider()
+
+        st.divider()
+
+        # =========================
+        # ELIMINAR REGISTRO
+        # Solo admin puede eliminar
+        # =========================
+
+        if st.session_state.get("usuario") == "admin":
+            st.subheader("Eliminar registro del cierre")
+
+            st.info("Para eliminar una lavada, copia el número de la columna Lavada # y escríbelo abajo.")
+
+            id_eliminar = st.number_input(
+                "Lavada # a eliminar",
+                min_value=1,
+                step=1,
+                key="eliminar_cierre"
+            )
+
+            if st.button("Eliminar registro seleccionado", key="btn_eliminar_cierre"):
+                if id_eliminar in df_dia["id"].values:
+                    eliminar_registro(int(id_eliminar))
+                    st.success("Registro eliminado correctamente.")
+                    st.rerun()
+                else:
+                    st.error("Ese registro no existe en las lavadas de esta fecha.")
+
+        else:
+            st.info("Solo el usuario administrador puede eliminar registros.")
 
         # =========================
         # EXPORTAR A EXCEL

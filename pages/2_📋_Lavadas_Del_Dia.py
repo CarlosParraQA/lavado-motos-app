@@ -160,22 +160,27 @@ else:
 
     # =========================
     # ELIMINAR REGISTRO
+    # Solo admin puede eliminar
     # =========================
 
-    st.subheader("Eliminar registro")
+    if st.session_state.get("usuario") == "admin":
+        st.subheader("Eliminar registro")
 
-    st.info("Para eliminar una lavada, copia el número de la columna Lavada # y escríbelo abajo.")
+        st.info("Para eliminar una lavada, copia el número de la columna Lavada # y escríbelo abajo.")
 
-    id_eliminar = st.number_input(
-        "Lavada a eliminar",
-        min_value=1,
-        step=1
-    )
+        id_eliminar = st.number_input(
+            "Lavada # a eliminar",
+            min_value=1,
+            step=1
+        )
 
-    if st.button("Eliminar registro seleccionado"):
-        if id_eliminar in df_hoy["id"].values:
-            eliminar_registro(int(id_eliminar))
-            st.success("Registro eliminado correctamente.")
-            st.rerun()
-        else:
-            st.error("Ese registro no existe en los registros mostrados.")
+        if st.button("Eliminar registro seleccionado"):
+            if id_eliminar in df_hoy["id"].values:
+                eliminar_registro(int(id_eliminar))
+                st.success("Registro eliminado correctamente.")
+                st.rerun()
+            else:
+                st.error("Ese registro no existe en los registros mostrados.")
+
+    else:
+        st.info("Solo el usuario administrador puede eliminar registros.")
