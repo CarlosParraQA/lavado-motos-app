@@ -1,49 +1,34 @@
 import streamlit as st
-
-st.set_page_config(
-    page_title="Lavadas del día",
-    page_icon="📋",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
-
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero
 from utils import formato_pesos
-from auth import login, logout
-from navbar import ocultar_sidebar, navbar
 
-login()
 
-ocultar_sidebar()
-navbar()
-
-logout()
-
-# =========================
-# ENCABEZADO
-# =========================
-
-fecha_hoy = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y-%m-%d")
-
-st.header(f"Lavadas registradas: {fecha_hoy}")
-
-df = obtener_lavados()
-
-df_hoy = df[df["fecha"] == fecha_hoy] if not df.empty else pd.DataFrame()
-
-# =========================
-# VALIDACIÓN SIN REGISTROS
-# =========================
-
-if df_hoy.empty:
-    st.warning("Todavía no hay lavadas registradas hoy. 😥")
-
-else:
+def mostrar_lavadas_del_dia():
     # =========================
-    # FILTRO POR GAMUSERO
+    # ENCABEZADO
+    # =========================
+
+    fecha_hoy = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y-%m-%d")
+
+    st.header(f"Lavadas registradas: {fecha_hoy}")
+
+    df = obtener_lavados()
+
+    df_hoy = df[df["fecha"] == fecha_hoy] if not df.empty else pd.DataFrame()
+
+    # =========================
+    # VALIDACIÓN SIN REGISTROS
+    # =========================
+
+    if df_hoy.empty:
+        st.warning("Todavía no hay lavadas registradas hoy. 😥")
+        return
+
+    # =========================
+    # FILTRO POR PERSONAL
     # =========================
 
     gamuseros = ["Todos"] + sorted(df_hoy["gamusero"].unique().tolist())
@@ -97,7 +82,7 @@ else:
     df_mostrar["pago_gamusero"] = df_mostrar["pago_gamusero"].apply(formato_pesos)
     df_mostrar["ganancia_negocio"] = df_mostrar["ganancia_negocio"].apply(formato_pesos)
 
-    # Seleccionar columnas a mostrar
+    # Seleccionar columnas completas
     df_mostrar = df_mostrar[
         [
             "id",
@@ -112,18 +97,29 @@ else:
         ]
     ]
 
-    # Cambiar nombres de columnas
+    # Renombrar columnas
     df_mostrar = df_mostrar.rename(columns={
         "id": "Lavada #",
         "fecha": "Fecha",
         "hora": "Hora",
         "gamusero": "Personal",
         "placa": "Placa",
-        "valor_lavada": "Valor lavada",
-        "pago_gamusero": "40% personal",
-        "ganancia_negocio": "60% negocio",
+        "valor_lavada": "Valor",
+        "pago_gamusero": "40%",
+        "ganancia_negocio": "60%",
         "observaciones": "Observaciones"
     })
+
+    # Tabla compacta para evitar scroll horizontal
+    df_tabla = df_mostrar[
+        [
+            "Lavada #",
+            "Hora",
+            "Personal",
+            "Placa",
+            "Valor"
+        ]
+    ]
 
     # =========================
     # POPUP / MODAL
@@ -135,8 +131,15 @@ else:
         nombre_actual = registro["Personal"]
 
         st.write(f"**Lavada #:** {id_lavada}")
+        st.write(f"**Fecha:** {registro['Fecha']}")
+        st.write(f"**Hora:** {registro['Hora']}")
         st.write(f"**Placa:** {registro['Placa']}")
-        st.write(f"**Valor:** {registro['Valor lavada']}")
+        st.write(f"**Valor:** {registro['Valor']}")
+        st.write(f"**40% personal:** {registro['40%']}")
+        st.write(f"**60% negocio:** {registro['60%']}")
+
+        if registro["Observaciones"]:
+            st.write(f"**Observaciones:** {registro['Observaciones']}")
 
         nuevo_nombre = st.text_input(
             "Nombre del personal",
@@ -158,7 +161,9 @@ else:
                     st.rerun()
 
         with col_eliminar:
-            if st.session_state.get("usuario", "").strip().lower() == "admin":
+            usuario_actual = st.session_state.get("usuario", "").strip().lower()
+
+            if usuario_actual == "admin":
                 if st.button("Eliminar lavada", use_container_width=True):
                     eliminar_registro(id_lavada)
                     st.success("Registro eliminado correctamente.")
@@ -171,7 +176,7 @@ else:
     # =========================
 
     evento_tabla = st.dataframe(
-        df_mostrar,
+        df_tabla,
         use_container_width=True,
         hide_index=True,
         on_select="rerun",
@@ -179,12 +184,7 @@ else:
         column_config={
             "Lavada #": st.column_config.NumberColumn(
                 "Lavada #",
-                help="Identificador del registro",
                 width="small"
-            ),
-            "Fecha": st.column_config.TextColumn(
-                "Fecha",
-                width="medium"
             ),
             "Hora": st.column_config.TextColumn(
                 "Hora",
@@ -198,21 +198,9 @@ else:
                 "Placa",
                 width="small"
             ),
-            "Valor lavada": st.column_config.TextColumn(
-                "Valor lavada",
-                width="medium"
-            ),
-            "40% personal": st.column_config.TextColumn(
-                "40% personal",
-                width="medium"
-            ),
-            "60% negocio": st.column_config.TextColumn(
-                "60% negocio",
-                width="medium"
-            ),
-            "Observaciones": st.column_config.TextColumn(
-                "Observaciones",
-                width="large"
+            "Valor": st.column_config.TextColumn(
+                "Valor",
+                width="small"
             ),
         }
     )
@@ -222,5 +210,11 @@ else:
 
     if filas_seleccionadas:
         indice_fila = filas_seleccionadas[0]
-        registro_seleccionado = df_mostrar.iloc[indice_fila]
+
+        id_seleccionado = df_tabla.iloc[indice_fila]["Lavada #"]
+
+        registro_seleccionado = df_mostrar[
+            df_mostrar["Lavada #"] == id_seleccionado
+        ].iloc[0]
+
         abrir_popup_lavada(registro_seleccionado)

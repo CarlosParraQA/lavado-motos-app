@@ -1,21 +1,22 @@
 import streamlit as st
 
 
-def ocultar_sidebar():
+def aplicar_estilos():
     st.markdown(
         """
         <style>
-            /* Oculta el sidebar */
             [data-testid="stSidebar"] {
                 display: none !important;
             }
 
-            /* Oculta el botón de abrir/cerrar sidebar */
             [data-testid="collapsedControl"] {
                 display: none !important;
             }
 
-            /* Usa más ancho de pantalla */
+            header[data-testid="stHeader"] {
+                display: none !important;
+            }
+
             .block-container {
                 max-width: 96% !important;
                 padding-top: 1.5rem !important;
@@ -23,30 +24,11 @@ def ocultar_sidebar():
                 padding-right: 2rem !important;
             }
 
-            /* Reduce espacios superiores */
-            header[data-testid="stHeader"] {
-                display: none !important;
-            }
-
-            /* Evita tanto movimiento visual */
-            .main {
-                overflow-x: hidden;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-def navbar():
-    st.markdown(
-        """
-        <style>
             .navbar-container {
                 background-color: #1f2937;
                 padding: 16px 26px;
                 border-radius: 14px;
-                margin-bottom: 18px;
+                margin-bottom: 16px;
                 border: 1px solid #374151;
             }
 
@@ -62,7 +44,14 @@ def navbar():
                 color: #9ca3af;
             }
         </style>
+        """,
+        unsafe_allow_html=True
+    )
 
+
+def navbar():
+    st.markdown(
+        """
         <div class="navbar-container">
             <div class="navbar-title">🏍️ Moto Space Wash</div>
             <div class="navbar-subtitle">Sistema de registro de lavadas</div>
@@ -71,21 +60,27 @@ def navbar():
         unsafe_allow_html=True
     )
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    opciones = {
+        "Inicio": "🏠 Inicio",
+        "Registrar": "🌸 Registrar lavada",
+        "Lavadas": "📋 Lavadas del día",
+        "Cierre": "💰 Cierre del día",
+        "Historial": "📊 Historial"
+    }
 
-    with col1:
-        st.page_link("Inicio.py", label="🏠 Inicio")
+    if "vista" not in st.session_state:
+        st.session_state.vista = "Inicio"
 
-    with col2:
-        st.page_link("pages/1_Registrar_Lavada.py", label="🌸 Registrar lavada")
+    cols = st.columns(len(opciones))
 
-    with col3:
-        st.page_link("pages/2_Lavadas_Del_Dia.py", label="📋 Lavadas del día")
-
-    with col4:
-        st.page_link("pages/3_Cierre_Del_Dia.py", label="💰 Cierre del día")
-
-    with col5:
-        st.page_link("pages/4_Historial_General.py", label="📊 Historial")
+    for col, (clave, etiqueta) in zip(cols, opciones.items()):
+        with col:
+            if st.button(
+                etiqueta,
+                use_container_width=True,
+                key=f"nav_{clave}"
+            ):
+                st.session_state.vista = clave
+                st.rerun()
 
     st.divider()
