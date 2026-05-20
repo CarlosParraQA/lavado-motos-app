@@ -210,7 +210,7 @@ def navbar():
         st.session_state.vista = "Inicio"
 
     col1, col2, col3, col4, col_user, col_logout = st.columns(
-        [2.0, 2.0, 2.0, 2.0, 1.0, 1.0],
+        [0.5, 0.5, 0.5, 0.5, 1.0, 1.0],
         vertical_alignment="center"
     )
 
