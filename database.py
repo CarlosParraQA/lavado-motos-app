@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from supabase import create_client
 
 # =========================
@@ -36,8 +37,10 @@ def guardar_lavada(gamusero, placa, valor_lavada, observaciones):
     y el 60% para el negocio.
     """
 
-    fecha_actual = datetime.now().strftime("%Y-%m-%d")
-    hora_actual = datetime.now().strftime("%H:%M:%S")
+    fecha_hora_colombia = datetime.now(ZoneInfo("America/Bogota"))
+
+    fecha_actual = fecha_hora_colombia.strftime("%Y-%m-%d")
+    hora_actual = fecha_hora_colombia.strftime("%H:%M:%S")
 
     pago_gamusero = int(valor_lavada * 0.40)
     ganancia_negocio = int(valor_lavada * 0.60)
