@@ -193,55 +193,55 @@ def navbar():
         unsafe_allow_html=True
     )
 
-    # =========================
-    # USUARIO Y CERRAR SESIÓN
-    # =========================
+# =========================
+# USUARIO Y CERRAR SESIÓN
+# =========================
 
-    col_user, col_logout, col_empty = st.columns([0.7, 0.75, 5.5])
+col_user, col_logout, col_empty = st.columns([0.8, 0.9, 3.8])
 
-    with col_user:
-        st.markdown(
-            f"""
-            <div class="user-box">
-                👤 {usuario_actual}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with col_logout:
-        if st.button("Cerrar sesión", key="btn_logout", use_container_width=True):
-            cerrar_sesion()
-
-    # =========================
-    # BOTONES DE NAVEGACIÓN
-    # =========================
-
-    opciones = {
-        "Inicio": "Inicio",
-        "Registrar": "Registrar Nuevo Servicio",
-        "Lavadas": "Servicios del Día",
-        # "Cierre": "Próximamente nuevo módulo",
-        "Historial": "Historial General"
-    }
-
-    if "vista" not in st.session_state:
-        st.session_state.vista = "Inicio"
-
-    col1, col2, col3, col4, col_empty_nav = st.columns(
-        [0.65, 1.35, 1.05, 1.15, 4.8]
+with col_user:
+    st.markdown(
+        f"""
+        <div class="user-box">
+            👤 {usuario_actual}
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    columnas = [col1, col2, col3, col4]
+with col_logout:
+    if st.button("Cerrar sesión", key="btn_logout", use_container_width=True):
+        cerrar_sesion()
 
-    for col, (clave, etiqueta) in zip(columnas, opciones.items()):
-        with col:
-            if st.button(
-                etiqueta,
-                use_container_width=True,
-                key=f"nav_{clave}"
-            ):
-                st.session_state.vista = clave
-                st.rerun()
+# =========================
+# BOTONES DE NAVEGACIÓN
+# =========================
 
-    st.divider()
+opciones = {
+    "Inicio": "Inicio",
+    "Registrar": "Registrar Nuevo Servicio",
+    "Lavadas": "Servicios del Día",
+    # "Cierre": "Próximamente nuevo módulo",
+    "Historial": "Historial General"
+}
+
+if "vista" not in st.session_state:
+    st.session_state.vista = "Inicio"
+
+col1, col2, col3, col4, col_empty_nav = st.columns(
+    [0.8, 1.7, 1.4, 1.5, 2.2]
+)
+
+columnas = [col1, col2, col3, col4]
+
+for col, (clave, etiqueta) in zip(columnas, opciones.items()):
+    with col:
+        if st.button(
+            etiqueta,
+            use_container_width=True,
+            key=f"nav_{clave}"
+        ):
+            st.session_state.vista = clave
+            st.rerun()
+
+st.divider()
