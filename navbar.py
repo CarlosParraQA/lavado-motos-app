@@ -80,7 +80,7 @@ def aplicar_estilos():
             }
 
             .user-box {
-                font-size: 20px;
+                font-size: 18px;
                 color: #e5e7eb;
                 font-weight: bold;
                 min-height: 38px;
@@ -197,7 +197,7 @@ def navbar():
     # USUARIO Y CERRAR SESIÓN
     # =========================
 
-    col_user, col_logout, col_empty = st.columns([0.8, 0.8, 4])
+    col_user, col_logout, col_empty = st.columns([0.7, 0.75, 5.5])
 
     with col_user:
         st.markdown(
@@ -210,7 +210,7 @@ def navbar():
         )
 
     with col_logout:
-        if st.button("Cerrar sesión", key="btn_logout"):
+        if st.button("Cerrar sesión", key="btn_logout", use_container_width=True):
             cerrar_sesion()
 
     # =========================
@@ -228,7 +228,11 @@ def navbar():
     if "vista" not in st.session_state:
         st.session_state.vista = "Inicio"
 
-    columnas = st.columns([1, 1.6, 1.4, 1.5])
+    col1, col2, col3, col4, col_empty_nav = st.columns(
+        [0.65, 1.35, 1.05, 1.15, 4.8]
+    )
+
+    columnas = [col1, col2, col3, col4]
 
     for col, (clave, etiqueta) in zip(columnas, opciones.items()):
         with col:
