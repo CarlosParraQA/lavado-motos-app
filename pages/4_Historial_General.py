@@ -1,4 +1,12 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="Lavadas del día",
+    page_icon="📋",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 import pandas as pd
 from navbar import ocultar_sidebar, navbar
 from datetime import datetime
@@ -8,9 +16,11 @@ from utils import formato_pesos
 from io import BytesIO
 from auth import login, logout
 
+login()
+
 ocultar_sidebar()
 navbar()
-login()
+
 logout()
 
 st.header("Historial general de lavadas")

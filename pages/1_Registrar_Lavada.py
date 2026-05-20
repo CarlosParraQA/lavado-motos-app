@@ -1,12 +1,22 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="Lavadas del día",
+    page_icon="📋",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 from navbar import ocultar_sidebar, navbar
 from database import guardar_lavada
 from utils import formato_pesos
 from auth import login, logout
 
+login()
+
 ocultar_sidebar()
 navbar()
-login()
+
 logout()
 
 st.header("Registrar nueva lavada")
