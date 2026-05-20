@@ -150,7 +150,7 @@ def aplicar_estilos():
                     min-height: 38px !important;
                     padding: 6px 10px !important;
                     font-size: 14px !important;
-                    width: 100% !important;
+                    width: auto !important;
                 }
             }
         </style>
@@ -220,7 +220,6 @@ def navbar():
         with col:
             if st.button(
                 etiqueta,
-                use_container_width=True,
                 key=f"nav_{clave}"
             ):
                 st.session_state.vista = clave
@@ -240,7 +239,6 @@ def navbar():
         if st.button(
             "Cerrar sesión",
             key="btn_logout",
-            use_container_width=True
         ):
             cerrar_sesion()
 
