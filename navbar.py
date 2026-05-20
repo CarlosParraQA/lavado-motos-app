@@ -30,11 +30,13 @@ def aplicar_estilos():
                 font-weight: 700;
                 color: white;
                 margin-bottom: 4px;
+                line-height: 1.1;
             }
 
             .navbar-subtitle {
                 font-size: 20px;
-                color: #e5e619;
+                color: #9ca3af;
+                line-height: 1.2;
             }
 
             .user-box {
@@ -50,11 +52,55 @@ def aplicar_estilos():
                 align-items: center;
                 justify-content: center;
                 margin-bottom: 8px;
+                white-space: nowrap;
             }
 
             div[data-testid="stButton"] > button {
                 border-radius: 10px;
                 border: 1px solid #374151;
+            }
+
+            /* =========================
+               AJUSTES PARA CELULAR
+            ========================= */
+            @media (max-width: 768px) {
+                .block-container {
+                    max-width: 100% !important;
+                    padding-top: 0.7rem !important;
+                    padding-left: 0.7rem !important;
+                    padding-right: 0.7rem !important;
+                }
+
+                .navbar-title {
+                    font-size: 24px !important;
+                    margin-bottom: 2px !important;
+                }
+
+                .navbar-subtitle {
+                    font-size: 13px !important;
+                }
+
+                .user-box {
+                    font-size: 12px !important;
+                    padding: 7px 8px !important;
+                    min-height: 30px !important;
+                    margin-bottom: 4px !important;
+                }
+
+                div[data-testid="stImage"] img {
+                    max-width: 60px !important;
+                    height: auto !important;
+                }
+
+                div[data-testid="stButton"] > button {
+                    min-height: 40px !important;
+                    padding: 6px 8px !important;
+                    font-size: 14px !important;
+                }
+
+                div[data-testid="column"] {
+                    min-width: 0 !important;
+                }
             }
         </style>
         """,
@@ -91,7 +137,7 @@ def navbar():
 
         with col_title:
             st.markdown(
-                f"""
+                """
                 <div class="navbar-title">Moto Space Wash</div>
                 <div class="navbar-subtitle">
                     Sistema de registro de lavadas
@@ -120,10 +166,10 @@ def navbar():
 
     opciones = {
         "Inicio": "Inicio",
-        "Registrar": "Registrar Nueva Servicio",
+        "Registrar": "Registrar Nuevo Servicio",
         "Lavadas": "Servicios del Día",
         "Cierre": "Próximamente nuevo módulo",
-        "Historial": "Historial General de Servicios"
+        "Historial": "Historial General"
     }
 
     if "vista" not in st.session_state:
