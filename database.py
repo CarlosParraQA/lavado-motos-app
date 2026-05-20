@@ -95,3 +95,16 @@ def eliminar_registro(id_registro):
     """
 
     supabase.table("lavados").delete().eq("id", int(id_registro)).execute()
+
+# =========================
+# MODIFICAR REGISTRO
+# =========================
+
+def actualizar_nombre_gamusero(id_registro, nuevo_nombre):
+    """
+    Actualiza el nombre del gamusero/personal en Supabase.
+    """
+
+    supabase.table("lavados").update({
+        "gamusero": nuevo_nombre
+    }).eq("id", int(id_registro)).execute()
