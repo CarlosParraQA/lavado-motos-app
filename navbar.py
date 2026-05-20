@@ -93,9 +93,6 @@ def aplicar_estilos():
             }
 
             div[data-testid="stButton"] > button {
-                background-color: #ff1b0f;
-                color: white;
-                font-weight: bold;
                 border-radius: 10px;
                 border: 1px solid #374151;
             }
