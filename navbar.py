@@ -1,16 +1,5 @@
 import streamlit as st
 from pathlib import Path
-import base64
-
-
-def cargar_logo_base64(ruta_logo="assets/logo.png"):
-    logo_path = Path(ruta_logo)
-
-    if not logo_path.exists():
-        return ""
-
-    with open(logo_path, "rb") as file:
-        return base64.b64encode(file.read()).decode()
 
 
 def aplicar_estilos():
@@ -31,37 +20,9 @@ def aplicar_estilos():
 
             .block-container {
                 max-width: 96% !important;
-                padding-top: 1.5rem !important;
-                padding-left: 2rem !important;
-                padding-right: 2rem !important;
-            }
-
-            .header-card {
-                border: 1px solid #374151;
-                border-radius: 14px;
-                padding: 18px 22px;
-                margin-bottom: 20px;
-                background-color: transparent;
-            }
-
-            .header-content {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 20px;
-            }
-
-            .brand-content {
-                display: flex;
-                align-items: center;
-                gap: 18px;
-            }
-
-            .brand-logo {
-                width: 100px;
-                height: 100px;
-                object-fit: contain;
-                flex-shrink: 0;
+                padding-top: 1rem !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
             }
 
             .navbar-title {
@@ -78,12 +39,6 @@ def aplicar_estilos():
                 line-height: 1.2;
             }
 
-            .header-actions {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-
             .user-box {
                 background-color: #111827;
                 border: 1px solid #374151;
@@ -96,6 +51,7 @@ def aplicar_estilos():
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                margin-bottom: 8px;
                 white-space: nowrap;
             }
 
@@ -104,9 +60,6 @@ def aplicar_estilos():
                 border: 1px solid #374151;
             }
 
-            /* =========================
-               AJUSTES PARA CELULAR
-            ========================= */
             @media (max-width: 768px) {
                 .block-container {
                     max-width: 100% !important;
@@ -115,48 +68,25 @@ def aplicar_estilos():
                     padding-right: 0.7rem !important;
                 }
 
-                .header-card {
-                    padding: 14px 16px;
-                    margin-bottom: 16px;
-                }
-
-                .header-content {
-                    flex-direction: column;
-                    align-items: stretch;
-                    gap: 14px;
-                }
-
-                .brand-content {
-                    flex-direction: row;
-                    align-items: center;
-                    gap: 12px;
-                }
-
-                .brand-logo {
-                    width: 68px;
-                    height: 68px;
-                }
-
                 .navbar-title {
-                    font-size: 26px !important;
+                    font-size: 24px !important;
                     margin-bottom: 2px !important;
                 }
 
                 .navbar-subtitle {
-                    font-size: 14px !important;
-                }
-
-                .header-actions {
-                    width: 100%;
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 10px;
+                    font-size: 13px !important;
                 }
 
                 .user-box {
-                    font-size: 13px !important;
+                    font-size: 12px !important;
                     padding: 8px 10px !important;
-                    min-height: 36px !important;
+                    min-height: 34px !important;
+                    margin-bottom: 4px !important;
+                }
+
+                div[data-testid="stImage"] img {
+                    max-width: 70px !important;
+                    height: auto !important;
                 }
 
                 div[data-testid="stButton"] > button {
@@ -180,39 +110,36 @@ def cerrar_sesion():
 
 def navbar():
     usuario_actual = st.session_state.get("usuario", "Sin usuario")
-    logo_base64 = cargar_logo_base64("assets/logo.png")
-
-    if logo_base64:
-        logo_html = f"""
-        <img src="data:image/png;base64,{logo_base64}" class="brand-logo">
-        """
-    else:
-        logo_html = """
-        <div class="brand-logo" style="font-size: 42px; display:flex; align-items:center;">
-            🏍️
-        </div>
-        """
+    logo_path = Path("assets/logo.png")
 
     # =========================
     # HEADER SUPERIOR
     # =========================
 
-    st.markdown(
-        f"""
-        <div class="header-card">
-            <div class="header-content">
-                <div class="brand-content">
-                    {logo_html}
-                    <div>
-                        <div class="navbar-title">Moto Space Wash</div>
-                        <div class="navbar-subtitle">Sistema de registro de lavadas</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.container(border=True):
+        col_logo, col_title = st.columns(
+            [0.18, 0.82],
+            vertical_alignment="center"
+        )
+
+        with col_logo:
+            if logo_path.exists():
+                st.image(str(logo_path), width=90)
+            else:
+                st.markdown("### 🏍️")
+
+        with col_title:
+            st.markdown(
+                """
+                <div class="navbar-title">Moto Space Wash</div>
+                <div class="navbar-subtitle">Sistema de registro de lavadas</div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    # =========================
+    # USUARIO Y CERRAR SESIÓN
+    # =========================
 
     col_user, col_logout = st.columns([1, 1])
 
