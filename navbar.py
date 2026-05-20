@@ -93,6 +93,9 @@ def aplicar_estilos():
             }
 
             div[data-testid="stButton"] > button {
+                background-color: #ff1b0f;
+                color: white;
+                font-weight: bold;
                 border-radius: 10px;
                 border: 1px solid #374151;
             }
@@ -135,14 +138,14 @@ def aplicar_estilos():
 
                 .user-box {
                     font-size: 12px !important;
-                    padding: 8px 10px !important;
+                    padding: 8px 8px !important;
                     min-height: 34px !important;
                     margin-bottom: 4px !important;
                 }
 
                 div[data-testid="stButton"] > button {
                     min-height: 40px !important;
-                    padding: 6px 8px !important;
+                    padding: 8px 8px !important;
                     font-size: 14px !important;
                 }
             }
