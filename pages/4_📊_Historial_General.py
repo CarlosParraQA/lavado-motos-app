@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from datetime import date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from database import obtener_lavados
 from utils import formato_pesos
 from io import BytesIO
@@ -22,18 +23,20 @@ else:
     # FILTRO POR FECHAS
     # =========================
 
+    fecha_colombia = datetime.now(ZoneInfo("America/Bogota")).date()
+
     col1, col2 = st.columns(2)
 
     with col1:
         fecha_inicio = st.date_input(
             "Fecha inicial",
-            value=date.today()
+            value=fecha_colombia
         )
 
     with col2:
         fecha_fin = st.date_input(
             "Fecha final",
-            value=date.today()
+            value=fecha_colombia
         )
 
     fecha_inicio_texto = fecha_inicio.strftime("%Y-%m-%d")
