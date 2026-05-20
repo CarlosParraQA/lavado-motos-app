@@ -83,9 +83,10 @@ def aplicar_estilos():
                 background-color: #ffe7d2;
                 border: 1px solid #374151;
                 border-radius: 12px;
-                padding: 1px 1px;
-                font-size: 14px;
+                padding: 10px 14px;
+                font-size: 20px;
                 color: #0f0800;
+                font-weight: bold;
                 text-align: center;
                 min-height: 38px;
                 display: flex;
