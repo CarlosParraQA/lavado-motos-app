@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from database import obtener_lavados, eliminar_registro
 from utils import formato_pesos
 from auth import login, logout
@@ -12,7 +13,7 @@ logout()
 # ENCABEZADO
 # =========================
 
-fecha_hoy = datetime.now().strftime("%Y-%m-%d")
+fecha_hoy = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y-%m-%d")
 
 st.header(f"Lavadas registradas: {fecha_hoy}")
 
