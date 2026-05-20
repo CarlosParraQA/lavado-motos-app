@@ -85,7 +85,7 @@ def aplicar_estilos():
                 border-radius: 12px;
                 padding: 10px 14px;
                 font-size: 14px;
-                color: #e5e7eb;
+                color: #0f0800;
                 text-align: center;
                 min-height: 38px;
                 display: flex;
