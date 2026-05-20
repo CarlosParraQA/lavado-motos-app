@@ -85,7 +85,7 @@ def navbar():
 
         with col_logo:
             if logo_path.exists():
-                st.image(str(logo_path), width=58)
+                st.image(str(logo_path), width=100)
             else:
                 st.markdown("### 🏍️")
 
