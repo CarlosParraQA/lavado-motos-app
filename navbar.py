@@ -1,19 +1,5 @@
 import streamlit as st
-import base64
 from pathlib import Path
-
-
-def cargar_logo_base64(ruta_logo="assets/logo.png"):
-    """
-    Convierte el logo a base64 para poder mostrarlo dentro del HTML del navbar.
-    """
-    logo_path = Path(ruta_logo)
-
-    if not logo_path.exists():
-        return ""
-
-    with open(logo_path, "rb") as file:
-        return base64.b64encode(file.read()).decode()
 
 
 def aplicar_estilos():
@@ -39,27 +25,12 @@ def aplicar_estilos():
                 padding-right: 2rem !important;
             }
 
-            .navbar-container {
+            .navbar-box {
                 background-color: #1f2937;
                 padding: 16px 26px;
                 border-radius: 14px;
                 margin-bottom: 16px;
                 border: 1px solid #374151;
-            }
-
-            .navbar-header {
-                display: flex;
-                align-items: center;
-                gap: 14px;
-            }
-
-            .navbar-logo {
-                width: 54px;
-                height: 54px;
-                object-fit: contain;
-                border-radius: 10px;
-                background-color: #ffffff;
-                padding: 4px;
             }
 
             .navbar-title {
@@ -107,41 +78,27 @@ def cerrar_sesion():
 
 def navbar():
     usuario_actual = st.session_state.get("usuario", "Sin usuario")
+    logo_path = Path("assets/logo.png")
 
-    logo_base64 = cargar_logo_base64("assets/logo.png")
+    with st.container(border=True):
+        col_logo, col_title = st.columns([0.08, 0.92])
 
-    if logo_base64:
-        logo_html = f"""
-            <img src="data:image/png;base64,{logo_base64}" class="navbar-logo">
-        """
-    else:
-        logo_html = """
-            <div class="navbar-logo" style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 26px;
-            ">
-                🏍️
-            </div>
-        """
+        with col_logo:
+            if logo_path.exists():
+                st.image(str(logo_path), width=58)
+            else:
+                st.markdown("### 🏍️")
 
-    st.markdown(
-        f"""
-        <div class="navbar-container">
-            <div class="navbar-header">
-                {logo_html}
-                <div>
-                    <div class="navbar-title">Moto Space Wash</div>
-                    <div class="navbar-subtitle">
-                        Sistema de registro de lavadas | Usuario: <strong>{usuario_actual}</strong>
-                    </div>
+        with col_title:
+            st.markdown(
+                f"""
+                <div class="navbar-title">Moto Space Wash</div>
+                <div class="navbar-subtitle">
+                    Sistema de registro de lavadas | Usuario: <strong>{usuario_actual}</strong>
                 </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+                """,
+                unsafe_allow_html=True
+            )
 
     opciones = {
         "Inicio": "Inicio",
