@@ -25,14 +25,6 @@ def aplicar_estilos():
                 padding-right: 2rem !important;
             }
 
-            .navbar-box {
-                background-color: #1f2937;
-                padding: 16px 26px;
-                border-radius: 14px;
-                margin-bottom: 16px;
-                border: 1px solid #374151;
-            }
-
             .navbar-title {
                 font-size: 35px;
                 font-weight: 700;
@@ -57,6 +49,7 @@ def aplicar_estilos():
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                margin-bottom: 8px;
             }
 
             div[data-testid="stButton"] > button {
@@ -80,8 +73,15 @@ def navbar():
     usuario_actual = st.session_state.get("usuario", "Sin usuario")
     logo_path = Path("assets/logo.png")
 
+    # =========================
+    # HEADER SUPERIOR
+    # =========================
+
     with st.container(border=True):
-        col_logo, col_title = st.columns([0.08, 0.92])
+        col_logo, col_title, col_user, col_logout = st.columns(
+            [0.08, 0.62, 0.18, 0.12],
+            vertical_alignment="center"
+        )
 
         with col_logo:
             if logo_path.exists():
@@ -94,7 +94,7 @@ def navbar():
                 f"""
                 <div class="navbar-title">Moto Space Wash</div>
                 <div class="navbar-subtitle">
-                    Sistema de registro de lavadas | Usuario: <strong>{usuario_actual}</strong>
+                    Sistema de registro de lavadas
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -102,17 +102,21 @@ def navbar():
 
         with col_user:
             st.markdown(
-            f"""
-            <div class="user-box">
-                👤 {usuario_actual}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+                f"""
+                <div class="user-box">
+                    👤 {usuario_actual}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         with col_logout:
             if st.button("Cerrar sesión", use_container_width=True):
                 cerrar_sesion()
+
+    # =========================
+    # BOTONES DE NAVEGACIÓN
+    # =========================
 
     opciones = {
         "Inicio": "Inicio",
@@ -125,8 +129,8 @@ def navbar():
     if "vista" not in st.session_state:
         st.session_state.vista = "Inicio"
 
-    col1, col2, col3, col4, col5, col_user, col_logout = st.columns(
-        [1, 1.4, 1.4, 1.8, 1.5, 1.2, 1]
+    col1, col2, col3, col4, col5 = st.columns(
+        [1, 1.4, 1.4, 1.8, 1.5]
     )
 
     columnas = [col1, col2, col3, col4, col5]
@@ -140,6 +144,5 @@ def navbar():
             ):
                 st.session_state.vista = clave
                 st.rerun()
-
 
     st.divider()
