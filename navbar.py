@@ -83,11 +83,10 @@ def aplicar_estilos():
                 font-size: 20px;
                 color: #e5e7eb;
                 font-weight: bold;
-                text-align: center;
                 min-height: 38px;
                 display: flex;
                 align-items: center;
-                justify-content: center;
+                justify-content: flex-start;
                 margin-bottom: 8px;
                 white-space: nowrap;
             }
@@ -97,6 +96,11 @@ def aplicar_estilos():
                 color: white;
                 border-radius: 10px;
                 border: 1px solid #374151;
+            }
+
+            /* Botón de cerrar sesión más pequeño */
+            div[data-testid="stButton"] > button[kind="secondary"] {
+                width: auto;
             }
 
             @media (max-width: 768px) {
@@ -136,15 +140,15 @@ def aplicar_estilos():
                 }
 
                 .user-box {
-                    font-size: 12px !important;
-                    padding: 8px 8px !important;
-                    min-height: 34px !important;
+                    font-size: 13px !important;
+                    min-height: 30px !important;
                     margin-bottom: 4px !important;
+                    justify-content: center;
                 }
 
                 div[data-testid="stButton"] > button {
-                    min-height: 40px !important;
-                    padding: 8px 8px !important;
+                    min-height: 38px !important;
+                    padding: 6px 10px !important;
                     font-size: 14px !important;
                 }
             }
@@ -193,7 +197,7 @@ def navbar():
     # USUARIO Y CERRAR SESIÓN
     # =========================
 
-    col_user, col_logout = st.columns([1, 1])
+    col_user, col_logout, col_empty = st.columns([1.2, 0.45, 2.5])
 
     with col_user:
         st.markdown(
@@ -206,7 +210,7 @@ def navbar():
         )
 
     with col_logout:
-        if st.button("Cerrar sesión", use_container_width=True):
+        if st.button("Cerrar sesión", key="btn_logout"):
             cerrar_sesion()
 
     # =========================
@@ -217,18 +221,14 @@ def navbar():
         "Inicio": "Inicio",
         "Registrar": "Registrar Nuevo Servicio",
         "Lavadas": "Servicios del Día",
-        #"Cierre": "Próximamente nuevo módulo",
+        # "Cierre": "Próximamente nuevo módulo",
         "Historial": "Historial General"
     }
 
     if "vista" not in st.session_state:
         st.session_state.vista = "Inicio"
 
-    col1, col2, col3, col4, col5 = st.columns(
-        [1, 1.4, 1.4, 1.8, 1.5]
-    )
-
-    columnas = [col1, col2, col3, col4, col5]
+    columnas = st.columns(len(opciones))
 
     for col, (clave, etiqueta) in zip(columnas, opciones.items()):
         with col:
