@@ -34,15 +34,15 @@ def aplicar_estilos():
             }
 
             .navbar-title {
-                font-size: 24px;
+                font-size: 35px;
                 font-weight: 700;
                 color: white;
                 margin-bottom: 4px;
             }
 
             .navbar-subtitle {
-                font-size: 13px;
-                color: #9ca3af;
+                font-size: 20px;
+                color: #e5e619;
             }
 
             .user-box {
