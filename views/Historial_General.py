@@ -216,7 +216,7 @@ def mostrar_historial_general():
             ),
             "Observaciones": st.column_config.TextColumn(
                 "Observaciones",
-                width="large"
+                width="medium"
             ),
         }
     )
