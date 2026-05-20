@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from datetime import date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from database import obtener_lavados, eliminar_registro
 from utils import formato_pesos
 from io import BytesIO
@@ -22,9 +23,11 @@ else:
     # SELECCIÓN DE FECHA
     # =========================
 
+    fecha_colombia = datetime.now(ZoneInfo("America/Bogota")).date()
+
     fecha_seleccionada = st.date_input(
         "Selecciona la fecha del cierre",
-        value=date.today()
+        value=fecha_colombia
     )
 
     fecha_texto = fecha_seleccionada.strftime("%Y-%m-%d")
