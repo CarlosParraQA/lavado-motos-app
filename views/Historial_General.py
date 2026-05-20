@@ -208,11 +208,11 @@ def mostrar_historial_general():
             ),
             "40% correspondiente al trabajador": st.column_config.TextColumn(
                 "40% correspondiente al trabajador",
-                width="small"
+                width="medium"
             ),
             "60% correspondiente al negocio": st.column_config.TextColumn(
                 "60% correspondiente al negocio",
-                width="small"
+                width="medium"
             ),
             "Observaciones": st.column_config.TextColumn(
                 "Observaciones",
