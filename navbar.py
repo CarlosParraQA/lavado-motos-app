@@ -69,12 +69,14 @@ def aplicar_estilos():
                 }
 
                 .navbar-title {
-                    font-size: 24px !important;
+                    font-size: 22px !important;
                     margin-bottom: 2px !important;
+                    white-space: nowrap;
                 }
 
                 .navbar-subtitle {
-                    font-size: 13px !important;
+                    font-size: 12px !important;
+                    white-space: nowrap;
                 }
 
                 .user-box {
@@ -118,13 +120,13 @@ def navbar():
 
     with st.container(border=True):
         col_logo, col_title = st.columns(
-            [0.18, 0.82],
+            [0.28, 0.72],
             vertical_alignment="center"
         )
 
         with col_logo:
             if logo_path.exists():
-                st.image(str(logo_path), width=90)
+                st.image(str(logo_path), width=75)
             else:
                 st.markdown("### 🏍️")
 
