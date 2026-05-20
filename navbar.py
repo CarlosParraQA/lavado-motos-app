@@ -217,7 +217,7 @@ def navbar():
         "Inicio": "Inicio",
         "Registrar": "Registrar Nuevo Servicio",
         "Lavadas": "Servicios del Día",
-        "Cierre": "Próximamente nuevo módulo",
+        #"Cierre": "Próximamente nuevo módulo",
         "Historial": "Historial General"
     }
 
