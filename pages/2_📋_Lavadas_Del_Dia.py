@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from database import obtener_lavados, eliminar_registro
+from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero
 from utils import formato_pesos
 from auth import login, logout
 
@@ -75,6 +75,7 @@ else:
     # =========================
 
     st.subheader("Detalle de lavadas")
+    st.caption("Selecciona una fila para modificar el nombre o eliminar el registro.")
 
     df_mostrar = df_hoy.copy()
 
@@ -111,11 +112,57 @@ else:
         "observaciones": "Observaciones"
     })
 
-    # Mostrar tabla con configuración visual
-    st.dataframe(
+    # =========================
+    # POPUP / MODAL
+    # =========================
+
+    @st.dialog("Modificar lavada")
+    def abrir_popup_lavada(registro):
+        id_lavada = int(registro["Lavada #"])
+        nombre_actual = registro["Personal"]
+
+        st.write(f"**Lavada #:** {id_lavada}")
+        st.write(f"**Placa:** {registro['Placa']}")
+        st.write(f"**Valor:** {registro['Valor lavada']}")
+
+        nuevo_nombre = st.text_input(
+            "Nombre del personal",
+            value=nombre_actual
+        )
+
+        col_guardar, col_eliminar = st.columns(2)
+
+        with col_guardar:
+            if st.button("Guardar cambios", use_container_width=True):
+                if not nuevo_nombre.strip():
+                    st.error("El nombre no puede estar vacío.")
+                else:
+                    actualizar_nombre_gamusero(
+                        id_registro=id_lavada,
+                        nuevo_nombre=nuevo_nombre.strip().title()
+                    )
+                    st.success("Nombre actualizado correctamente.")
+                    st.rerun()
+
+        with col_eliminar:
+            if st.session_state.get("usuario", "").strip().lower() == "admin":
+                if st.button("Eliminar lavada", use_container_width=True):
+                    eliminar_registro(id_lavada)
+                    st.success("Registro eliminado correctamente.")
+                    st.rerun()
+            else:
+                st.info("Solo admin puede eliminar.")
+
+    # =========================
+    # TABLA SELECCIONABLE
+    # =========================
+
+    evento_tabla = st.dataframe(
         df_mostrar,
         use_container_width=True,
         hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row",
         column_config={
             "Lavada #": st.column_config.NumberColumn(
                 "Lavada #",
@@ -157,31 +204,10 @@ else:
         }
     )
 
-    st.divider()
+    # Abrir popup cuando se seleccione una fila
+    filas_seleccionadas = evento_tabla.selection.rows
 
-    # =========================
-    # ELIMINAR REGISTRO
-    # Solo admin puede eliminar
-    # =========================
-
-    if st.session_state.get("usuario") == "admin":
-        st.subheader("Eliminar registro")
-
-        st.info("Para eliminar una lavada, copia el número de la columna Lavada # y escríbelo abajo.")
-
-        id_eliminar = st.number_input(
-            "Lavada # a eliminar",
-            min_value=1,
-            step=1
-        )
-
-        if st.button("Eliminar registro seleccionado"):
-            if id_eliminar in df_hoy["id"].values:
-                eliminar_registro(int(id_eliminar))
-                st.success("Registro eliminado correctamente.")
-                st.rerun()
-            else:
-                st.error("Ese registro no existe en los registros mostrados.")
-
-    else:
-        st.info("Solo el usuario administrador puede eliminar registros.")
+    if filas_seleccionadas:
+        indice_fila = filas_seleccionadas[0]
+        registro_seleccionado = df_mostrar.iloc[indice_fila]
+        abrir_popup_lavada(registro_seleccionado)
