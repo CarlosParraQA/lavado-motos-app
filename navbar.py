@@ -100,6 +100,20 @@ def navbar():
                 unsafe_allow_html=True
             )
 
+        with col_user:
+            st.markdown(
+            f"""
+            <div class="user-box">
+                👤 {usuario_actual}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        with col_logout:
+            if st.button("Cerrar sesión", use_container_width=True):
+                cerrar_sesion()
+
     opciones = {
         "Inicio": "Inicio",
         "Registrar": "Registrar lavada",
@@ -127,18 +141,5 @@ def navbar():
                 st.session_state.vista = clave
                 st.rerun()
 
-    with col_user:
-        st.markdown(
-            f"""
-            <div class="user-box">
-                👤 {usuario_actual}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with col_logout:
-        if st.button("Cerrar sesión", use_container_width=True):
-            cerrar_sesion()
 
     st.divider()
