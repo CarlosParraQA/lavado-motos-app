@@ -1,5 +1,16 @@
 import streamlit as st
 from pathlib import Path
+import base64
+
+
+def cargar_logo_base64(ruta_logo="assets/logo.png"):
+    logo_path = Path(ruta_logo)
+
+    if not logo_path.exists():
+        return ""
+
+    with open(logo_path, "rb") as file:
+        return base64.b64encode(file.read()).decode()
 
 
 def aplicar_estilos():
@@ -25,17 +36,46 @@ def aplicar_estilos():
                 padding-right: 1rem !important;
             }
 
+            .header-card {
+                border: 1px solid #374151;
+                border-radius: 14px;
+                padding: 18px 22px;
+                margin-bottom: 16px;
+                background-color: transparent;
+            }
+
+            .header-brand {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                width: 100%;
+            }
+
+            .header-logo {
+                width: 90px;
+                height: 90px;
+                object-fit: contain;
+                flex-shrink: 0;
+            }
+
+            .header-text {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
             .navbar-title {
                 font-size: 35px;
                 font-weight: 700;
                 color: white;
-                margin-bottom: 4px;
+                margin: 0;
                 line-height: 1.1;
             }
 
             .navbar-subtitle {
                 font-size: 20px;
                 color: #9ca3af;
+                margin-top: 4px;
                 line-height: 1.2;
             }
 
@@ -68,15 +108,32 @@ def aplicar_estilos():
                     padding-right: 0.7rem !important;
                 }
 
+                .header-card {
+                    padding: 14px 16px;
+                    margin-bottom: 12px;
+                }
+
+                .header-brand {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    gap: 12px !important;
+                }
+
+                .header-logo {
+                    width: 68px !important;
+                    height: 68px !important;
+                }
+
                 .navbar-title {
-                    font-size: 22px !important;
-                    margin-bottom: 2px !important;
+                    font-size: 24px !important;
+                    line-height: 1.1 !important;
                     white-space: nowrap;
                 }
 
                 .navbar-subtitle {
-                    font-size: 12px !important;
-                    white-space: nowrap;
+                    font-size: 13px !important;
+                    line-height: 1.2 !important;
                 }
 
                 .user-box {
@@ -84,11 +141,6 @@ def aplicar_estilos():
                     padding: 8px 10px !important;
                     min-height: 34px !important;
                     margin-bottom: 4px !important;
-                }
-
-                div[data-testid="stImage"] img {
-                    max-width: 70px !important;
-                    height: auto !important;
                 }
 
                 div[data-testid="stButton"] > button {
@@ -112,32 +164,31 @@ def cerrar_sesion():
 
 def navbar():
     usuario_actual = st.session_state.get("usuario", "Sin usuario")
-    logo_path = Path("assets/logo.png")
+    logo_base64 = cargar_logo_base64("assets/logo.png")
+
+    if logo_base64:
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="header-logo">'
+    else:
+        logo_html = '<div class="header-logo" style="font-size:42px;">🏍️</div>'
 
     # =========================
     # HEADER SUPERIOR
     # =========================
 
-    with st.container(border=True):
-        col_logo, col_title = st.columns(
-            [0.28, 0.72],
-            vertical_alignment="center"
-        )
-
-        with col_logo:
-            if logo_path.exists():
-                st.image(str(logo_path), width=55)
-            else:
-                st.markdown("### 🏍️")
-
-        with col_title:
-            st.markdown(
-                """
-                <div class="navbar-title">Moto Space Wash</div>
-                <div class="navbar-subtitle">Sistema de registro de lavadas</div>
-                """,
-                unsafe_allow_html=True
-            )
+    st.markdown(
+        f"""
+        <div class="header-card">
+            <div class="header-brand">
+                {logo_html}
+                <div class="header-text">
+                    <div class="navbar-title">Moto Space Wash</div>
+                    <div class="navbar-subtitle">Sistema de registro de lavadas</div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     # =========================
     # USUARIO Y CERRAR SESIÓN
