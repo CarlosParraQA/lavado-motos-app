@@ -15,7 +15,7 @@ def login():
     if st.session_state.logueado:
         return True
 
-    st.title("🔐 Acceso Moto Space Wash")
+    st.title("🔐 Accede al sistema de registros - Space Wash")
     st.caption("Ingresa tus credenciales para continuar.")
 
     with st.form("login_form"):
