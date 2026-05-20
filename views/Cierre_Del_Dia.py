@@ -21,7 +21,7 @@ def mostrar_cierre_del_dia():
             </p>
 
             <p style="color: #9ca3af; font-size: 15px;">
-                Próximamente estará disponible nuevamente el cierre del día.
+                Próximamente estará disponible.
             </p>
         </div>
         """,
