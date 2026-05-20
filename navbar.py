@@ -150,6 +150,7 @@ def aplicar_estilos():
                     min-height: 38px !important;
                     padding: 6px 10px !important;
                     font-size: 14px !important;
+                    width: 100% !important;
                 }
             }
         </style>
