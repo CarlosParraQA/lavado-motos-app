@@ -1,8 +1,11 @@
 import streamlit as st
+from navbar import ocultar_sidebar, navbar
 from database import guardar_lavada
 from utils import formato_pesos
 from auth import login, logout
 
+ocultar_sidebar()
+navbar()
 login()
 logout()
 

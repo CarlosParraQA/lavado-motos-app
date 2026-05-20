@@ -1,7 +1,7 @@
 import streamlit as st
 from database import crear_tabla
 from auth import login, logout
-
+from navbar import ocultar_sidebar, navbar
 
 st.set_page_config(
     page_title="Registro Lavado de Motos",
@@ -9,6 +9,8 @@ st.set_page_config(
     layout="wide"
 )
 
+ocultar_sidebar()
+navbar()
 login()
 logout()
 

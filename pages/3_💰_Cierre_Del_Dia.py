@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from navbar import ocultar_sidebar, navbar
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from database import obtener_lavados, eliminar_registro
@@ -7,6 +8,8 @@ from utils import formato_pesos
 from io import BytesIO
 from auth import login, logout
 
+ocultar_sidebar()
+navbar()
 login()
 logout()
 

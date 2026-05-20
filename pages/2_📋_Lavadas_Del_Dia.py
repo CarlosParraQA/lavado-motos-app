@@ -1,11 +1,14 @@
 import streamlit as st
 import pandas as pd
+from navbar import ocultar_sidebar, navbar
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero
 from utils import formato_pesos
 from auth import login, logout
 
+ocultar_sidebar()
+navbar()
 login()
 logout()
 
