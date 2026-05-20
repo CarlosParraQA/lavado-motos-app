@@ -68,15 +68,15 @@ def navbar():
         st.page_link("Inicio.py", label="Inicio", icon="🏠")
 
     with col2:
-        st.page_link("pages/1_🌸_Registrar_Lavada.py", label="Registrar lavada", icon="🌸")
+        st.page_link("pages/1_Registrar_Lavada.py", label="Registrar lavada", icon="🌸")
 
     with col3:
-        st.page_link("pages/2_📋_Lavadas_Del_Dia.py", label="Lavadas del día", icon="📋")
+        st.page_link("pages/2_Lavadas_Del_Dia.py", label="Lavadas del día", icon="📋")
 
     with col4:
-        st.page_link("pages/3_💰_Cierre_Del_Dia.py", label="Cierre del día", icon="💰")
+        st.page_link("pages/3_Cierre_Del_Dia.py", label="Cierre del día", icon="💰")
 
     with col5:
-        st.page_link("pages/4_📊_Historial_General.py", label="Historial", icon="📊")
+        st.page_link("pages/4_Historial_General.py", label="Historial", icon="📊")
 
     st.divider()
