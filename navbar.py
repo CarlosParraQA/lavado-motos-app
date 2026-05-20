@@ -80,7 +80,7 @@ def aplicar_estilos():
             }
 
             .user-box {
-                background-color: #111827;
+                background-color: #9ca3af;
                 border: 1px solid #374151;
                 border-radius: 12px;
                 padding: 10px 14px;
