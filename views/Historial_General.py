@@ -99,11 +99,11 @@ def mostrar_historial_general():
     resumen_mostrar["ganancia_60_negocio"] = resumen_mostrar["ganancia_60_negocio"].apply(formato_pesos)
 
     resumen_mostrar = resumen_mostrar.rename(columns={
-        "gamusero": "Personal",
-        "cantidad_lavadas": "Lavadas",
-        "total_lavado": "Total lavado",
-        "pago_40_personal": "40%",
-        "ganancia_60_negocio": "60%"
+        "gamusero": "Nombre del Trabajador",
+        "cantidad_lavadas": "Lavadas realizadas",
+        "total_lavado": "Ingreso total",
+        "pago_40_personal": "40% correspondiente al trabajador",
+        "ganancia_60_negocio": "60% correspondiente al negocio"
     })
 
     st.dataframe(
@@ -111,24 +111,24 @@ def mostrar_historial_general():
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Personal": st.column_config.TextColumn(
-                "Personal",
+            "Nombre del Trabajador": st.column_config.TextColumn(
+                "Nombre del Trabajador",
                 width="medium"
             ),
-            "Lavadas": st.column_config.NumberColumn(
-                "Lavadas",
+            "Lavadas realizadas": st.column_config.NumberColumn(
+                "Lavadas realizadas",
                 width="small"
             ),
-            "Total lavado": st.column_config.TextColumn(
-                "Total lavado",
+            "Ingreso total": st.column_config.TextColumn(
+                "Ingreso total",
                 width="small"
             ),
-            "40%": st.column_config.TextColumn(
-                "40%",
+            "40% correspondiente al trabajador": st.column_config.TextColumn(
+                "40% correspondiente al trabajador",
                 width="small"
             ),
-            "60%": st.column_config.TextColumn(
-                "60%",
+            "60% correspondiente al negocio": st.column_config.TextColumn(
+                "60% correspondiente al negocio",
                 width="small"
             ),
         }
@@ -169,11 +169,11 @@ def mostrar_historial_general():
         "id": "Lavada #",
         "fecha": "Fecha",
         "hora": "Hora",
-        "gamusero": "Personal",
+        "gamusero": "Nombre del Trabajador",
         "placa": "Placa",
         "valor_lavada": "Valor",
-        "pago_gamusero": "40%",
-        "ganancia_negocio": "60%",
+        "pago_gamusero": "40% correspondiente al trabajador",
+        "ganancia_negocio": "60% correspondiente al negocio",
         "observaciones": "Observaciones"
     })
 
@@ -194,8 +194,8 @@ def mostrar_historial_general():
                 "Hora",
                 width="small"
             ),
-            "Personal": st.column_config.TextColumn(
-                "Personal",
+            "Nombre del Trabajador": st.column_config.TextColumn(
+                "Nombre del Trabajador",
                 width="medium"
             ),
             "Placa": st.column_config.TextColumn(
@@ -206,12 +206,12 @@ def mostrar_historial_general():
                 "Valor",
                 width="small"
             ),
-            "40%": st.column_config.TextColumn(
-                "40%",
+            "40% correspondiente al trabajador": st.column_config.TextColumn(
+                "40% correspondiente al trabajador",
                 width="small"
             ),
-            "60%": st.column_config.TextColumn(
-                "60%",
+            "60% correspondiente al negocio": st.column_config.TextColumn(
+                "60% correspondiente al negocio",
                 width="small"
             ),
             "Observaciones": st.column_config.TextColumn(

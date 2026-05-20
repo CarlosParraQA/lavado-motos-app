@@ -61,11 +61,11 @@ def navbar():
     )
 
     opciones = {
-        "Inicio": "🏠 Inicio",
-        "Registrar": "🌸 Registrar lavada",
-        "Lavadas": "📋 Lavadas del día",
-        "Cierre": "💰 Cierre del día",
-        "Historial": "📊 Historial"
+        "Inicio": "Inicio",
+        "Registrar": "Registrar lavada",
+        "Lavadas": "Lavadas del día",
+        "Cierre": "Proximamente Nuevo Modulo",
+        "Historial": "Historial General"
     }
 
     if "vista" not in st.session_state:
