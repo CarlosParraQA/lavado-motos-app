@@ -100,7 +100,7 @@ def aplicar_estilos():
 
             /* Botón de cerrar sesión más pequeño */
             div[data-testid="stButton"] > button[kind="secondary"] {
-                width: auto;
+                width: 100% !important;
             }
 
             @media (max-width: 768px) {
@@ -150,7 +150,7 @@ def aplicar_estilos():
                     min-height: 38px !important;
                     padding: 6px 10px !important;
                     font-size: 14px !important;
-                    width: auto !important;
+                    width: 100% !important;
                 }
             }
         </style>
