@@ -197,7 +197,7 @@ def navbar():
     # USUARIO Y CERRAR SESIÓN
     # =========================
 
-    col_user, col_logout, col_empty = st.columns([1.2, 0.45, 2.5])
+    col_user, col_logout, col_empty = st.columns([0.8, 0.8, 4])
 
     with col_user:
         st.markdown(
@@ -228,7 +228,7 @@ def navbar():
     if "vista" not in st.session_state:
         st.session_state.vista = "Inicio"
 
-    columnas = st.columns(len(opciones))
+    columnas = st.columns([1, 1.6, 1.4, 1.5])
 
     for col, (clave, etiqueta) in zip(columnas, opciones.items()):
         with col:
