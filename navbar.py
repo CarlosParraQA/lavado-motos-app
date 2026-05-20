@@ -80,13 +80,14 @@ def aplicar_estilos():
             }
 
             .user-box {
-                font-size: 18px;
+                font-size: 20px;
                 color: #e5e7eb;
                 font-weight: bold;
+                text-align: center;
                 min-height: 38px;
                 display: flex;
                 align-items: center;
-                justify-content: flex-start;
+                justify-content: center;
                 margin-bottom: 8px;
                 white-space: nowrap;
             }
@@ -96,11 +97,6 @@ def aplicar_estilos():
                 color: white;
                 border-radius: 10px;
                 border: 1px solid #374151;
-            }
-
-            /* Botón de cerrar sesión más pequeño */
-            div[data-testid="stButton"] > button[kind="secondary"] {
-                width: 100% !important;
             }
 
             @media (max-width: 768px) {
@@ -140,17 +136,16 @@ def aplicar_estilos():
                 }
 
                 .user-box {
-                    font-size: 13px !important;
-                    min-height: 30px !important;
+                    font-size: 12px !important;
+                    padding: 8px 8px !important;
+                    min-height: 34px !important;
                     margin-bottom: 4px !important;
-                    justify-content: center;
                 }
 
                 div[data-testid="stButton"] > button {
-                    min-height: 38px !important;
-                    padding: 6px 10px !important;
+                    min-height: 40px !important;
+                    padding: 8px 8px !important;
                     font-size: 14px !important;
-                    width: 100% !important;
                 }
             }
         </style>
@@ -195,35 +190,10 @@ def navbar():
     )
 
     # =========================
-    # BOTONES DE NAVEGACIÓN + USUARIO + CERRAR SESIÓN
+    # USUARIO Y CERRAR SESIÓN
     # =========================
 
-    opciones = {
-        "Inicio": "Inicio",
-        "Registrar": "Registrar Nuevo Servicio",
-        "Lavadas": "Servicios del Día",
-        # "Cierre": "Próximamente nuevo módulo",
-        "Historial": "Historial General"
-    }
-
-    if "vista" not in st.session_state:
-        st.session_state.vista = "Inicio"
-
-    col1, col2, col3, col4, col_user, col_logout = st.columns(
-        [1, 1.8, 1.4, 1.5, 0.8, 0.8],
-        vertical_alignment="center"
-    )
-
-    columnas = [col1, col2, col3, col4]
-
-    for col, (clave, etiqueta) in zip(columnas, opciones.items()):
-        with col:
-            if st.button(
-                etiqueta,
-                key=f"nav_{clave}"
-            ):
-                st.session_state.vista = clave
-                st.rerun()
+    col_user, col_logout = st.columns([1, 1])
 
     with col_user:
         st.markdown(
@@ -236,10 +206,38 @@ def navbar():
         )
 
     with col_logout:
-        if st.button(
-            "Cerrar sesión",
-            key="btn_logout",
-        ):
+        if st.button("Cerrar sesión", use_container_width=True):
             cerrar_sesion()
+
+    # =========================
+    # BOTONES DE NAVEGACIÓN
+    # =========================
+
+    opciones = {
+        "Inicio": "Inicio",
+        "Registrar": "Registrar Nuevo Servicio",
+        "Lavadas": "Servicios del Día",
+        "Cierre": "Próximamente nuevo módulo",
+        "Historial": "Historial General"
+    }
+
+    if "vista" not in st.session_state:
+        st.session_state.vista = "Inicio"
+
+    col1, col2, col3, col4, col5 = st.columns(
+        [1, 1.4, 1.4, 1.8, 1.5]
+    )
+
+    columnas = [col1, col2, col3, col4, col5]
+
+    for col, (clave, etiqueta) in zip(columnas, opciones.items()):
+        with col:
+            if st.button(
+                etiqueta,
+                use_container_width=True,
+                key=f"nav_{clave}"
+            ):
+                st.session_state.vista = clave
+                st.rerun()
 
     st.divider()
