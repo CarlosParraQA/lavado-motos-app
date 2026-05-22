@@ -16,7 +16,7 @@ def mostrar_registrar_lavada():
     with col2:
         valor_lavada = st.selectbox(
             "Valor de la lavada",
-            [6000, 15000, 20000, 30000, 35000],
+            [6000, 15000, 20000, 30000, 35000, 60000],
             format_func=lambda x: formato_pesos(x)
         )
 
