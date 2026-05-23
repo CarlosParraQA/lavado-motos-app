@@ -193,12 +193,6 @@ def mostrar_cierre_del_dia():
 
             with col_estado:
                 if ya_pagado:
-                    st.success("Pagado")
-                else:
-                    st.warning("Pendiente")
-
-            with col_accion:
-                if ya_pagado:
                     st.button(
                         "Pagado",
                         disabled=True,
