@@ -4,15 +4,10 @@ import streamlit as st
 def cargar_sesion_desde_token():
     """
     Recupera sesión desde token en la URL.
-    Si existe logout=1, no recupera sesión automáticamente.
+    No recupera si el usuario acaba de cerrar sesión.
     """
 
-    if st.session_state.get("logueado", False):
-        return True
-
-    logout_url = st.query_params.get("logout", "")
-
-    if logout_url == "1":
+    if st.session_state.get("logout_manual", False):
         return False
 
     token_url = st.query_params.get("token", "")
@@ -31,27 +26,10 @@ def cargar_sesion_desde_token():
     return False
 
 
-def login():
+def mostrar_formulario_login():
     """
-    Login simple con usuarios guardados en st.secrets.
-    Mantiene sesión con token en la URL.
+    Muestra el formulario de login y detiene la app.
     """
-
-    if "logueado" not in st.session_state:
-        st.session_state.logueado = False
-
-    if "usuario" not in st.session_state:
-        st.session_state.usuario = ""
-
-    if st.query_params.get("logout", "") == "1":
-        st.session_state.logueado = False
-        st.session_state.usuario = ""
-    else:
-        if cargar_sesion_desde_token():
-            return True
-
-        if st.session_state.logueado:
-            return True
 
     st.title("🔐 Accede al sistema de registros - Space Wash")
     st.caption("Ingresa tus credenciales para continuar.")
@@ -69,11 +47,13 @@ def login():
             if usuario in usuarios and clave == usuarios[usuario]:
                 st.session_state.logueado = True
                 st.session_state.usuario = usuario
+                st.session_state.logout_manual = False
 
                 token_usuario = tokens_sesion.get(usuario)
 
+                st.query_params.clear()
+
                 if token_usuario:
-                    st.query_params.clear()
                     st.query_params["token"] = token_usuario
 
                 st.success("Ingreso exitoso.")
@@ -84,6 +64,39 @@ def login():
     st.stop()
 
 
+def login():
+    """
+    Login con usuarios guardados en st.secrets.
+    Mantiene sesión con token en la URL.
+    """
+
+    if "logueado" not in st.session_state:
+        st.session_state.logueado = False
+
+    if "usuario" not in st.session_state:
+        st.session_state.usuario = ""
+
+    if "logout_manual" not in st.session_state:
+        st.session_state.logout_manual = False
+
+    # Si viene de cerrar sesión, siempre muestra login y bloquea el resto de la app
+    if st.query_params.get("logout", "") == "1" or st.session_state.logout_manual:
+        st.session_state.logueado = False
+        st.session_state.usuario = ""
+        mostrar_formulario_login()
+
+    # Si ya está logueado en la sesión actual, deja pasar
+    if st.session_state.logueado:
+        return True
+
+    # Si tiene token válido en URL, recupera sesión
+    if cargar_sesion_desde_token():
+        return True
+
+    # Si no hay sesión ni token, muestra login
+    mostrar_formulario_login()
+
+
 def cerrar_sesion():
     """
     Cierra sesión y evita que el token vuelva a iniciar automáticamente.
@@ -91,6 +104,7 @@ def cerrar_sesion():
 
     st.session_state.logueado = False
     st.session_state.usuario = ""
+    st.session_state.logout_manual = True
 
     st.query_params.clear()
     st.query_params["logout"] = "1"
