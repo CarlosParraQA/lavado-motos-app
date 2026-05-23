@@ -154,13 +154,6 @@ def aplicar_estilos():
     )
 
 
-def cerrar_sesion():
-    st.session_state.logueado = False
-    st.session_state.usuario = ""
-    st.session_state.vista = "Inicio"
-    st.rerun()
-
-
 def navbar():
     usuario_actual = st.session_state.get("usuario", "Sin usuario")
     logo_base64 = cargar_logo_base64("assets/logo.png")
