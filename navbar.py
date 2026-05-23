@@ -217,7 +217,7 @@ def navbar():
         "Inicio": "Inicio",
         "Registrar": "Registrar Nuevo Servicio",
         "Lavadas": "Servicios del Día",
-        "Pago": "Pago a Empleados",
+        "Cierre": "Pago a Empleados",
         "Historial": "Historial General"
     }
 
