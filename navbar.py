@@ -1,7 +1,9 @@
 import streamlit as st
 from pathlib import Path
 import base64
+from streamlit_cookies_controller import CookieController
 
+controller = CookieController()
 
 def cargar_logo_base64(ruta_logo="assets/logo.png"):
     logo_path = Path(ruta_logo)
@@ -207,7 +209,12 @@ def navbar():
 
     with col_logout:
         if st.button("Cerrar sesión", use_container_width=True):
-            cerrar_sesion()
+            controller.set("spacewash_usuario", "", max_age=0)
+
+            st.session_state.logueado = False
+            st.session_state.usuario = ""
+
+            st.rerun()
 
     # =========================
     # BOTONES DE NAVEGACIÓN
