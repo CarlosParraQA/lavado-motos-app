@@ -209,7 +209,7 @@ def navbar():
 
     with col_logout:
         if st.button("Cerrar sesión", use_container_width=True):
-            controller.set("spacewash_usuario", "", max_age=0)
+            controller.remove("spacewash_usuario")
 
             st.session_state.logueado = False
             st.session_state.usuario = ""
