@@ -6,6 +6,9 @@ def cargar_sesion_desde_token():
     Recupera la sesión usando el token guardado en la URL.
     """
 
+    if st.session_state.get("logout_manual", False):
+        return False
+
     if st.session_state.get("logueado", False):
         return True
 
@@ -37,6 +40,9 @@ def login():
     if "usuario" not in st.session_state:
         st.session_state.usuario = ""
 
+    if "logout_manual" not in st.session_state:
+        st.session_state.logout_manual = False
+
     if cargar_sesion_desde_token():
         return True
 
@@ -59,6 +65,7 @@ def login():
             if usuario in usuarios and clave == usuarios[usuario]:
                 st.session_state.logueado = True
                 st.session_state.usuario = usuario
+                st.session_state.logout_manual = False
 
                 token_usuario = tokens_sesion.get(usuario)
 
@@ -85,8 +92,8 @@ def logout():
         if st.button("Cerrar sesión"):
             st.session_state.logueado = False
             st.session_state.usuario = ""
+            st.session_state.logout_manual = True
 
-            if "token" in st.query_params:
-                del st.query_params["token"]
+            st.query_params.clear()
 
             st.rerun()
