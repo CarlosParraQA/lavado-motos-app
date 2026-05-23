@@ -21,7 +21,6 @@ login()
 
 aplicar_estilos()
 navbar()
-logout()
 
 crear_tabla()
 
