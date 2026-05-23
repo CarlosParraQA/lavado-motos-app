@@ -1,29 +1,21 @@
 import streamlit as st
+from streamlit_cookies_controller import CookieController
 
 
-def cargar_sesion_desde_token():
+controller = CookieController()
+
+
+def cargar_sesion_desde_cookie():
     """
-    Recupera la sesión usando el token guardado en la URL.
+    Recupera la sesión desde una cookie del navegador.
     """
 
-    if st.session_state.get("logout_manual", False):
-        return False
+    usuario_cookie = controller.get("spacewash_usuario")
 
-    if st.session_state.get("logueado", False):
+    if usuario_cookie:
+        st.session_state.logueado = True
+        st.session_state.usuario = usuario_cookie
         return True
-
-    token_url = st.query_params.get("token", "")
-
-    if not token_url:
-        return False
-
-    tokens_sesion = st.secrets.get("tokens_sesion", {})
-
-    for usuario, token_guardado in tokens_sesion.items():
-        if token_url == token_guardado:
-            st.session_state.logueado = True
-            st.session_state.usuario = usuario
-            return True
 
     return False
 
@@ -31,7 +23,7 @@ def cargar_sesion_desde_token():
 def login():
     """
     Login con usuarios guardados en st.secrets.
-    Mantiene la sesión usando token en la URL.
+    Mantiene la sesión usando cookie del navegador.
     """
 
     if "logueado" not in st.session_state:
@@ -40,13 +32,10 @@ def login():
     if "usuario" not in st.session_state:
         st.session_state.usuario = ""
 
-    if "logout_manual" not in st.session_state:
-        st.session_state.logout_manual = False
-
-    if cargar_sesion_desde_token():
+    if st.session_state.logueado:
         return True
 
-    if st.session_state.logueado:
+    if cargar_sesion_desde_cookie():
         return True
 
     st.title("🔐 Accede al sistema de registros - Space Wash")
@@ -60,17 +49,16 @@ def login():
 
         if ingresar:
             usuarios = st.secrets["usuarios"]
-            tokens_sesion = st.secrets.get("tokens_sesion", {})
 
             if usuario in usuarios and clave == usuarios[usuario]:
                 st.session_state.logueado = True
                 st.session_state.usuario = usuario
-                st.session_state.logout_manual = False
 
-                token_usuario = tokens_sesion.get(usuario)
-
-                if token_usuario:
-                    st.query_params["token"] = token_usuario
+                controller.set(
+                    "spacewash_usuario",
+                    usuario,
+                    max_age=60 * 60 * 24 * 7
+                )
 
                 st.success("Ingreso exitoso.")
                 st.rerun()
@@ -90,10 +78,9 @@ def logout():
         st.write(f"👤 Usuario: **{st.session_state.usuario}**")
 
         if st.button("Cerrar sesión"):
+            controller.remove("spacewash_usuario")
+
             st.session_state.logueado = False
             st.session_state.usuario = ""
-            st.session_state.logout_manual = True
-
-            st.query_params.clear()
 
             st.rerun()
