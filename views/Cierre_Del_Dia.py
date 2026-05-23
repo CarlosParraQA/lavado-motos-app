@@ -117,10 +117,7 @@ def mostrar_cierre_del_dia():
 
     pagos_realizados = obtener_pagos_fecha(fecha_texto)
 
-    nombre_operador = st.text_input(
-        "Nombre del operador",
-        value="Colocar el nombre del operador aquí"
-    ).strip().title()
+    nombre_operador = "Sueldo Encargado"
 
     registros_pago = []
 
@@ -148,7 +145,7 @@ def mostrar_cierre_del_dia():
 
     registros_pago.append({
         "empleado": nombre_operador,
-        "rol": "Operador",
+        "rol": "Encargado",
         "cantidad_servicios": 0,
         "total_realizado": 0,
         "valor_pagar": PAGO_FIJO_OPERADOR
