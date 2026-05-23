@@ -2,10 +2,25 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from database import obtener_lavados
+from database import obtener_lavados, supabase
 from utils import formato_pesos
 from io import BytesIO
 
+def obtener_pagos_empleados(fecha_inicio, fecha_fin):
+    try:
+        response = (
+            supabase
+            .table("pagos_empleados")
+            .select("*")
+            .gte("fecha", fecha_inicio)
+            .lte("fecha", fecha_fin)
+            .execute()
+        )
+
+        return pd.DataFrame(response.data or [])
+
+    except Exception:
+        return pd.DataFrame()
 
 def mostrar_historial_general():
     st.header("Historial general de lavadas")
@@ -52,87 +67,114 @@ def mostrar_historial_general():
         st.warning("No hay registros en ese rango de fechas.")
         return
 
-    # =========================
-    # MÉTRICAS GENERALES
+ # =========================
+    # RESUMEN FINANCIERO
     # =========================
 
     total_lavado = df_filtrado["valor_lavada"].sum()
-    total_pago = df_filtrado["pago_gamusero"].sum()
-    total_negocio = df_filtrado["ganancia_negocio"].sum()
 
-    col1, col2, col3 = st.columns(3)
+    df_pagos = obtener_pagos_empleados(
+        fecha_inicio_texto,
+        fecha_fin_texto
+    )
+
+    if df_pagos.empty:
+        total_pagado_empleados = 0
+        total_pagado_encargado = 0
+        total_pagado_general = 0
+    else:
+        total_pagado_empleados = df_pagos[
+            df_pagos["rol"].str.lower() == "gamusero"
+        ]["valor_pagar"].sum()
+
+        total_pagado_encargado = df_pagos[
+            df_pagos["rol"].str.lower() == "encargado"
+        ]["valor_pagar"].sum()
+
+        total_pagado_general = df_pagos["valor_pagar"].sum()
+
+    ganancia_final_negocio = total_lavado - total_pagado_general
+
+    col1, col2, col3, col4 = st.columns(4)
 
     col1.metric(
-        "Total lavado",
+        "Total vendido",
         formato_pesos(total_lavado)
     )
 
     col2.metric(
-        "Total 40% personal",
-        formato_pesos(total_pago)
+        "Pagado a empleados",
+        formato_pesos(total_pagado_empleados)
     )
 
     col3.metric(
-        "Total 60% negocio",
-        formato_pesos(total_negocio)
+        "Pagado encargado",
+        formato_pesos(total_pagado_encargado)
+    )
+
+    col4.metric(
+        "Ganancia final negocio",
+        formato_pesos(ganancia_final_negocio)
     )
 
     st.divider()
 
     # =========================
-    # RESUMEN POR PERSONAL
+    # DETALLE DE PAGOS REALIZADOS
     # =========================
 
-    st.subheader("Resumen por personal")
+    st.subheader("Pagos realizados")
 
-    resumen = df_filtrado.groupby("gamusero").agg(
-        cantidad_lavadas=("id", "count"),
-        total_lavado=("valor_lavada", "sum"),
-        pago_40_personal=("pago_gamusero", "sum"),
-        ganancia_60_negocio=("ganancia_negocio", "sum")
-    ).reset_index()
+    if df_pagos.empty:
+        st.info("No hay pagos registrados en este rango de fechas.")
+    else:
+        df_pagos_mostrar = df_pagos.copy()
 
-    resumen_mostrar = resumen.copy()
+        df_pagos_mostrar["valor_pagar"] = df_pagos_mostrar["valor_pagar"].apply(formato_pesos)
+        df_pagos_mostrar["total_realizado"] = df_pagos_mostrar["total_realizado"].apply(formato_pesos)
 
-    resumen_mostrar["total_lavado"] = resumen_mostrar["total_lavado"].apply(formato_pesos)
-    resumen_mostrar["pago_40_personal"] = resumen_mostrar["pago_40_personal"].apply(formato_pesos)
-    resumen_mostrar["ganancia_60_negocio"] = resumen_mostrar["ganancia_60_negocio"].apply(formato_pesos)
+        columnas_pagos = [
+            "fecha",
+            "empleado",
+            "rol",
+            "cantidad_servicios",
+            "total_realizado",
+            "valor_pagar",
+            "pagado_por",
+            "fecha_pago"
+        ]
 
-    resumen_mostrar = resumen_mostrar.rename(columns={
-        "gamusero": "Nombre del Trabajador",
-        "cantidad_lavadas": "Lavadas realizadas",
-        "total_lavado": "Ingreso total",
-        "pago_40_personal": "40% correspondiente al trabajador",
-        "ganancia_60_negocio": "60% correspondiente al negocio"
-    })
+        df_pagos_mostrar = df_pagos_mostrar[columnas_pagos]
 
-    st.dataframe(
-        resumen_mostrar,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Nombre del Trabajador": st.column_config.TextColumn(
-                "Nombre del Trabajador",
-                width="medium"
-            ),
-            "Lavadas realizadas": st.column_config.NumberColumn(
-                "Lavadas realizadas",
-                width="small"
-            ),
-            "Ingreso total": st.column_config.TextColumn(
-                "Ingreso total",
-                width="small"
-            ),
-            "40% correspondiente al trabajador": st.column_config.TextColumn(
-                "40% correspondiente al trabajador",
-                width="small"
-            ),
-            "60% correspondiente al negocio": st.column_config.TextColumn(
-                "60% correspondiente al negocio",
-                width="small"
-            ),
-        }
-    )
+        df_pagos_mostrar = df_pagos_mostrar.rename(columns={
+            "fecha": "Fecha",
+            "empleado": "Empleado",
+            "rol": "Rol",
+            "cantidad_servicios": "Servicios",
+            "total_realizado": "Total realizado",
+            "valor_pagar": "Valor pagado",
+            "pagado_por": "Pagado por",
+            "fecha_pago": "Fecha de pago"
+        })
+
+        st.dataframe(
+            df_pagos_mostrar,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    resumen_financiero_df = pd.DataFrame([{
+        "Total vendido": total_lavado,
+        "Pagado a empleados": total_pagado_empleados,
+        "Pagado encargado": total_pagado_encargado,
+        "Total pagado": total_pagado_general,
+        "Ganancia final negocio": ganancia_final_negocio
+    }])
+
+    resumen_financiero_mostrar = resumen_financiero_df.copy()
+
+    for columna in resumen_financiero_mostrar.columns:
+        resumen_financiero_mostrar[columna] = resumen_financiero_mostrar[columna].apply(formato_pesos)
 
     st.divider()
 
@@ -230,11 +272,18 @@ def mostrar_historial_general():
     buffer = BytesIO()
 
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        resumen_mostrar.to_excel(
+        resumen_financiero_mostrar.to_excel(
             writer,
-            sheet_name="Resumen por personal",
+            sheet_name="Resumen financiero",
             index=False
         )
+
+        if not df_pagos.empty:
+            df_pagos_mostrar.to_excel(
+                writer,
+                sheet_name="Pagos realizados",
+                index=False
+            )
 
         df_detalle.to_excel(
             writer,
