@@ -43,11 +43,15 @@ def login():
     if "usuario" not in st.session_state:
         st.session_state.usuario = ""
 
-    if cargar_sesion_desde_token():
-        return True
+    if st.query_params.get("logout", "") == "1":
+        st.session_state.logueado = False
+        st.session_state.usuario = ""
+    else:
+        if cargar_sesion_desde_token():
+            return True
 
-    if st.session_state.logueado:
-        return True
+        if st.session_state.logueado:
+            return True
 
     st.title("🔐 Accede al sistema de registros - Space Wash")
     st.caption("Ingresa tus credenciales para continuar.")
