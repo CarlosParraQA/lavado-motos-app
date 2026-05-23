@@ -8,7 +8,7 @@ st.set_page_config(
 )
 
 from database import crear_tabla
-from auth import login, logout
+from auth import login
 from navbar import aplicar_estilos, navbar
 
 from views.Registrar_Lavada import mostrar_registrar_lavada
