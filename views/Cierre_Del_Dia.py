@@ -117,7 +117,7 @@ def mostrar_cierre_del_dia():
 
     pagos_realizados = obtener_pagos_fecha(fecha_texto)
 
-    nombre_operador = "Sueldo Encargado"
+    nombre_operador = "Encargado"
 
     registros_pago = []
 
