@@ -140,8 +140,7 @@ def mostrar_historial_general():
             "cantidad_servicios",
             "total_realizado",
             "valor_pagar",
-            "pagado_por",
-            "fecha_pago"
+            "pagado_por"
         ]
 
         df_pagos_mostrar = df_pagos_mostrar[columnas_pagos]
@@ -154,7 +153,6 @@ def mostrar_historial_general():
             "total_realizado": "Total realizado",
             "valor_pagar": "Valor pagado",
             "pagado_por": "Pagado por",
-            "fecha_pago": "Fecha de pago"
         })
 
         st.dataframe(
