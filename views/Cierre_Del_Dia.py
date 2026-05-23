@@ -119,7 +119,7 @@ def mostrar_cierre_del_dia():
 
     nombre_operador = st.text_input(
         "Nombre del operador",
-        value="Operador"
+        value="Colocar el nombre del operador aquí"
     ).strip().title()
 
     registros_pago = []
