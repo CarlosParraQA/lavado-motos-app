@@ -1,9 +1,40 @@
 import streamlit as st
 
 
+def cargar_sesion_desde_token():
+    """
+    Recupera sesión desde token en la URL.
+    Si existe logout=1, no recupera sesión automáticamente.
+    """
+
+    if st.session_state.get("logueado", False):
+        return True
+
+    logout_url = st.query_params.get("logout", "")
+
+    if logout_url == "1":
+        return False
+
+    token_url = st.query_params.get("token", "")
+
+    if not token_url:
+        return False
+
+    tokens_sesion = st.secrets.get("tokens_sesion", {})
+
+    for usuario, token_guardado in tokens_sesion.items():
+        if token_url == token_guardado:
+            st.session_state.logueado = True
+            st.session_state.usuario = usuario
+            return True
+
+    return False
+
+
 def login():
     """
     Login simple con usuarios guardados en st.secrets.
+    Mantiene sesión con token en la URL.
     """
 
     if "logueado" not in st.session_state:
@@ -11,6 +42,9 @@ def login():
 
     if "usuario" not in st.session_state:
         st.session_state.usuario = ""
+
+    if cargar_sesion_desde_token():
+        return True
 
     if st.session_state.logueado:
         return True
@@ -26,10 +60,18 @@ def login():
 
         if ingresar:
             usuarios = st.secrets["usuarios"]
+            tokens_sesion = st.secrets.get("tokens_sesion", {})
 
             if usuario in usuarios and clave == usuarios[usuario]:
                 st.session_state.logueado = True
                 st.session_state.usuario = usuario
+
+                token_usuario = tokens_sesion.get(usuario)
+
+                if token_usuario:
+                    st.query_params.clear()
+                    st.query_params["token"] = token_usuario
+
                 st.success("Ingreso exitoso.")
                 st.rerun()
             else:
@@ -38,15 +80,15 @@ def login():
     st.stop()
 
 
-def logout():
+def cerrar_sesion():
     """
-    Cierra la sesión del usuario.
+    Cierra sesión y evita que el token vuelva a iniciar automáticamente.
     """
 
-    st.divider()
-    st.write(f"👤 Usuario: **{st.session_state.usuario}**")
+    st.session_state.logueado = False
+    st.session_state.usuario = ""
 
-    if st.button("Cerrar sesión", use_container_width=True):
-        st.session_state.logueado = False
-        st.session_state.usuario = ""
-        st.rerun()
+    st.query_params.clear()
+    st.query_params["logout"] = "1"
+
+    st.rerun()

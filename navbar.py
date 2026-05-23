@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
 import base64
-
+from auth import cerrar_sesion
 
 def cargar_logo_base64(ruta_logo="assets/logo.png"):
     logo_path = Path(ruta_logo)
@@ -207,9 +207,7 @@ def navbar():
 
     with col_logout:
         if st.button("Cerrar sesión", use_container_width=True):
-            st.session_state.logueado = False
-            st.session_state.usuario = ""
-            st.rerun()
+            cerrar_sesion()
 
     # =========================
     # BOTONES DE NAVEGACIÓN
