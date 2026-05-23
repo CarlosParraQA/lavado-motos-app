@@ -1,29 +1,9 @@
 import streamlit as st
-from streamlit_cookies_controller import CookieController
-
-
-controller = CookieController()
-
-
-def cargar_sesion_desde_cookie():
-    """
-    Recupera la sesión desde una cookie del navegador.
-    """
-
-    usuario_cookie = controller.get("spacewash_usuario")
-
-    if usuario_cookie:
-        st.session_state.logueado = True
-        st.session_state.usuario = usuario_cookie
-        return True
-
-    return False
 
 
 def login():
     """
-    Login con usuarios guardados en st.secrets.
-    Mantiene la sesión usando cookie del navegador.
+    Login simple con usuarios guardados en st.secrets.
     """
 
     if "logueado" not in st.session_state:
@@ -33,9 +13,6 @@ def login():
         st.session_state.usuario = ""
 
     if st.session_state.logueado:
-        return True
-
-    if cargar_sesion_desde_cookie():
         return True
 
     st.title("🔐 Accede al sistema de registros - Space Wash")
@@ -53,13 +30,6 @@ def login():
             if usuario in usuarios and clave == usuarios[usuario]:
                 st.session_state.logueado = True
                 st.session_state.usuario = usuario
-
-                controller.set(
-                    "spacewash_usuario",
-                    usuario,
-                    max_age=60 * 60 * 24 * 7
-                )
-
                 st.success("Ingreso exitoso.")
                 st.rerun()
             else:
@@ -73,14 +43,10 @@ def logout():
     Cierra la sesión del usuario.
     """
 
-    with st.sidebar:
-        st.divider()
-        st.write(f"👤 Usuario: **{st.session_state.usuario}**")
+    st.divider()
+    st.write(f"👤 Usuario: **{st.session_state.usuario}**")
 
-        if st.button("Cerrar sesión"):
-            controller.remove("spacewash_usuario")
-
-            st.session_state.logueado = False
-            st.session_state.usuario = ""
-
-            st.rerun()
+    if st.button("Cerrar sesión", use_container_width=True):
+        st.session_state.logueado = False
+        st.session_state.usuario = ""
+        st.rerun()
