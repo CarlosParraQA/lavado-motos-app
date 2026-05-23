@@ -23,7 +23,7 @@ def obtener_pagos_empleados(fecha_inicio, fecha_fin):
         return pd.DataFrame()
 
 def mostrar_historial_general():
-    st.header("Historial general de lavadas")
+    st.header("Historial General del día")
 
     # Obtener registros
     df = obtener_lavados()
