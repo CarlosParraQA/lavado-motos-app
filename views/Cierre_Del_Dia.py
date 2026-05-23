@@ -193,11 +193,30 @@ def mostrar_cierre_del_dia():
 
             with col_estado:
                 if ya_pagado:
+                    st.success("Pagado")
+                else:
+                    st.warning("Pendiente")
+
+            with col_accion:
+                usuario_actual = st.session_state.get("usuario", "").strip().lower()
+
+                usuarios_autorizados_pago = ["admin", "socio"]
+
+                puede_pagar = usuario_actual in usuarios_autorizados_pago
+
+                if ya_pagado:
                     st.button(
                         "Pagado",
                         disabled=True,
                         use_container_width=True,
                         key=f"pagado_{empleado}_{fecha_texto}"
+                    )
+                elif not puede_pagar:
+                    st.button(
+                        "Sin permiso",
+                        disabled=True,
+                        use_container_width=True,
+                        key=f"sin_permiso_{empleado}_{fecha_texto}"
                     )
                 else:
                     if st.button(
