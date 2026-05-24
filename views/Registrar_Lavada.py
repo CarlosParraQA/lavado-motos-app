@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from database import guardar_lavada
+from database import guardar_lavada, obtener_lavados
 from utils import formato_pesos
 
 
@@ -38,12 +38,39 @@ def mostrar_registrar_lavada():
     st.table(resumen_lavada.style.hide(axis="index"))
 
     if st.button("Guardar lavada", use_container_width=True):
-        if not gamusero.strip():
+        placa_normalizada = placa.strip().upper()
+        gamusero_normalizado = gamusero.strip().title()
+
+        if not gamusero_normalizado:
             st.error("Debes ingresar el nombre del gamusero.")
+
+        elif not placa_normalizada:
+            st.error("Debes ingresar la placa de la moto.")
+
         else:
+            df_lavados = obtener_lavados()
+
+            if not df_lavados.empty:
+                from datetime import datetime
+                from zoneinfo import ZoneInfo
+
+                fecha_hoy = datetime.now(ZoneInfo("America/Bogota")).date().strftime("%Y-%m-%d")
+
+                placa_ya_registrada = df_lavados[
+                    (df_lavados["fecha"] == fecha_hoy) &
+                    (df_lavados["placa"].astype(str).str.upper().str.strip() == placa_normalizada)
+                ]
+
+                if not placa_ya_registrada.empty:
+                    st.error(
+                        f"La placa {placa_normalizada} ya tiene una lavada registrada hoy. "
+                        "No se puede registrar dos veces el mismo día."
+                    )
+                    return
+
             guardar_lavada(
-                gamusero=gamusero.strip().title(),
-                placa=placa.strip().upper(),
+                gamusero=gamusero_normalizado,
+                placa=placa_normalizada,
                 valor_lavada=valor_lavada,
                 observaciones=observaciones.strip()
             )
