@@ -25,13 +25,16 @@ def mostrar_registrar_lavada():
             placeholder="Opcional"
         )
 
+        coin = st.checkbox("¿Se le dio coin?", value=False)
+
     pago_calculado = int(valor_lavada * 0.40)
     ganancia_calculada = int(valor_lavada * 0.60)
 
     resumen_lavada = pd.DataFrame({
         "Valor lavada": [formato_pesos(valor_lavada)],
         "40% gamusero": [formato_pesos(pago_calculado)],
-        "60% negocio": [formato_pesos(ganancia_calculada)]
+        "60% negocio": [formato_pesos(ganancia_calculada)],
+        "Coin": ["Sí" if coin else "No"]
     })
 
     st.subheader("Resumen de la lavada")
@@ -76,13 +79,15 @@ def mostrar_registrar_lavada():
                 gamusero=gamusero_normalizado,
                 placa=placa_normalizada,
                 valor_lavada=valor_lavada,
-                observaciones=observaciones.strip()
+                observaciones=observaciones.strip(),
+                coin=coin
             )
 
             st.success("Lavada registrada correctamente.")
 
-        except Exception:
+        except Exception as error:
             st.error(
                 f"No se pudo guardar la lavada. La placa {placa_normalizada} "
                 "ya puede estar registrada para el día de hoy."
             )
+            st.exception(error)
