@@ -111,7 +111,7 @@ def mostrar_cierre_del_dia():
     usuarios_autorizados_pago = ["admin", "socio"]
     puede_gestionar_pagos = usuario_actual in usuarios_autorizados_pago
 
-    es_domingo = fecha_seleccionada.weekday() == 6  # Lunes=0, Domingo=6
+    es_domingo = fecha_seleccionada.weekday() == 3  # Lunes=0, Domingo=6
 
     if puede_gestionar_pagos and es_domingo:
         st.success("Puedes cambiar el porcentaje de pago de cada empleado de forma individual.")
@@ -174,15 +174,20 @@ def mostrar_cierre_del_dia():
         if item["rol"] == "Gamusero":
             key_porcentaje = f"porcentaje_pago_{item['empleado']}_{fecha_texto}"
 
-        if puede_gestionar_pagos and es_domingo:
-            porcentaje_individual = int(st.session_state.get(key_porcentaje, 40))
-        else:
-            porcentaje_individual = 40
+            porcentaje_guardado = int(st.session_state.get(key_porcentaje, 40))
 
-        item["porcentaje_pago"] = porcentaje_individual
-        item["valor_pagar"] = int(
-            round(int(item["total_realizado"]) * (porcentaje_individual / 100))
-        )
+            if porcentaje_guardado not in [40, 50]:
+                porcentaje_guardado = 40
+
+            if puede_gestionar_pagos and es_domingo:
+                porcentaje_individual = porcentaje_guardado
+            else:
+                porcentaje_individual = 40
+
+            item["porcentaje_pago"] = porcentaje_individual
+            item["valor_pagar"] = int(
+                round(int(item["total_realizado"]) * (porcentaje_individual / 100))
+            )
 
     total_servicios = 0 if df_fecha.empty else int(df_fecha["id"].count())
     total_realizado = sum(int(item["total_realizado"]) for item in registros_pago)
@@ -220,16 +225,20 @@ def mostrar_cierre_del_dia():
                 st.write(f"**Rol:** {rol}")
                 st.write(f"**Servicios realizados:** {cantidad_servicios}")
                 st.write(f"**Total realizado:** {formato_pesos(total_realizado_empleado)}")
+
                 if rol == "Gamusero":
                     key_porcentaje = f"porcentaje_pago_{empleado}_{fecha_texto}"
 
                     if puede_gestionar_pagos and es_domingo and not ya_pagado:
-                        porcentaje_pago = st.number_input(
+                        valor_actual = int(porcentaje_pago or 40)
+
+                        if valor_actual not in [40, 50]:
+                            valor_actual = 40
+
+                        porcentaje_pago = st.selectbox(
                             "Porcentaje a pagar",
-                            min_value=0,
-                            max_value=100,
-                            value=int(porcentaje_pago or 40),
-                            step=1,
+                            options=[40, 50],
+                            index=[40, 50].index(valor_actual),
                             key=key_porcentaje,
                             help="Este porcentaje aplica solo para este empleado."
                         )
@@ -237,7 +246,6 @@ def mostrar_cierre_del_dia():
                         valor_pagar = int(
                             round(total_realizado_empleado * (int(porcentaje_pago) / 100))
                         )
-
                     else:
                         st.write(f"**Porcentaje aplicado:** {int(porcentaje_pago or 40)}%")
 
