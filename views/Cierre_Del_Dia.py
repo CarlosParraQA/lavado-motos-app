@@ -115,22 +115,23 @@ def mostrar_cierre_del_dia():
 
     es_domingo = fecha_seleccionada.weekday() == 6  # Lunes=0, Domingo=6
 
-    if puede_gestionar_pagos and es_domingo:
-        porcentaje_pago_empleados = st.number_input(
-            "Porcentaje a pagar a empleados",
-            min_value=0,
-            max_value=100,
-            value=40,
-            step=1,
-            key=f"porcentaje_pago_empleados_{fecha_texto}",
-            help="Este porcentaje se aplica al total realizado por cada gamusero en la fecha seleccionada."
-        )
+    if puede_gestionar_pagos:
+        if es_domingo:
+            st.success("Hoy puedes cambiar el porcentaje de pago porque la fecha seleccionada es domingo.")
 
-    elif puede_gestionar_pagos and not es_domingo:
-        st.info("Solo los domingos se cambia el porcentaje de pago. Para esta fecha se aplica el 40%.")
-
+            porcentaje_pago_empleados = st.number_input(
+                "Porcentaje a pagar a empleados",
+                min_value=0,
+                max_value=100,
+                value=40,
+                step=1,
+                key=f"porcentaje_pago_empleados_{fecha_texto}",
+                help="Este porcentaje se aplica al total realizado por cada gamusero en la fecha seleccionada."
+            )
+        else:
+            st.warning("Solo los domingos se cambia el porcentaje de pago. Para esta fecha se aplica el 40%.")
     else:
-        st.info("El porcentaje de pago solo puede ser modificado por admin o socio.")
+        st.warning("No tienes permiso para cambiar el porcentaje de pago. Solo admin o socio pueden hacerlo los domingos.")
 
     df = obtener_lavados()
 
