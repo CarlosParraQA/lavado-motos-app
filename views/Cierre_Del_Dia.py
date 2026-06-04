@@ -113,7 +113,7 @@ def mostrar_cierre_del_dia():
 
     porcentaje_pago_empleados = 40
 
-    es_domingo = fecha_seleccionada.weekday() == 6  # Lunes=0, Domingo=6
+    es_domingo = fecha_seleccionada.weekday() == 3  # Lunes=0, Domingo=6
 
     if puede_gestionar_pagos:
         if es_domingo:
