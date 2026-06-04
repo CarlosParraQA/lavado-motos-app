@@ -107,6 +107,31 @@ def mostrar_cierre_del_dia():
 
     fecha_texto = fecha_seleccionada.strftime("%Y-%m-%d")
 
+    usuario_actual = st.session_state.get("usuario", "").strip().lower()
+    usuarios_autorizados_pago = ["admin", "socio"]
+    puede_gestionar_pagos = usuario_actual in usuarios_autorizados_pago
+
+    porcentaje_pago_empleados = 40
+
+    es_domingo = fecha_seleccionada.weekday() == 6  # Lunes=0, Domingo=6
+
+    if puede_gestionar_pagos and es_domingo:
+        porcentaje_pago_empleados = st.number_input(
+            "Porcentaje a pagar a empleados",
+            min_value=0,
+            max_value=100,
+            value=40,
+            step=1,
+            key=f"porcentaje_pago_empleados_{fecha_texto}",
+            help="Este porcentaje se aplica al total realizado por cada gamusero en la fecha seleccionada."
+        )
+
+    elif puede_gestionar_pagos and not es_domingo:
+        st.info("Solo los domingos se cambia el porcentaje de pago. Para esta fecha se aplica el 40%.")
+
+    else:
+        st.info("El porcentaje de pago solo puede ser modificado por admin o socio.")
+
     df = obtener_lavados()
 
     if df.empty:
@@ -127,8 +152,7 @@ def mostrar_cierre_del_dia():
             .groupby("gamusero")
             .agg(
                 cantidad_servicios=("id", "count"),
-                total_realizado=("valor_lavada", "sum"),
-                valor_pagar=("pago_gamusero", "sum")
+                total_realizado=("valor_lavada", "sum")
             )
             .reset_index()
         )
@@ -138,6 +162,10 @@ def mostrar_cierre_del_dia():
         })
 
         resumen["rol"] = "Gamusero"
+        resumen["porcentaje_pago"] = int(porcentaje_pago_empleados)
+        resumen["valor_pagar"] = (
+            resumen["total_realizado"] * (int(porcentaje_pago_empleados) / 100)
+        ).round(0).astype(int)
 
         registros_pago = resumen.to_dict("records")
     else:
@@ -148,7 +176,8 @@ def mostrar_cierre_del_dia():
         "rol": "Encargado",
         "cantidad_servicios": 0,
         "total_realizado": 0,
-        "valor_pagar": PAGO_FIJO_OPERADOR
+        "valor_pagar": PAGO_FIJO_OPERADOR,
+        "porcentaje_pago": None
     })
 
     total_servicios = 0 if df_fecha.empty else int(df_fecha["id"].count())
@@ -171,6 +200,7 @@ def mostrar_cierre_del_dia():
         cantidad_servicios = int(registro["cantidad_servicios"])
         total_realizado_empleado = int(registro["total_realizado"])
         valor_pagar = int(registro["valor_pagar"])
+        porcentaje_pago = registro.get("porcentaje_pago")
 
         ya_pagado = pago_ya_realizado(
             pagos_realizados,
@@ -186,6 +216,9 @@ def mostrar_cierre_del_dia():
                 st.write(f"**Rol:** {rol}")
                 st.write(f"**Servicios realizados:** {cantidad_servicios}")
                 st.write(f"**Total realizado:** {formato_pesos(total_realizado_empleado)}")
+                if porcentaje_pago is not None:
+                    st.write(f"**Porcentaje aplicado:** {int(porcentaje_pago)}%")
+
                 st.write(f"**Valor a pagar:** {formato_pesos(valor_pagar)}")
 
             with col_estado:
@@ -195,11 +228,7 @@ def mostrar_cierre_del_dia():
                     st.warning("Pendiente")
 
             with col_accion:
-                usuario_actual = st.session_state.get("usuario", "").strip().lower()
-
-                usuarios_autorizados_pago = ["admin", "socio"]
-
-                puede_pagar = usuario_actual in usuarios_autorizados_pago
+                puede_pagar = puede_gestionar_pagos
 
                 if ya_pagado:
                     st.button(
