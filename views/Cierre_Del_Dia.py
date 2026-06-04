@@ -111,25 +111,14 @@ def mostrar_cierre_del_dia():
     usuarios_autorizados_pago = ["admin", "socio"]
     puede_gestionar_pagos = usuario_actual in usuarios_autorizados_pago
 
-    porcentaje_pago_empleados = 40
+    es_domingo = fecha_seleccionada.weekday() == 6  # Lunes=0, Domingo=6
 
-    es_domingo = fecha_seleccionada.weekday() == 3  # Lunes=0, Domingo=6
+    if puede_gestionar_pagos and es_domingo:
+        st.success("Puedes cambiar el porcentaje de pago de cada empleado de forma individual.")
 
-    if puede_gestionar_pagos:
-        if es_domingo:
-            st.success("Hoy puedes cambiar el porcentaje de pago porque la fecha seleccionada es domingo.")
+    elif puede_gestionar_pagos and not es_domingo:
+        st.warning("Solo los domingos se cambia el porcentaje de pago. Para esta fecha se aplica el 40%.")
 
-            porcentaje_pago_empleados = st.number_input(
-                "Porcentaje a pagar a empleados",
-                min_value=0,
-                max_value=100,
-                value=40,
-                step=1,
-                key=f"porcentaje_pago_empleados_{fecha_texto}",
-                help="Este porcentaje se aplica al total realizado por cada gamusero en la fecha seleccionada."
-            )
-        else:
-            st.warning("Solo los domingos se cambia el porcentaje de pago. Para esta fecha se aplica el 40%.")
     else:
         st.warning("No tienes permiso para cambiar el porcentaje de pago. Solo admin o socio pueden hacerlo los domingos.")
 
@@ -163,9 +152,9 @@ def mostrar_cierre_del_dia():
         })
 
         resumen["rol"] = "Gamusero"
-        resumen["porcentaje_pago"] = int(porcentaje_pago_empleados)
+        resumen["porcentaje_pago"] = 40
         resumen["valor_pagar"] = (
-            resumen["total_realizado"] * (int(porcentaje_pago_empleados) / 100)
+            resumen["total_realizado"] * 0.40
         ).round(0).astype(int)
 
         registros_pago = resumen.to_dict("records")
@@ -180,6 +169,20 @@ def mostrar_cierre_del_dia():
         "valor_pagar": PAGO_FIJO_OPERADOR,
         "porcentaje_pago": None
     })
+
+    for item in registros_pago:
+        if item["rol"] == "Gamusero":
+            key_porcentaje = f"porcentaje_pago_{item['empleado']}_{fecha_texto}"
+
+        if puede_gestionar_pagos and es_domingo:
+            porcentaje_individual = int(st.session_state.get(key_porcentaje, 40))
+        else:
+            porcentaje_individual = 40
+
+        item["porcentaje_pago"] = porcentaje_individual
+        item["valor_pagar"] = int(
+            round(int(item["total_realizado"]) * (porcentaje_individual / 100))
+        )
 
     total_servicios = 0 if df_fecha.empty else int(df_fecha["id"].count())
     total_realizado = sum(int(item["total_realizado"]) for item in registros_pago)
@@ -217,8 +220,26 @@ def mostrar_cierre_del_dia():
                 st.write(f"**Rol:** {rol}")
                 st.write(f"**Servicios realizados:** {cantidad_servicios}")
                 st.write(f"**Total realizado:** {formato_pesos(total_realizado_empleado)}")
-                if porcentaje_pago is not None:
-                    st.write(f"**Porcentaje aplicado:** {int(porcentaje_pago)}%")
+                if rol == "Gamusero":
+                    key_porcentaje = f"porcentaje_pago_{empleado}_{fecha_texto}"
+
+                    if puede_gestionar_pagos and es_domingo and not ya_pagado:
+                        porcentaje_pago = st.number_input(
+                            "Porcentaje a pagar",
+                            min_value=0,
+                            max_value=100,
+                            value=int(porcentaje_pago or 40),
+                            step=1,
+                            key=key_porcentaje,
+                            help="Este porcentaje aplica solo para este empleado."
+                        )
+
+                        valor_pagar = int(
+                            round(total_realizado_empleado * (int(porcentaje_pago) / 100))
+                        )
+
+                    else:
+                        st.write(f"**Porcentaje aplicado:** {int(porcentaje_pago or 40)}%")
 
                 st.write(f"**Valor a pagar:** {formato_pesos(valor_pagar)}")
 
