@@ -111,7 +111,7 @@ def mostrar_cierre_del_dia():
     usuarios_autorizados_pago = ["admin", "socio"]
     puede_gestionar_pagos = usuario_actual in usuarios_autorizados_pago
 
-    es_domingo = fecha_seleccionada.weekday() == 4  # Lunes=0, Domingo=6
+    es_domingo = fecha_seleccionada.weekday() == 6  # Lunes=0, Domingo=6
 
     if puede_gestionar_pagos and es_domingo:
         st.success("Puedes cambiar el porcentaje de pago de cada empleado de forma individual.")
