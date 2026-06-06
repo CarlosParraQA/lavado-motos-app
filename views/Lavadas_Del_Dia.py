@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero, actualizar_coin_lavada
+from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero, actualizar_coin_lavada, actualizar_metodo_pago_lavada
 from utils import formato_pesos
 
 
@@ -80,7 +80,11 @@ def mostrar_lavadas_del_dia():
     if "coin" not in df_mostrar.columns:
         df_mostrar["coin"] = False
 
+    if "metodo_pago" not in df_mostrar.columns:
+        df_mostrar["metodo_pago"] = "Efectivo"
+
     df_mostrar["coin"] = df_mostrar["coin"].fillna(False).astype(bool)
+    df_mostrar["metodo_pago"] = df_mostrar["metodo_pago"].fillna("Efectivo")
 
     # Formatear valores monetarios
     df_mostrar["valor_lavada"] = df_mostrar["valor_lavada"].apply(formato_pesos)
@@ -98,8 +102,9 @@ def mostrar_lavadas_del_dia():
             "valor_lavada",
             "pago_gamusero",
             "ganancia_negocio",
-            "observaciones",
-            "coin"
+            "metodo_pago",
+            "coin",
+            "observaciones"
         ]
     ]
 
@@ -114,7 +119,8 @@ def mostrar_lavadas_del_dia():
         "pago_gamusero": "40%",
         "ganancia_negocio": "60%",
         "observaciones": "Observaciones",
-        "coin": "Coin"
+        "coin": "Coin",
+        "metodo_pago": "Método de pago"
     })
 
     # Tabla compacta para evitar scroll horizontal
@@ -125,7 +131,8 @@ def mostrar_lavadas_del_dia():
             "Personal",
             "Placa",
             "Valor",
-            "Coin"
+            "Coin",
+            "Método de pago"
         ]
     ]
 
@@ -138,6 +145,10 @@ def mostrar_lavadas_del_dia():
         id_lavada = int(registro["Lavada #"])
         nombre_actual = registro["Personal"]
         coin_actual = bool(registro["Coin"])
+        metodo_pago_actual = registro.get("Método de pago", "Efectivo")
+
+        if metodo_pago_actual not in ["Efectivo", "Nequi"]:
+            metodo_pago_actual = "Efectivo"
 
         st.write(f"**Lavada #:** {id_lavada}")
         st.write(f"**Fecha:** {registro['Fecha']}")
@@ -158,7 +169,11 @@ def mostrar_lavadas_del_dia():
             "¿Se le dio coin?",
             value=coin_actual
         )
-
+        nuevo_metodo_pago = st.selectbox(
+            "Método de pago",
+            ["Efectivo", "Nequi"],
+            index=0 if metodo_pago_actual == "Efectivo" else 1
+        )
         col_guardar, col_eliminar = st.columns(2)
 
         with col_guardar:
@@ -174,6 +189,10 @@ def mostrar_lavadas_del_dia():
                     actualizar_coin_lavada(
                         id_registro=id_lavada,
                         coin=nuevo_coin
+                    )
+                    actualizar_metodo_pago_lavada(
+                        id_registro=id_lavada,
+                        metodo_pago=nuevo_metodo_pago
                     )
 
                     st.success("Lavada actualizada correctamente.")
@@ -222,7 +241,11 @@ def mostrar_lavadas_del_dia():
                 width="small"
             ),
             "Coin": st.column_config.CheckboxColumn(
-                "Coin",
+                "C",
+                width="small",
+            ), 
+            "Método de pago": st.column_config.TextColumn(
+                "Método de pago",
                 width="small"
             ),
         }

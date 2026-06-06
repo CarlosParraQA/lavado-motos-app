@@ -114,3 +114,8 @@ def actualizar_coin_lavada(id_registro, coin):
     supabase.table("lavados").update({
         "coin": bool(coin)
     }).eq("id", int(id_registro)).execute()
+
+def actualizar_metodo_pago_lavada(id_registro, metodo_pago):
+    supabase.table("lavados").update({
+        "metodo_pago": metodo_pago
+    }).eq("id", int(id_registro)).execute()
