@@ -61,7 +61,12 @@ def mostrar_historial_general():
     df_filtrado = df[
         (df["fecha"] >= fecha_inicio_texto) &
         (df["fecha"] <= fecha_fin_texto)
-    ]
+    ].copy()
+
+    if "coin" not in df_filtrado.columns:
+        df_filtrado["coin"] = False
+
+    df_filtrado["coin"] = df_filtrado["coin"].fillna(False).astype(bool)
 
     if df_filtrado.empty:
         st.warning("No hay registros en ese rango de fechas.")
@@ -200,7 +205,8 @@ def mostrar_historial_general():
             "valor_lavada",
             "pago_gamusero",
             "ganancia_negocio",
-            "observaciones"
+            "observaciones",
+            "coin"
         ]
     ]
 
@@ -214,8 +220,11 @@ def mostrar_historial_general():
         "valor_lavada": "Valor",
         "pago_gamusero": "40% correspondiente al trabajador",
         "ganancia_negocio": "60% correspondiente al negocio",
-        "observaciones": "Observaciones"
+        "observaciones": "Observaciones",
+        "coin": "Coin"
     })
+
+    df_detalle["Coin"] = df_detalle["Coin"].apply(lambda x: "Sí" if x else "No")
 
     st.dataframe(
         df_detalle,
@@ -258,6 +267,10 @@ def mostrar_historial_general():
                 "Observaciones",
                 width="medium"
             ),
+            "Coin": st.column_config.TextColumn(
+                "Coin",
+                width="small"
+            )
         }
     )
 
