@@ -241,7 +241,7 @@ def mostrar_lavadas_del_dia():
                 width="small"
             ),
             "Coin": st.column_config.CheckboxColumn(
-                "C",
+                "Coin",
                 width="small",
             ), 
             "Método de pago": st.column_config.TextColumn(
