@@ -6,6 +6,7 @@ from database import obtener_lavados, supabase
 from utils import formato_pesos
 from io import BytesIO
 
+
 def obtener_pagos_empleados(fecha_inicio, fecha_fin):
     try:
         response = (
@@ -21,6 +22,7 @@ def obtener_pagos_empleados(fecha_inicio, fecha_fin):
 
     except Exception:
         return pd.DataFrame()
+
 
 def mostrar_historial_general():
     st.header("Historial General del día")
@@ -63,16 +65,24 @@ def mostrar_historial_general():
         (df["fecha"] <= fecha_fin_texto)
     ].copy()
 
-    if "coin" not in df_filtrado.columns:
-        df_filtrado["coin"] = False
-
-    df_filtrado["coin"] = df_filtrado["coin"].fillna(False).astype(bool)
-
     if df_filtrado.empty:
         st.warning("No hay registros en ese rango de fechas.")
         return
 
- # =========================
+    # =========================
+    # VALIDAR COLUMNAS NUEVAS
+    # =========================
+
+    if "coin" not in df_filtrado.columns:
+        df_filtrado["coin"] = False
+
+    if "metodo_pago" not in df_filtrado.columns:
+        df_filtrado["metodo_pago"] = "Efectivo"
+
+    df_filtrado["coin"] = df_filtrado["coin"].fillna(False).astype(bool)
+    df_filtrado["metodo_pago"] = df_filtrado["metodo_pago"].fillna("Efectivo")
+
+    # =========================
     # RESUMEN FINANCIERO
     # =========================
 
@@ -88,6 +98,8 @@ def mostrar_historial_general():
         total_pagado_encargado = 0
         total_pagado_general = 0
     else:
+        df_pagos["rol"] = df_pagos["rol"].astype(str)
+
         total_pagado_empleados = df_pagos[
             df_pagos["rol"].str.lower() == "gamusero"
         ]["valor_pagar"].sum()
@@ -132,6 +144,7 @@ def mostrar_historial_general():
 
     if df_pagos.empty:
         st.info("No hay pagos registrados en este rango de fechas.")
+        df_pagos_mostrar = pd.DataFrame()
     else:
         df_pagos_mostrar = df_pagos.copy()
 
@@ -205,8 +218,9 @@ def mostrar_historial_general():
             "valor_lavada",
             "pago_gamusero",
             "ganancia_negocio",
-            "observaciones",
-            "coin"
+            "coin",
+            "metodo_pago",
+            "observaciones"
         ]
     ]
 
@@ -220,11 +234,13 @@ def mostrar_historial_general():
         "valor_lavada": "Valor",
         "pago_gamusero": "40% correspondiente al trabajador",
         "ganancia_negocio": "60% correspondiente al negocio",
-        "observaciones": "Observaciones",
-        "coin": "Coin"
+        "coin": "Coin",
+        "metodo_pago": "Método de pago",
+        "observaciones": "Observaciones"
     })
 
     df_detalle["Coin"] = df_detalle["Coin"].apply(lambda x: "Sí" if x else "No")
+    df_detalle["Método de pago"] = df_detalle["Método de pago"].fillna("Efectivo")
 
     st.dataframe(
         df_detalle,
@@ -263,14 +279,18 @@ def mostrar_historial_general():
                 "60% correspondiente al negocio",
                 width="medium"
             ),
+            "Coin": st.column_config.TextColumn(
+                "Coin",
+                width="small"
+            ),
+            "Método de pago": st.column_config.TextColumn(
+                "Método de pago",
+                width="small"
+            ),
             "Observaciones": st.column_config.TextColumn(
                 "Observaciones",
                 width="medium"
             ),
-            "Coin": st.column_config.TextColumn(
-                "Coin",
-                width="small"
-            )
         }
     )
 
@@ -289,7 +309,7 @@ def mostrar_historial_general():
             index=False
         )
 
-        if not df_pagos.empty:
+        if not df_pagos_mostrar.empty:
             df_pagos_mostrar.to_excel(
                 writer,
                 sheet_name="Pagos realizados",
