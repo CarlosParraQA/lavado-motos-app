@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero
+from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero, actualizar_coin_lavada
 from utils import formato_pesos
 
 
@@ -77,6 +77,11 @@ def mostrar_lavadas_del_dia():
 
     df_mostrar = df_hoy.copy()
 
+    if "coin" not in df_mostrar.columns:
+        df_mostrar["coin"] = False
+
+    df_mostrar["coin"] = df_mostrar["coin"].fillna(False).astype(bool)
+
     # Formatear valores monetarios
     df_mostrar["valor_lavada"] = df_mostrar["valor_lavada"].apply(formato_pesos)
     df_mostrar["pago_gamusero"] = df_mostrar["pago_gamusero"].apply(formato_pesos)
@@ -93,7 +98,8 @@ def mostrar_lavadas_del_dia():
             "valor_lavada",
             "pago_gamusero",
             "ganancia_negocio",
-            "observaciones"
+            "observaciones",
+            "coin"
         ]
     ]
 
@@ -107,7 +113,8 @@ def mostrar_lavadas_del_dia():
         "valor_lavada": "Valor",
         "pago_gamusero": "40%",
         "ganancia_negocio": "60%",
-        "observaciones": "Observaciones"
+        "observaciones": "Observaciones",
+        "coin": "Coin"
     })
 
     # Tabla compacta para evitar scroll horizontal
@@ -117,7 +124,8 @@ def mostrar_lavadas_del_dia():
             "Hora",
             "Personal",
             "Placa",
-            "Valor"
+            "Valor",
+            "Coin"
         ]
     ]
 
@@ -129,6 +137,7 @@ def mostrar_lavadas_del_dia():
     def abrir_popup_lavada(registro):
         id_lavada = int(registro["Lavada #"])
         nombre_actual = registro["Personal"]
+        coin_actual = bool(registro["Coin"])
 
         st.write(f"**Lavada #:** {id_lavada}")
         st.write(f"**Fecha:** {registro['Fecha']}")
@@ -145,6 +154,10 @@ def mostrar_lavadas_del_dia():
             "Nombre del personal",
             value=nombre_actual
         )
+        nuevo_coin = st.checkbox(
+            "¿Se le dio coin?",
+            value=coin_actual
+        )
 
         col_guardar, col_eliminar = st.columns(2)
 
@@ -157,7 +170,13 @@ def mostrar_lavadas_del_dia():
                         id_registro=id_lavada,
                         nuevo_nombre=nuevo_nombre.strip().title()
                     )
-                    st.success("Nombre actualizado correctamente.")
+
+                    actualizar_coin_lavada(
+                        id_registro=id_lavada,
+                        coin=nuevo_coin
+                    )
+
+                    st.success("Lavada actualizada correctamente.")
                     st.rerun()
 
         with col_eliminar:
@@ -200,6 +219,10 @@ def mostrar_lavadas_del_dia():
             ),
             "Valor": st.column_config.TextColumn(
                 "Valor",
+                width="small"
+            ),
+            "Coin": st.column_config.CheckboxColumn(
+                "Coin",
                 width="small"
             ),
         }

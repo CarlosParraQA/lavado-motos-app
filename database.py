@@ -109,3 +109,8 @@ def actualizar_nombre_gamusero(id_registro, nuevo_nombre):
     supabase.table("lavados").update({
         "gamusero": nuevo_nombre
     }).eq("id", int(id_registro)).execute()
+
+def actualizar_coin_lavada(id_registro, coin):
+    supabase.table("lavados").update({
+        "coin": bool(coin)
+    }).eq("id", int(id_registro)).execute()

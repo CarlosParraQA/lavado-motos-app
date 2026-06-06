@@ -25,7 +25,7 @@ def mostrar_registrar_lavada():
             placeholder="Opcional"
         )
 
-        coin = st.checkbox("¿Se le dio coin?", value=False)
+        coin = st.checkbox("¿Se le dio Coin?", value=False)
 
     pago_calculado = int(valor_lavada * 0.40)
     ganancia_calculada = int(valor_lavada * 0.60)
