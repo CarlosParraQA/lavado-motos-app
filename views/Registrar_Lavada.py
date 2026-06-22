@@ -24,22 +24,22 @@ def mostrar_registrar_lavada():
     # AGREGAR OPERADOR
     # =========================
 
-    st.markdown("### 👤 Operadores")
+    st.markdown("### 👤 Colaboradores")
 
-    with st.expander("➕ Agregar operador a la lista", expanded=False):
+    with st.expander("➕ Agregar colaborador a la lista", expanded=False):
         st.info(
-            "Agrega el operador una sola vez. Luego aparecerá en la lista "
+            "Agrega el colaborador una sola vez. Luego aparecerá en la lista "
             "para seleccionarlo al registrar nuevas lavadas."
         )
 
         nuevo_operador = st.text_input(
-            "Nombre del nuevo operador",
+            "Nombre del nuevo colaborador",
             placeholder="Ejemplo: Juan Pérez",
             key="nuevo_operador"
         )
 
         if st.button(
-            "Guardar operador",
+            "Guardar colaborador",
             use_container_width=True,
             key="btn_guardar_operador"
         ):
