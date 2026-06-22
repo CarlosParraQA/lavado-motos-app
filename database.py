@@ -30,7 +30,15 @@ def crear_tabla():
 # GUARDAR LAVADA
 # =========================
 
-def guardar_lavada(gamusero, placa, valor_lavada, observaciones, coin=False):
+def guardar_lavada(
+    gamusero,
+    placa,
+    valor_lavada,
+    observaciones,
+    coin=False,
+    nombre_cliente="",
+    telefono_cliente=""
+):
     """
     Guarda una lavada en Supabase.
     Calcula automáticamente el 40% para el gamusero
@@ -50,6 +58,8 @@ def guardar_lavada(gamusero, placa, valor_lavada, observaciones, coin=False):
         "hora": hora_actual,
         "gamusero": gamusero,
         "placa": placa,
+        "nombre_cliente": nombre_cliente,
+        "telefono_cliente": telefono_cliente,
         "valor_lavada": valor_lavada,
         "pago_gamusero": pago_gamusero,
         "ganancia_negocio": ganancia_negocio,

@@ -12,6 +12,8 @@ def mostrar_registrar_lavada():
     with col1:
         gamusero = st.text_input("Nombre del Responsable (Gamusero)")
         placa = st.text_input("Placa de la moto")
+        nombre_cliente = st.text_input("Nombre del cliente")
+        telefono_cliente = st.text_input("Teléfono del cliente")
 
     with col2:
         valor_lavada = st.selectbox(
@@ -31,6 +33,8 @@ def mostrar_registrar_lavada():
     ganancia_calculada = int(valor_lavada * 0.60)
 
     resumen_lavada = pd.DataFrame({
+        "Cliente": [nombre_cliente.strip().title() if nombre_cliente.strip() else "Sin registrar"],
+        "Teléfono": [telefono_cliente.strip() if telefono_cliente.strip() else "Sin registrar"],
         "Valor lavada": [formato_pesos(valor_lavada)],
         "40% gamusero": [formato_pesos(pago_calculado)],
         "60% negocio": [formato_pesos(ganancia_calculada)],
@@ -47,6 +51,8 @@ def mostrar_registrar_lavada():
         placa_normalizada = placa.strip().upper()
         gamusero_normalizado = gamusero.strip().title()
         fecha_hoy = datetime.now(ZoneInfo("America/Bogota")).date().strftime("%Y-%m-%d")
+        nombre_cliente_normalizado = nombre_cliente.strip().title()
+        telefono_cliente_normalizado = telefono_cliente.strip()
 
         if not gamusero_normalizado:
             st.error("Debes ingresar el nombre del gamusero.")
@@ -80,7 +86,9 @@ def mostrar_registrar_lavada():
                 placa=placa_normalizada,
                 valor_lavada=valor_lavada,
                 observaciones=observaciones.strip(),
-                coin=coin
+                coin=coin,
+                nombre_cliente=nombre_cliente_normalizado,
+                telefono_cliente=telefono_cliente_normalizado
             )
 
             st.success("Lavada registrada correctamente.")

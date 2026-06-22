@@ -83,8 +83,16 @@ def mostrar_lavadas_del_dia():
     if "metodo_pago" not in df_mostrar.columns:
         df_mostrar["metodo_pago"] = "Efectivo"
 
+    if "nombre_cliente" not in df_mostrar.columns:
+        df_mostrar["nombre_cliente"] = ""
+
+    if "telefono_cliente" not in df_mostrar.columns:
+        df_mostrar["telefono_cliente"] = ""
+
     df_mostrar["coin"] = df_mostrar["coin"].fillna(False).astype(bool)
     df_mostrar["metodo_pago"] = df_mostrar["metodo_pago"].fillna("Efectivo")
+    df_mostrar["nombre_cliente"] = df_mostrar["nombre_cliente"].fillna("").astype(str)
+    df_mostrar["telefono_cliente"] = df_mostrar["telefono_cliente"].fillna("").astype(str)
 
     # Formatear valores monetarios
     df_mostrar["valor_lavada"] = df_mostrar["valor_lavada"].apply(formato_pesos)
@@ -98,6 +106,8 @@ def mostrar_lavadas_del_dia():
             "fecha",
             "hora",
             "gamusero",
+            "nombre_cliente",
+            "telefono_cliente",
             "placa",
             "valor_lavada",
             "pago_gamusero",
@@ -114,6 +124,8 @@ def mostrar_lavadas_del_dia():
         "fecha": "Fecha",
         "hora": "Hora",
         "gamusero": "Personal",
+        "nombre_cliente": "Cliente",
+        "telefono_cliente": "Teléfono",
         "placa": "Placa",
         "valor_lavada": "Valor",
         "pago_gamusero": "40%",
@@ -129,6 +141,8 @@ def mostrar_lavadas_del_dia():
             "Lavada #",
             "Hora",
             "Personal",
+            "Cliente",
+            "Teléfono",
             "Placa",
             "Valor",
             "Coin",
@@ -153,6 +167,8 @@ def mostrar_lavadas_del_dia():
         st.write(f"**Lavada #:** {id_lavada}")
         st.write(f"**Fecha:** {registro['Fecha']}")
         st.write(f"**Hora:** {registro['Hora']}")
+        st.write(f"**Cliente:** {registro['Cliente'] if registro['Cliente'] else 'Sin registrar'}")
+        st.write(f"**Teléfono:** {registro['Teléfono'] if registro['Teléfono'] else 'Sin registrar'}")
         st.write(f"**Placa:** {registro['Placa']}")
         st.write(f"**Valor:** {registro['Valor']}")
         st.write(f"**40% personal:** {registro['40%']}")
@@ -256,6 +272,14 @@ def mostrar_lavadas_del_dia():
         on_select="rerun",
         selection_mode="single-row",
         column_config={
+            "Cliente": st.column_config.TextColumn(
+                "Cliente",
+                width="medium"
+            ),
+            "Teléfono": st.column_config.TextColumn(
+                "Teléfono",
+                width="medium"
+            ),
             "Lavada #": st.column_config.NumberColumn(
                 "Lavada #",
                 width="small"

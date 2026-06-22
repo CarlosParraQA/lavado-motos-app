@@ -79,8 +79,16 @@ def mostrar_historial_general():
     if "metodo_pago" not in df_filtrado.columns:
         df_filtrado["metodo_pago"] = "Efectivo"
 
+    if "nombre_cliente" not in df_filtrado.columns:
+        df_filtrado["nombre_cliente"] = ""
+
+    if "telefono_cliente" not in df_filtrado.columns:
+        df_filtrado["telefono_cliente"] = ""
+
     df_filtrado["coin"] = df_filtrado["coin"].fillna(False).astype(bool)
     df_filtrado["metodo_pago"] = df_filtrado["metodo_pago"].fillna("Efectivo")
+    df_filtrado["nombre_cliente"] = df_filtrado["nombre_cliente"].fillna("").astype(str)
+    df_filtrado["telefono_cliente"] = df_filtrado["telefono_cliente"].fillna("").astype(str)
 
     # =========================
     # RESUMEN FINANCIERO
@@ -214,6 +222,8 @@ def mostrar_historial_general():
             "fecha",
             "hora",
             "gamusero",
+            "nombre_cliente",
+            "telefono_cliente",
             "placa",
             "valor_lavada",
             "pago_gamusero",
@@ -230,6 +240,8 @@ def mostrar_historial_general():
         "fecha": "Fecha",
         "hora": "Hora",
         "gamusero": "Nombre del Trabajador",
+        "nombre_cliente": "Cliente",
+        "telefono_cliente": "Teléfono",
         "placa": "Placa",
         "valor_lavada": "Valor",
         "pago_gamusero": "40% correspondiente al trabajador",
@@ -241,6 +253,8 @@ def mostrar_historial_general():
 
     df_detalle["Coin"] = df_detalle["Coin"].apply(lambda x: "Sí" if x else "No")
     df_detalle["Método de pago"] = df_detalle["Método de pago"].fillna("Efectivo")
+    df_detalle["Cliente"] = df_detalle["Cliente"].replace("", "Sin registrar")
+    df_detalle["Teléfono"] = df_detalle["Teléfono"].replace("", "Sin registrar")
 
     st.dataframe(
         df_detalle,
@@ -261,6 +275,14 @@ def mostrar_historial_general():
             ),
             "Nombre del Trabajador": st.column_config.TextColumn(
                 "Nombre del Trabajador",
+                width="medium"
+            ),
+            "Cliente": st.column_config.TextColumn(
+                "Cliente",
+                width="medium"
+            ),
+            "Teléfono": st.column_config.TextColumn(
+                "Teléfono",
                 width="medium"
             ),
             "Placa": st.column_config.TextColumn(
