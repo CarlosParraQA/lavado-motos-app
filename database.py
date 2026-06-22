@@ -119,3 +119,20 @@ def actualizar_metodo_pago_lavada(id_registro, metodo_pago):
     supabase.table("lavados").update({
         "metodo_pago": metodo_pago
     }).eq("id", int(id_registro)).execute()
+
+def actualizar_valor_lavada(id_registro, nuevo_valor_lavada):
+    """
+    Actualiza el valor de la lavada y recalcula automáticamente:
+    - 40% para el personal
+    - 60% para el negocio
+    """
+
+    nuevo_valor_lavada = int(nuevo_valor_lavada)
+    pago_gamusero = int(nuevo_valor_lavada * 0.40)
+    ganancia_negocio = int(nuevo_valor_lavada * 0.60)
+
+    supabase.table("lavados").update({
+        "valor_lavada": nuevo_valor_lavada,
+        "pago_gamusero": pago_gamusero,
+        "ganancia_negocio": ganancia_negocio
+    }).eq("id", int(id_registro)).execute()

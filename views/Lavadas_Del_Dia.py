@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from database import obtener_lavados, eliminar_registro, actualizar_nombre_gamusero, actualizar_coin_lavada, actualizar_metodo_pago_lavada
+from database import (obtener_lavados, eliminar_registro, actualizar_nombre_gamusero, actualizar_coin_lavada, actualizar_metodo_pago_lavada, actualizar_valor_lavada)
 from utils import formato_pesos
 
 
@@ -158,6 +158,36 @@ def mostrar_lavadas_del_dia():
         st.write(f"**40% personal:** {registro['40%']}")
         st.write(f"**60% negocio:** {registro['60%']}")
 
+            # Convertir el valor actual de texto a número
+        valor_actual = int(
+            str(registro["Valor"])
+            .replace("$", "")
+            .replace(".", "")
+            .replace(",", "")
+            .strip()
+        )
+
+        # Lista de valores permitidos: solo superiores al valor actual
+        opciones_valor = [
+            valor for valor in range(20000, 60001, 5000)
+            if valor > valor_actual
+        ]
+
+        cambiar_valor = False
+        nuevo_valor_lavada = None
+
+        if opciones_valor:
+            cambiar_valor = st.checkbox("Cambiar valor de la lavada")
+
+            if cambiar_valor:
+                nuevo_valor_lavada = st.selectbox(
+                    "Nuevo valor de la lavada",
+                    opciones_valor,
+                    format_func=formato_pesos
+                )
+        else:
+            st.info("Esta lavada ya tiene el valor máximo permitido.")
+
         if registro["Observaciones"]:
             st.write(f"**Observaciones:** {registro['Observaciones']}")
 
@@ -194,6 +224,12 @@ def mostrar_lavadas_del_dia():
                         id_registro=id_lavada,
                         metodo_pago=nuevo_metodo_pago
                     )
+
+                    if cambiar_valor and nuevo_valor_lavada is not None:
+                        actualizar_valor_lavada(
+                            id_registro=id_lavada,
+                            nuevo_valor_lavada=nuevo_valor_lavada
+                        )
 
                     st.success("Lavada actualizada correctamente.")
                     st.rerun()
