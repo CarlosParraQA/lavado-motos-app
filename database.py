@@ -95,6 +95,68 @@ def obtener_lavados():
 
     return pd.DataFrame(data)
 
+# =========================
+# OPERADORES / GAMUSEROS
+# =========================
+
+def obtener_operadores():
+    """
+    Obtiene la lista de operadores activos desde Supabase.
+    """
+
+    try:
+        response = (
+            supabase
+            .table("operadores")
+            .select("nombre")
+            .eq("activo", True)
+            .order("nombre")
+            .execute()
+        )
+
+        data = response.data or []
+
+        return [
+            item["nombre"]
+            for item in data
+            if item.get("nombre")
+        ]
+
+    except Exception:
+        return []
+
+
+def guardar_operador(nombre_operador):
+    """
+    Guarda un operador en Supabase.
+    Si ya existe, no lo duplica.
+    """
+
+    nombre_operador = nombre_operador.strip().title()
+
+    if not nombre_operador:
+        return
+
+    existente = (
+        supabase
+        .table("operadores")
+        .select("id, nombre")
+        .ilike("nombre", nombre_operador)
+        .execute()
+    )
+
+    if existente.data:
+        id_operador = existente.data[0]["id"]
+
+        supabase.table("operadores").update({
+            "activo": True
+        }).eq("id", id_operador).execute()
+
+    else:
+        supabase.table("operadores").insert({
+            "nombre": nombre_operador,
+            "activo": True
+        }).execute()
 
 # =========================
 # ELIMINAR REGISTRO

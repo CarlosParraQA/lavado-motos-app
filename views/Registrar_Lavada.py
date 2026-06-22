@@ -1,16 +1,87 @@
 import streamlit as st
 import pandas as pd
-from database import guardar_lavada, obtener_lavados
+from database import (
+    guardar_lavada,
+    obtener_lavados,
+    obtener_operadores,
+    guardar_operador
+)
 from utils import formato_pesos
 
 
 def mostrar_registrar_lavada():
     st.header("Registrar nueva lavada")
 
+    # =========================
+    # MENSAJE AL AGREGAR OPERADOR
+    # =========================
+
+    if "mensaje_operador" in st.session_state:
+        st.success(st.session_state["mensaje_operador"])
+        del st.session_state["mensaje_operador"]
+
+    # =========================
+    # AGREGAR OPERADOR
+    # =========================
+
+    st.markdown("### 👤 Operadores")
+
+    with st.expander("➕ Agregar operador a la lista", expanded=False):
+        st.info(
+            "Agrega el operador una sola vez. Luego aparecerá en la lista "
+            "para seleccionarlo al registrar nuevas lavadas."
+        )
+
+        nuevo_operador = st.text_input(
+            "Nombre del nuevo operador",
+            placeholder="Ejemplo: Juan Pérez",
+            key="nuevo_operador"
+        )
+
+        if st.button(
+            "Guardar operador",
+            use_container_width=True,
+            key="btn_guardar_operador"
+        ):
+            nuevo_operador_normalizado = nuevo_operador.strip().title()
+
+            if not nuevo_operador_normalizado:
+                st.error("Debes ingresar el nombre del operador.")
+                return
+
+            try:
+                guardar_operador(nuevo_operador_normalizado)
+
+                st.session_state["mensaje_operador"] = (
+                    f"Operador {nuevo_operador_normalizado} agregado correctamente."
+                )
+
+                st.rerun()
+
+            except Exception as error:
+                st.error("No se pudo guardar el operador.")
+                st.exception(error)
+
+    st.divider()
+
+    # =========================
+    # FORMULARIO DE REGISTRO
+    # =========================
+
+    operadores = obtener_operadores()
+
     col1, col2 = st.columns(2)
 
     with col1:
-        gamusero = st.text_input("Nombre del Responsable (Gamusero)")
+        if operadores:
+            gamusero = st.selectbox(
+                "Nombre del Responsable (Gamusero)",
+                ["Selecciona un operador"] + operadores
+            )
+        else:
+            gamusero = "Selecciona un operador"
+            st.warning("Primero debes agregar al menos un operador a la lista.")
+
         placa = st.text_input("Placa de la moto")
         nombre_cliente = st.text_input("Nombre del cliente")
         telefono_cliente = st.text_input("Teléfono del cliente")
@@ -29,12 +100,29 @@ def mostrar_registrar_lavada():
 
         coin = st.checkbox("¿Se le dio Coin?", value=False)
 
+    # =========================
+    # RESUMEN DE LA LAVADA
+    # =========================
+
     pago_calculado = int(valor_lavada * 0.40)
     ganancia_calculada = int(valor_lavada * 0.60)
 
     resumen_lavada = pd.DataFrame({
-        "Cliente": [nombre_cliente.strip().title() if nombre_cliente.strip() else "Sin registrar"],
-        "Teléfono": [telefono_cliente.strip() if telefono_cliente.strip() else "Sin registrar"],
+        "Operador": [
+            gamusero
+            if gamusero != "Selecciona un operador"
+            else "Sin seleccionar"
+        ],
+        "Cliente": [
+            nombre_cliente.strip().title()
+            if nombre_cliente.strip()
+            else "Sin registrar"
+        ],
+        "Teléfono": [
+            telefono_cliente.strip()
+            if telefono_cliente.strip()
+            else "Sin registrar"
+        ],
         "Valor lavada": [formato_pesos(valor_lavada)],
         "40% gamusero": [formato_pesos(pago_calculado)],
         "60% negocio": [formato_pesos(ganancia_calculada)],
@@ -44,19 +132,24 @@ def mostrar_registrar_lavada():
     st.subheader("Resumen de la lavada")
     st.table(resumen_lavada.style.hide(axis="index"))
 
+    # =========================
+    # GUARDAR LAVADA
+    # =========================
+
     if st.button("Guardar lavada", use_container_width=True):
         from datetime import datetime
         from zoneinfo import ZoneInfo
 
         placa_normalizada = placa.strip().upper()
-        gamusero_normalizado = gamusero.strip().title()
         fecha_hoy = datetime.now(ZoneInfo("America/Bogota")).date().strftime("%Y-%m-%d")
         nombre_cliente_normalizado = nombre_cliente.strip().title()
         telefono_cliente_normalizado = telefono_cliente.strip()
 
-        if not gamusero_normalizado:
-            st.error("Debes ingresar el nombre del gamusero.")
+        if gamusero == "Selecciona un operador":
+            st.error("Debes seleccionar el gamusero.")
             return
+
+        gamusero_normalizado = gamusero.strip().title()
 
         if not placa_normalizada:
             st.error("Debes ingresar la placa de la moto.")
