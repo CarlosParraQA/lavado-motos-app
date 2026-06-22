@@ -26,42 +26,170 @@ def cargar_sesion_desde_token():
     return False
 
 
-def mostrar_formulario_login():
+def procesar_login_empleados(usuario, clave):
     """
-    Muestra el formulario de login y detiene la app.
+    Valida las credenciales del empleado.
+    Si son correctas, inicia sesión y mantiene el token en la URL.
     """
 
-    st.title("🔐 Accede al sistema de registros - Space Wash")
-    st.caption("Ingresa tus credenciales para continuar.")
+    usuarios = st.secrets["usuarios"]
+    tokens_sesion = st.secrets.get("tokens_sesion", {})
 
-    with st.form("login_form"):
+    if usuario in usuarios and clave == usuarios[usuario]:
+        st.session_state.logueado = True
+        st.session_state.usuario = usuario
+        st.session_state.logout_manual = False
+        st.session_state.mostrar_login_empleados = False
+        st.session_state.pantalla_acceso = "inicio"
+
+        token_usuario = tokens_sesion.get(usuario)
+
+        st.query_params.clear()
+
+        if token_usuario:
+            st.query_params["token"] = token_usuario
+
+        st.success("Ingreso exitoso.")
+        st.rerun()
+
+    else:
+        st.error("Usuario o contraseña incorrectos.")
+
+
+@st.dialog("🔐 Acceso empleados")
+def modal_login_empleados():
+    """
+    Muestra el login actual dentro de un popup/modal.
+    """
+
+    st.caption("Ingresa tus credenciales para continuar al sistema interno.")
+
+    with st.form("login_form_empleados"):
         usuario = st.text_input("Usuario")
         clave = st.text_input("Contraseña", type="password")
 
-        ingresar = st.form_submit_button("Ingresar", use_container_width=True)
+        ingresar = st.form_submit_button(
+            "Ingresar",
+            use_container_width=True
+        )
 
         if ingresar:
-            usuarios = st.secrets["usuarios"]
-            tokens_sesion = st.secrets.get("tokens_sesion", {})
+            procesar_login_empleados(usuario, clave)
 
-            if usuario in usuarios and clave == usuarios[usuario]:
-                st.session_state.logueado = True
-                st.session_state.usuario = usuario
-                st.session_state.logout_manual = False
+    if st.button("Volver", use_container_width=True, key="volver_login_empleados"):
+        st.session_state.mostrar_login_empleados = False
+        st.rerun()
 
-                token_usuario = tokens_sesion.get(usuario)
 
-                st.query_params.clear()
+def mostrar_pantalla_clientes():
+    """
+    Pantalla temporal para clientes.
+    """
 
-                if token_usuario:
-                    st.query_params["token"] = token_usuario
+    st.title("👥 Clientes")
 
-                st.success("Ingreso exitoso.")
-                st.rerun()
-            else:
-                st.error("Usuario o contraseña incorrectos.")
+    st.info("🚧 Módulo en construcción.")
+
+    st.write(
+        "Muy pronto estará disponible este espacio para clientes."
+    )
+
+    if st.button("⬅️ Volver", use_container_width=True):
+        st.session_state.pantalla_acceso = "inicio"
+        st.rerun()
 
     st.stop()
+
+
+def mostrar_selector_acceso():
+    """
+    Muestra dos tarjetas grandes:
+    - Clientes
+    - Empleados
+    """
+
+    if "pantalla_acceso" not in st.session_state:
+        st.session_state.pantalla_acceso = "inicio"
+
+    if "mostrar_login_empleados" not in st.session_state:
+        st.session_state.mostrar_login_empleados = False
+
+    if st.session_state.pantalla_acceso == "clientes":
+        mostrar_pantalla_clientes()
+
+    st.markdown(
+        """
+        <style>
+            .contenedor-acceso {
+                text-align: center;
+                padding-top: 30px;
+                padding-bottom: 25px;
+            }
+
+            .titulo-acceso {
+                font-size: 38px;
+                font-weight: 800;
+                margin-bottom: 8px;
+            }
+
+            .subtitulo-acceso {
+                font-size: 17px;
+                color: #666;
+                margin-bottom: 30px;
+            }
+
+            div[data-testid="column"] div.stButton > button {
+                height: 180px;
+                border-radius: 24px;
+                border: 2px solid #E5E7EB;
+                background: linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%);
+                font-size: 28px;
+                font-weight: 800;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+                transition: all 0.2s ease-in-out;
+            }
+
+            div[data-testid="column"] div.stButton > button:hover {
+                transform: translateY(-4px);
+                border-color: #FF7A00;
+                box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+            }
+        </style>
+
+        <div class="contenedor-acceso">
+            <div class="titulo-acceso">🏍️ Moto Space Wash</div>
+            <div class="subtitulo-acceso">
+                Selecciona el tipo de acceso para continuar
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("👥\n\nClientes", use_container_width=True):
+            st.session_state.pantalla_acceso = "clientes"
+            st.rerun()
+
+    with col2:
+        if st.button("👷\n\nEmpleados", use_container_width=True):
+            st.session_state.mostrar_login_empleados = True
+
+    if st.session_state.mostrar_login_empleados:
+        modal_login_empleados()
+
+    st.stop()
+
+
+def mostrar_formulario_login():
+    """
+    Ya no muestra el login directo.
+    Ahora muestra primero la pantalla de Clientes / Empleados.
+    """
+
+    mostrar_selector_acceso()
 
 
 def login():
@@ -79,7 +207,13 @@ def login():
     if "logout_manual" not in st.session_state:
         st.session_state.logout_manual = False
 
-    # Si viene de cerrar sesión, siempre muestra login y bloquea el resto de la app
+    if "pantalla_acceso" not in st.session_state:
+        st.session_state.pantalla_acceso = "inicio"
+
+    if "mostrar_login_empleados" not in st.session_state:
+        st.session_state.mostrar_login_empleados = False
+
+    # Si viene de cerrar sesión, muestra nuevamente la pantalla de acceso
     if st.query_params.get("logout", "") == "1" or st.session_state.logout_manual:
         st.session_state.logueado = False
         st.session_state.usuario = ""
@@ -93,7 +227,7 @@ def login():
     if cargar_sesion_desde_token():
         return True
 
-    # Si no hay sesión ni token, muestra login
+    # Si no hay sesión ni token, muestra selector Clientes / Empleados
     mostrar_formulario_login()
 
 
@@ -105,6 +239,8 @@ def cerrar_sesion():
     st.session_state.logueado = False
     st.session_state.usuario = ""
     st.session_state.logout_manual = True
+    st.session_state.pantalla_acceso = "inicio"
+    st.session_state.mostrar_login_empleados = False
 
     st.query_params.clear()
     st.query_params["logout"] = "1"
