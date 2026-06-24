@@ -138,16 +138,15 @@ def mostrar_selector_acceso():
                 margin-bottom: 30px;
             }
 
-            div[data-testid="column"] div.stButton,
-            div[data-testid="column"] div.stButton > button,
-            div[data-testid="column"] div.stButton > button > div,
-            div[data-testid="column"] div.stButton > button > div > div {
-                height: 500px !important;
+            div.stButton button,
+            div.stButton button > div {
+                min-height: 260px !important;
+                height: 260px !important;
+                width: 100% !important;
             }
 
-            div[data-testid="column"] div.stButton > button,
-            div[data-testid="column"] div.stButton > button > div,
-            div[data-testid="column"] div.stButton > button > div > div {
+            div.stButton button,
+            div.stButton button > div {
                 border-radius: 24px !important;
                 border: 2px solid #E5E7EB !important;
                 background: linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%) !important;
@@ -161,12 +160,11 @@ def mostrar_selector_acceso():
                 padding: 0 !important;
             }
 
-            div[data-testid="column"] div.stButton > button:hover,
-            div[data-testid="column"] div.stButton > button > div:hover,
-            div[data-testid="column"] div.stButton > button > div > div:hover {
-                transform: translateY(-4px);
-                border-color: #FF7A00;
-                box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+            div.stButton button:hover,
+            div.stButton button > div:hover {
+                transform: translateY(-4px) !important;
+                border-color: #FF7A00 !important;
+                box-shadow: 0 12px 28px rgba(0,0,0,0.14) !important;
             }
         </style>
 
@@ -180,16 +178,14 @@ def mostrar_selector_acceso():
         unsafe_allow_html=True
     )
 
-    col1, col2 = st.columns(2)
+    if st.button("👥\n\nClientes", use_container_width=True, key="clientes_acceso"):
+        st.session_state.pantalla_acceso = "clientes"
+        st.rerun()
 
-    with col1:
-        if st.button("👥\n\nClientes", use_container_width=True):
-            st.session_state.pantalla_acceso = "clientes"
-            st.rerun()
+    st.markdown("<div style='height: 24px'></div>", unsafe_allow_html=True)
 
-    with col2:
-        if st.button("👷\n\nEmpleados", use_container_width=True):
-            st.session_state.mostrar_login_empleados = True
+    if st.button("👷\n\nEmpleados", use_container_width=True, key="empleados_acceso"):
+        st.session_state.mostrar_login_empleados = True
 
     if st.session_state.mostrar_login_empleados:
         modal_login_empleados()
