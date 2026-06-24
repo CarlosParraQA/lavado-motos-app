@@ -139,7 +139,7 @@ def mostrar_selector_acceso():
             }
 
             div[data-testid="column"] div.stButton > button {
-                min-height: 500px;
+                min-height: 260px;
                 border-radius: 24px;
                 border: 2px solid #E5E7EB;
                 background: linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%);
