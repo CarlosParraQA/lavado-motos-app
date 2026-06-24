@@ -200,13 +200,13 @@ def mostrar_selector_acceso():
         unsafe_allow_html=True
     )
 
-    if st.button("👥\nClientes", use_container_width=True, key="clientes_acceso"):
+    if st.button("Clientes", use_container_width=True, key="clientes_acceso"):
         st.session_state.pantalla_acceso = "clientes"
         st.rerun()
 
     st.markdown("<div style='height: 24px'></div>", unsafe_allow_html=True)
 
-    if st.button("👷\nEmpleados", use_container_width=True, key="empleados_acceso"):
+    if st.button("Colaboradores", use_container_width=True, key="empleados_acceso"):
         st.session_state.mostrar_login_empleados = True
 
     if st.session_state.mostrar_login_empleados:
