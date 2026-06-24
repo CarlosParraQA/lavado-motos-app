@@ -138,11 +138,17 @@ def mostrar_selector_acceso():
                 margin-bottom: 30px;
             }
 
+            div[data-testid="column"] div.stButton,
             div[data-testid="column"] div.stButton > button,
             div[data-testid="column"] div.stButton > button > div,
-            div[data-testid="column"] .stButton button {
+            div[data-testid="column"] div.stButton > button > div > div {
                 min-height: 260px !important;
                 height: 260px !important;
+            }
+
+            div[data-testid="column"] div.stButton > button,
+            div[data-testid="column"] div.stButton > button > div,
+            div[data-testid="column"] div.stButton > button > div > div {
                 border-radius: 24px !important;
                 border: 2px solid #E5E7EB !important;
                 background: linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%) !important;
@@ -153,10 +159,12 @@ def mostrar_selector_acceso():
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
+                padding: 0 !important;
             }
 
             div[data-testid="column"] div.stButton > button:hover,
-            div[data-testid="column"] .stButton button:hover {
+            div[data-testid="column"] div.stButton > button > div:hover,
+            div[data-testid="column"] div.stButton > button > div > div:hover {
                 transform: translateY(-4px);
                 border-color: #FF7A00;
                 box-shadow: 0 12px 28px rgba(0,0,0,0.14);
