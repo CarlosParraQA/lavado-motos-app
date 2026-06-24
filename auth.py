@@ -142,7 +142,6 @@ def mostrar_selector_acceso():
             div[data-testid="column"] div.stButton > button,
             div[data-testid="column"] div.stButton > button > div,
             div[data-testid="column"] div.stButton > button > div > div {
-                min-height: 260px !important;
                 height: 500px !important;
             }
 
