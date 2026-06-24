@@ -150,7 +150,7 @@ def mostrar_selector_acceso():
                 border-radius: 24px !important;
                 border: 2px solid #E5E7EB !important;
                 background: linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%) !important;
-                font-size: 28px !important;
+                font-size: 30px !important;
                 font-weight: 800 !important;
                 box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
                 transition: all 0.2s ease-in-out !important;
