@@ -62,6 +62,29 @@ def modal_login_empleados():
     Muestra el login actual dentro de un popup/modal.
     """
 
+    st.markdown(
+        """
+        <style>
+            div[data-testid="stDialog"] div.stButton > button {
+                min-height: 45px !important;
+                height: 45px !important;
+                border-radius: 8px !important;
+                font-size: 16px !important;
+                font-weight: 600 !important;
+                transform: none !important;
+                box-shadow: none !important;
+                padding: 8px 16px !important;
+            }
+
+            div[data-testid="stDialog"] div.stButton > button p {
+                font-size: 16px !important;
+                line-height: 1.2 !important;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.caption("Ingresa tus credenciales para continuar al sistema interno.")
 
     with st.form("login_form_empleados"):
@@ -90,9 +113,7 @@ def mostrar_pantalla_clientes():
 
     st.info("🚧 Módulo en construcción.")
 
-    st.write(
-        "Muy pronto estará disponible este espacio para clientes."
-    )
+    st.write("Muy pronto estará disponible este espacio para clientes.")
 
     if st.button("⬅️ Volver", use_container_width=True):
         st.session_state.pantalla_acceso = "inicio"
@@ -133,24 +154,18 @@ def mostrar_selector_acceso():
             }
 
             .subtitulo-acceso {
-                font-size: 17px;
+                font-size: 18px;
                 color: #666;
                 margin-bottom: 30px;
             }
 
-            div.stButton button,
-            div.stButton button > div {
+            div.stButton > button {
+                width: 100% !important;
                 min-height: 260px !important;
                 height: 260px !important;
-                width: 100% !important;
-            }
-
-            div.stButton button,
-            div.stButton button > div {
-                border-radius: 10px;
-                border: 1px solid #374151;
+                border-radius: 16px !important;
+                border: 1px solid #374151 !important;
                 background-color: #374151 !important;
-                font-size: 70px !important;
                 box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
                 transition: all 0.2s ease-in-out !important;
                 display: flex !important;
@@ -159,11 +174,19 @@ def mostrar_selector_acceso():
                 padding: 0 !important;
             }
 
-            div.stButton button:hover,
-            div.stButton button > div:hover {
+            div.stButton > button:hover {
                 transform: translateY(-4px) !important;
                 border-color: #FF7A00 !important;
                 box-shadow: 0 12px 28px rgba(0,0,0,0.14) !important;
+            }
+
+            div.stButton > button p {
+                font-size: 58px !important;
+                font-weight: 900 !important;
+                color: white !important;
+                line-height: 1.1 !important;
+                white-space: pre-line !important;
+                text-align: center !important;
             }
         </style>
 
@@ -177,13 +200,13 @@ def mostrar_selector_acceso():
         unsafe_allow_html=True
     )
 
-    if st.button("👥\n\nClientes", use_container_width=True, key="clientes_acceso"):
+    if st.button("👥\nClientes", use_container_width=True, key="clientes_acceso"):
         st.session_state.pantalla_acceso = "clientes"
         st.rerun()
 
     st.markdown("<div style='height: 24px'></div>", unsafe_allow_html=True)
 
-    if st.button("👷\n\nEmpleados", use_container_width=True, key="empleados_acceso"):
+    if st.button("👷\nEmpleados", use_container_width=True, key="empleados_acceso"):
         st.session_state.mostrar_login_empleados = True
 
     if st.session_state.mostrar_login_empleados:
@@ -194,8 +217,7 @@ def mostrar_selector_acceso():
 
 def mostrar_formulario_login():
     """
-    Ya no muestra el login directo.
-    Ahora muestra primero la pantalla de Clientes / Empleados.
+    Muestra primero la pantalla de Clientes / Empleados.
     """
 
     mostrar_selector_acceso()
@@ -222,21 +244,17 @@ def login():
     if "mostrar_login_empleados" not in st.session_state:
         st.session_state.mostrar_login_empleados = False
 
-    # Si viene de cerrar sesión, muestra nuevamente la pantalla de acceso
     if st.query_params.get("logout", "") == "1" or st.session_state.logout_manual:
         st.session_state.logueado = False
         st.session_state.usuario = ""
         mostrar_formulario_login()
 
-    # Si ya está logueado en la sesión actual, deja pasar
     if st.session_state.logueado:
         return True
 
-    # Si tiene token válido en URL, recupera sesión
     if cargar_sesion_desde_token():
         return True
 
-    # Si no hay sesión ni token, muestra selector Clientes / Empleados
     mostrar_formulario_login()
 
 
