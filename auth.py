@@ -147,8 +147,8 @@ def mostrar_selector_acceso():
 
             div.stButton button,
             div.stButton button > div {
-                border-radius: 24px !important;
-                border: 2px solid #E5E7EB !important;
+                border-radius: 10px;
+                border: 1px solid #374151;
                 background-color: #374151 !important;
                 font-size: 30px !important;
                 font-weight: 800 !important;
