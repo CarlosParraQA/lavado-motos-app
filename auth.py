@@ -138,18 +138,25 @@ def mostrar_selector_acceso():
                 margin-bottom: 30px;
             }
 
-            div[data-testid="column"] div.stButton > button {
-                min-height: 500px;
-                border-radius: 24px;
-                border: 2px solid #E5E7EB;
-                background: linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%);
-                font-size: 28px;
-                font-weight: 800;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-                transition: all 0.2s ease-in-out;
+            div[data-testid="column"] div.stButton > button,
+            div[data-testid="column"] div.stButton > button > div,
+            div[data-testid="column"] .stButton button {
+                min-height: 260px !important;
+                height: 260px !important;
+                border-radius: 24px !important;
+                border: 2px solid #E5E7EB !important;
+                background: linear-gradient(135deg, #ffffff 0%, #f7f7f7 100%) !important;
+                font-size: 28px !important;
+                font-weight: 800 !important;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+                transition: all 0.2s ease-in-out !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
-            div[data-testid="column"] div.stButton > button:hover {
+            div[data-testid="column"] div.stButton > button:hover,
+            div[data-testid="column"] .stButton button:hover {
                 transform: translateY(-4px);
                 border-color: #FF7A00;
                 box-shadow: 0 12px 28px rgba(0,0,0,0.14);
