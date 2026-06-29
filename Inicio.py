@@ -137,6 +137,12 @@ def mostrar_inicio():
 
     df_hoy = df[df["fecha"] == fecha_hoy_texto].copy()
 
+    total_servicios = len(df_hoy)
+    total_vendido = int(df_hoy["valor_lavada"].sum()) if not df_hoy.empty else 0
+    total_pago_gamusero = int(df_hoy["pago_gamusero"].sum()) if not df_hoy.empty else 0
+    total_ganancia = int(df_hoy["ganancia_negocio"].sum()) if not df_hoy.empty else 0
+    total_coins = int(df_hoy["coin"].sum()) if not df_hoy.empty else 0
+
     if not df_hoy.empty:
         metodo_pago_normalizado = df_hoy["metodo_pago"].str.strip().str.lower()
 
@@ -150,20 +156,6 @@ def mostrar_inicio():
     else:
         total_efectivo = 0
         total_nequi = 0
-
-    # =========================
-    # MÉTRICAS PRINCIPALES
-    # =========================
-
-    col1, col2, col3, col4, col5 = st.columns(5)
-
-    col1.metric("Servicios hoy", total_servicios)
-    col2.metric("Total vendido", formato_pesos(total_vendido))
-    col3.metric("Pago personal", formato_pesos(total_pago_gamusero))
-    col4.metric("Ganancia negocio", formato_pesos(total_ganancia))
-    col5.metric("Coins entregadas", total_coins)
-
-    st.divider()
 
     # =========================
     # SI NO HAY REGISTROS HOY
