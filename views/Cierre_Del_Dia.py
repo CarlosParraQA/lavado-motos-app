@@ -26,7 +26,7 @@ def obtener_pagos_fecha(fecha):
 
 def obtener_pago_realizado(pagos_realizados, empleado, fecha):
     """
-    Retorna el pago guardado en Supabase para ese empleado y fecha.
+    Retorna el pago guardado en Supabase para ese colaborador y fecha.
     Si no existe, retorna None.
     """
 
@@ -128,7 +128,7 @@ def calcular_porcentaje_desde_pago(total_realizado, valor_pagado):
 def mostrar_cierre_del_dia():
     st.header("Pagos a Colaboradores y Cierre de Caja")
     st.caption(
-        "Consulta lo realizado por cada empleado y registra el pago correspondiente."
+        "Consulta lo realizado por cada colaborador y registra el pago correspondiente."
     )
 
     fecha_hoy = datetime.now(ZoneInfo("America/Bogota")).date()
