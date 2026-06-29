@@ -18,7 +18,15 @@ def aplicar_estilos():
     st.markdown(
         """
         <style>
-            /* Ocultar header superior de Streamlit */
+            /* Ocultar sidebar y header nativo de Streamlit */
+            [data-testid="stSidebar"] {
+                display: none !important;
+            }
+
+            [data-testid="collapsedControl"] {
+                display: none !important;
+            }
+
             header[data-testid="stHeader"] {
                 display: none !important;
             }
@@ -26,130 +34,150 @@ def aplicar_estilos():
             /* Contenedor principal */
             .block-container {
                 max-width: 96% !important;
-                padding-top: 1.2rem !important;
-                padding-left: 2rem !important;
-                padding-right: 2rem !important;
+                padding-top: 1rem !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
             }
 
-            /* Sidebar izquierdo */
-            section[data-testid="stSidebar"] {
-                background-color: #111827 !important;
-                border-right: 1px solid #374151 !important;
+            /* Header compacto */
+            .header-card {
+                border: 1px solid #374151;
+                border-radius: 14px;
+                padding: 10px 14px;
+                margin-bottom: 8px;
+                background-color: transparent;
+                min-height: 88px;
+                display: flex;
+                align-items: center;
             }
 
-            section[data-testid="stSidebar"] > div {
-                padding-top: 1.2rem !important;
+            .header-brand {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                width: 100%;
             }
 
-            /* Logo */
-            .sidebar-logo {
-                width: 95px;
-                height: 95px;
+            .header-logo {
+                width: 68px;
+                height: 68px;
                 object-fit: contain;
-                display: block;
-                margin: 0 auto 12px auto;
+                flex-shrink: 0;
             }
 
-            .sidebar-title {
-                font-size: 24px;
+            .header-text {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .navbar-title {
+                font-size: 30px;
                 font-weight: 800;
                 color: white;
-                text-align: center;
-                margin-bottom: 2px;
+                margin: 0;
                 line-height: 1.1;
             }
 
-            .sidebar-subtitle {
-                font-size: 13px;
+            .navbar-subtitle {
+                font-size: 16px;
                 color: #9ca3af;
-                text-align: center;
-                margin-bottom: 20px;
+                margin-top: 3px;
                 line-height: 1.2;
             }
 
-            .sidebar-user {
-                background-color: #1f2937;
+            /* Caja usuario */
+            .user-box {
+                font-size: 18px;
+                color: #e5e7eb;
+                font-weight: 800;
+                text-align: center;
+                min-height: 42px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 6px;
+                white-space: nowrap;
                 border: 1px solid #374151;
                 border-radius: 12px;
-                padding: 12px 10px;
-                color: #e5e7eb;
-                font-size: 16px;
-                font-weight: 700;
-                text-align: center;
-                margin-bottom: 16px;
-                word-break: break-word;
+                padding: 8px 12px;
+                background-color: transparent;
             }
 
-            .sidebar-section-title {
-                color: #9ca3af;
-                font-size: 12px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                margin: 18px 0 8px 0;
-            }
-
-            /* Botones SOLO del sidebar */
-            section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
+            /* Botones generales */
+            div[data-testid="stButton"] > button {
                 background-color: #374151 !important;
                 color: white !important;
                 border-radius: 12px !important;
-                border: 1px solid #4b5563 !important;
+                border: 1px solid #374151 !important;
                 min-height: 54px !important;
-                padding: 12px 14px !important;
+                padding: 12px 18px !important;
                 width: 100% !important;
-                margin-bottom: 6px !important;
             }
 
-            /* Texto interno de los botones */
-            section[data-testid="stSidebar"] div[data-testid="stButton"] > button p,
-            section[data-testid="stSidebar"] div[data-testid="stButton"] > button span {
-                font-size: 17px !important;
-                font-weight: 800 !important;
-                line-height: 1.1 !important;
-            }
-
-            /* Hover */
-            section[data-testid="stSidebar"] div[data-testid="stButton"] > button:hover {
+            div[data-testid="stButton"] > button:hover {
                 background-color: #4b5563 !important;
                 border-color: #6b7280 !important;
             }
 
-            /* Botón cerrar sesión */
-            .logout-space {
-                margin-top: 18px;
+            /* Texto interno de los botones */
+            div[data-testid="stButton"] > button p,
+            div[data-testid="stButton"] > button span {
+                font-size: 18px !important;
+                font-weight: 900 !important;
+                line-height: 1.1 !important;
             }
 
             /* Responsive */
             @media (max-width: 768px) {
                 .block-container {
                     max-width: 100% !important;
-                    padding-top: 0.8rem !important;
-                    padding-left: 1rem !important;
-                    padding-right: 1rem !important;
+                    padding-top: 0.7rem !important;
+                    padding-left: 0.7rem !important;
+                    padding-right: 0.7rem !important;
                 }
 
-                .sidebar-logo {
-                    width: 72px !important;
-                    height: 72px !important;
+                .header-card {
+                    padding: 8px 10px !important;
+                    min-height: 74px !important;
+                    margin-bottom: 6px !important;
                 }
 
-                .sidebar-title {
+                .header-brand {
+                    gap: 8px !important;
+                }
+
+                .header-logo {
+                    width: 54px !important;
+                    height: 54px !important;
+                }
+
+                .navbar-title {
                     font-size: 20px !important;
+                    line-height: 1.1 !important;
+                    white-space: nowrap;
                 }
 
-                .sidebar-subtitle {
+                .navbar-subtitle {
+                    font-size: 11px !important;
+                    line-height: 1.2 !important;
+                }
+
+                .user-box {
                     font-size: 12px !important;
+                    padding: 6px 6px !important;
+                    min-height: 34px !important;
+                    margin-bottom: 4px !important;
                 }
 
-                section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
-                    min-height: 46px !important;
-                    padding: 10px 10px !important;
+                div[data-testid="stButton"] > button {
+                    min-height: 42px !important;
+                    padding: 8px 8px !important;
                 }
 
-                section[data-testid="stSidebar"] div[data-testid="stButton"] > button p,
-                section[data-testid="stSidebar"] div[data-testid="stButton"] > button span {
-                    font-size: 14px !important;
+                div[data-testid="stButton"] > button p,
+                div[data-testid="stButton"] > button span {
+                    font-size: 13px !important;
                     font-weight: 800 !important;
                 }
             }
@@ -163,13 +191,51 @@ def navbar():
     usuario_actual = st.session_state.get("usuario", "Sin usuario")
     logo_base64 = cargar_logo_base64("assets/logo.png")
 
-    if "vista" not in st.session_state:
-        st.session_state.vista = "Inicio"
-
     if logo_base64:
-        logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="sidebar-logo">'
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="header-logo">'
     else:
-        logo_html = '<div style="font-size:55px; text-align:center;">🏍️</div>'
+        logo_html = '<div class="header-logo" style="font-size:42px; display:flex; align-items:center; justify-content:center;">🏍️</div>'
+
+    # =========================
+    # HEADER SUPERIOR COMPACTO
+    # Logo a la izquierda
+    # Usuario y cerrar sesión a la derecha
+    # =========================
+
+    col_logo, col_usuario = st.columns([4, 1.35])
+
+    with col_logo:
+        st.markdown(
+            f"""
+            <div class="header-card">
+                <div class="header-brand">
+                    {logo_html}
+                    <div class="header-text">
+                        <div class="navbar-title">Moto Space Wash</div>
+                        <div class="navbar-subtitle">Sistema de registro de lavadas</div>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col_usuario:
+        st.markdown(
+            f"""
+            <div class="user-box">
+                👤 {usuario_actual}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        if st.button("Cerrar sesión", use_container_width=True):
+            cerrar_sesion()
+
+    # =========================
+    # BOTONES DE NAVEGACIÓN
+    # =========================
 
     opciones = {
         "Inicio": "Inicio",
@@ -179,34 +245,23 @@ def navbar():
         "Historial": "Historial General"
     }
 
-    with st.sidebar:
-        st.markdown(
-            f"""
-            {logo_html}
-            <div class="sidebar-title">Moto Space Wash</div>
-            <div class="sidebar-subtitle">Sistema de registro de lavadas</div>
+    if "vista" not in st.session_state:
+        st.session_state.vista = "Inicio"
 
-            <div class="sidebar-user">
-                👤 {usuario_actual}
-            </div>
+    col1, col2, col3, col4, col5 = st.columns(
+        [1.2, 1.8, 1.8, 2.2, 2]
+    )
 
-            <div class="sidebar-section-title">Menú principal</div>
-            """,
-            unsafe_allow_html=True
-        )
+    columnas = [col1, col2, col3, col4, col5]
 
-        for clave, etiqueta in opciones.items():
-            texto_boton = f"✅ {etiqueta}" if st.session_state.vista == clave else etiqueta
-
+    for col, (clave, etiqueta) in zip(columnas, opciones.items()):
+        with col:
             if st.button(
-                texto_boton,
+                etiqueta,
                 use_container_width=True,
                 key=f"nav_{clave}"
             ):
                 st.session_state.vista = clave
                 st.rerun()
 
-        st.markdown('<div class="logout-space"></div>', unsafe_allow_html=True)
-
-        if st.button("Cerrar sesión", use_container_width=True):
-            cerrar_sesion()
+    st.divider()
