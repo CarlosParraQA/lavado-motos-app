@@ -99,7 +99,7 @@ def aplicar_estilos():
                 border: 1px solid #374151;
 
                 font-size: 30px !important;
-                font-weight: 700 !important;
+                font-weight: 1000 !important;
                 min-height: 52px !important;
                 padding: 12px 18px !important;
 
