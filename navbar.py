@@ -106,7 +106,7 @@ def aplicar_estilos():
             /* ESTA ES LA PARTE CLAVE */
             div[data-testid="stButton"] > button p,
             div[data-testid="stButton"] > button span {
-                font-size: 30px !important;
+                font-size: 20px !important;
                 font-weight: 900 !important;
                 line-height: 1.1 !important;
             }
