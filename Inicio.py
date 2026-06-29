@@ -137,12 +137,6 @@ def mostrar_inicio():
 
     df_hoy = df[df["fecha"] == fecha_hoy_texto].copy()
 
-    total_servicios = len(df_hoy)
-    total_vendido = int(df_hoy["valor_lavada"].sum()) if not df_hoy.empty else 0
-    total_pago_gamusero = int(df_hoy["pago_gamusero"].sum()) if not df_hoy.empty else 0
-    total_ganancia = int(df_hoy["ganancia_negocio"].sum()) if not df_hoy.empty else 0
-    total_coins = int(df_hoy["coin"].sum()) if not df_hoy.empty else 0
-
     if not df_hoy.empty:
         metodo_pago_normalizado = df_hoy["metodo_pago"].str.strip().str.lower()
 
