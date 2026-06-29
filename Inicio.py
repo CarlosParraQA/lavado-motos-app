@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 
 st.set_page_config(
     page_title="Moto Space Wash",
+    page_icon="🏍️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -18,11 +19,6 @@ from views.Registrar_Lavada import mostrar_registrar_lavada
 from views.Lavadas_Del_Dia import mostrar_lavadas_del_dia
 from views.Cierre_Del_Dia import mostrar_cierre_del_dia
 from views.Historial_General import mostrar_historial_general
-
-
-def cambiar_vista(nombre_vista):
-    st.session_state.vista = nombre_vista
-    st.rerun()
 
 
 def preparar_dataframe_lavados(df):
@@ -102,7 +98,7 @@ def mostrar_inicio_sin_registros():
         with st.container(border=True):
             st.markdown("#### 💰 Control de pagos")
             st.write(
-                "Calcula automáticamente el 40% para el personal y el 60% para el negocio."
+                "Calcula automáticamente el pago del personal y la ganancia del negocio."
             )
 
     with col3:
@@ -157,30 +153,33 @@ def mostrar_inicio():
         total_nequi = 0
 
     # =========================
+    # MÉTRICAS PRINCIPALES
+    # =========================
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    col1.metric("Servicios hoy", total_servicios)
+    col2.metric("Total vendido", formato_pesos(total_vendido))
+    col3.metric("Pago personal", formato_pesos(total_pago_gamusero))
+    col4.metric("Ganancia negocio", formato_pesos(total_ganancia))
+    col5.metric("Coins entregadas", total_coins)
+
+    st.divider()
+
+    # =========================
     # SI NO HAY REGISTROS HOY
     # =========================
 
     if df_hoy.empty:
         st.warning("Aún no hay servicios registrados para el día de hoy.")
 
-        col1, col2 = st.columns([1.2, 1])
-
-        with col1:
-            with st.container(border=True):
-                st.markdown("### Estado del día")
-                st.write(
-                    "La operación de hoy todavía no tiene lavadas registradas. "
-                    "Cuando se registre el primer servicio, aquí aparecerán los totales, "
-                    "los últimos servicios y el resumen por colaborador."
-                )
-
-        with col2:
-            with st.container(border=True):
-                st.markdown("### Recomendación")
-                st.write(
-                    "Usa el menú superior para ingresar a **Registrar Nuevo Servicio** "
-                    "e iniciar la operación del día."
-                )
+        with st.container(border=True):
+            st.markdown("### Estado del día")
+            st.write(
+                "La operación de hoy todavía no tiene lavadas registradas. "
+                "Cuando se registre el primer servicio, aquí aparecerán los totales, "
+                "los últimos servicios y el resumen por colaborador."
+            )
 
         return
 
@@ -296,36 +295,10 @@ def mostrar_inicio():
             hide_index=True
         )
 
-    st.divider()
-
-    # =========================
-    # BLOQUE FINAL
-    # =========================
-
-    col1, col2 = st.columns([1, 1])
-
-    with col1:
-        with st.container(border=True):
-            st.markdown("### Control del día")
-            st.write(
-                "Desde este panel puedes revisar rápidamente cómo va la operación, "
-                "cuánto se ha vendido y cuánto corresponde pagar al personal."
-            )
-
-    with col2:
-        with st.container(border=True):
-            st.markdown("### Próximo paso sugerido")
-            st.write(
-                "Al finalizar la jornada, entra a **Pago a Empleados** para revisar "
-                "los valores y registrar los pagos correspondientes."
-            )
-
 
 def mostrar_historial_en_inicio():
     st.divider()
-
-    with st.expander("Consultar historial general y descargar Excel", expanded=False):
-        mostrar_historial_general()
+    mostrar_historial_general()
 
 
 # =========================
