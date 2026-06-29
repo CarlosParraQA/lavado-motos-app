@@ -8,6 +8,6 @@ headless = true
 base = "dark"
 primaryColor = "#f97316"
 backgroundColor = "#0B0F1A"
-secondaryBackgroundColor = "#E07A5F"
+secondaryBackgroundColor = "#0f162a"
 textColor = "#f9fafb"
 font = "sans serif"
