@@ -148,7 +148,7 @@ def mostrar_cierre_del_dia():
 
     if puede_gestionar_pagos and es_domingo:
         st.success(
-            "Puedes cambiar el porcentaje de pago de cada empleado de forma individual."
+            "Puedes cambiar el porcentaje de pago de cada colaborador de forma individual."
         )
 
     elif puede_gestionar_pagos and not es_domingo:
@@ -284,7 +284,7 @@ def mostrar_cierre_del_dia():
 
     st.divider()
 
-    st.subheader("Detalle de pago por empleado")
+    st.subheader("Detalle de pago por colaborador")
 
     for registro in registros_pago:
         empleado = registro["empleado"]
