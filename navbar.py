@@ -95,8 +95,15 @@ def aplicar_estilos():
             div[data-testid="stButton"] > button {
                 background-color: #374151;
                 color: white;
-                border-radius: 10px;
+                border-radius: 12px;
                 border: 1px solid #374151;
+
+                font-size: 17px !important;
+                font-weight: 700 !important;
+                min-height: 52px !important;
+                padding: 12px 18px !important;
+
+                width: 100% !important;
             }
 
             @media (max-width: 768px) {
@@ -143,9 +150,10 @@ def aplicar_estilos():
                 }
 
                 div[data-testid="stButton"] > button {
-                    min-height: 40px !important;
-                    padding: 8px 8px !important;
+                    min-height: 46px !important;
+                    padding: 10px 10px !important;
                     font-size: 14px !important;
+                    font-weight: 700 !important;
                 }
             }
         </style>
@@ -218,7 +226,7 @@ def navbar():
         st.session_state.vista = "Inicio"
 
     col1, col2, col3, col4, col5 = st.columns(
-        [1, 1.4, 1.4, 1.8, 1.5]
+        [1.2, 1.8, 1.8, 2.2, 2]
     )
 
     columnas = [col1, col2, col3, col4, col5]
