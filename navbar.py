@@ -93,17 +93,22 @@ def aplicar_estilos():
             }
 
             div[data-testid="stButton"] > button {
-                background-color: #374151;
-                color: white;
-                border-radius: 12px;
-                border: 1px solid #374151;
+            background-color: #374151 !important;
+            color: white !important;
+            border-radius: 12px !important;
+            border: 1px solid #374151 !important;
 
+            min-height: 62px !important;
+            padding: 14px 18px !important;
+            width: 100% !important;
+            }
+
+            /* ESTA ES LA PARTE CLAVE */
+            div[data-testid="stButton"] > button p,
+            div[data-testid="stButton"] > button span {
                 font-size: 30px !important;
-                font-weight: 1000 !important;
-                min-height: 52px !important;
-                padding: 12px 18px !important;
-
-                width: 100% !important;
+                font-weight: 900 !important;
+                line-height: 1.1 !important;
             }
 
             @media (max-width: 768px) {
