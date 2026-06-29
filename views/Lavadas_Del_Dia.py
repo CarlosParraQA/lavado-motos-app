@@ -69,7 +69,7 @@ def aplicar_estilos_lavadas():
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 8px 8px;
+                padding: 5px 5px;
                 color: #ef4444;
                 font-size: 22px;
                 font-weight: 900;
