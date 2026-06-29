@@ -2,11 +2,92 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from database import (obtener_lavados, eliminar_registro, actualizar_nombre_gamusero, actualizar_coin_lavada, actualizar_metodo_pago_lavada, actualizar_valor_lavada)
+
+from database import (
+    obtener_lavados,
+    eliminar_registro,
+    actualizar_nombre_gamusero,
+    actualizar_coin_lavada,
+    actualizar_metodo_pago_lavada,
+    actualizar_valor_lavada
+)
+
 from utils import formato_pesos
 
 
+def aplicar_estilos_lavadas():
+    st.markdown(
+        """
+        <style>
+            /* Botón Modificar */
+            div[data-testid="stButton"] > button[kind="primary"] {
+                background-color: #f97316 !important;
+                color: white !important;
+                border: 1px solid #f97316 !important;
+                border-radius: 10px !important;
+                min-height: 44px !important;
+                padding: 10px 14px !important;
+                font-weight: 900 !important;
+            }
+
+            div[data-testid="stButton"] > button[kind="primary"]:hover {
+                background-color: #ea580c !important;
+                border-color: #ea580c !important;
+                color: white !important;
+            }
+
+            div[data-testid="stButton"] > button[kind="primary"] p,
+            div[data-testid="stButton"] > button[kind="primary"] span {
+                font-size: 15px !important;
+                font-weight: 900 !important;
+            }
+
+            .tabla-header-lavadas {
+                background-color: #1f2937;
+                border: 1px solid #374151;
+                border-radius: 10px;
+                padding: 10px 8px;
+                font-weight: 900;
+                color: #d1d5db;
+                margin-bottom: 6px;
+            }
+
+            .fila-lavada {
+                border-bottom: 1px solid #1f2937;
+                padding: 4px 0;
+            }
+
+            .coin-si {
+                color: #22c55e;
+                font-size: 22px;
+                font-weight: 900;
+                text-align: center;
+            }
+
+            .coin-no {
+                color: #ef4444;
+                font-size: 22px;
+                font-weight: 900;
+                text-align: center;
+            }
+
+            .texto-tabla-lavadas {
+                display: flex;
+                align-items: center;
+                min-height: 44px;
+                font-weight: 700;
+                color: #f9fafb;
+                word-break: break-word;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 def mostrar_lavadas_del_dia():
+    aplicar_estilos_lavadas()
+
     # =========================
     # ENCABEZADO
     # =========================
@@ -31,7 +112,7 @@ def mostrar_lavadas_del_dia():
     # FILTRO POR PERSONAL
     # =========================
 
-    gamuseros = ["Todos"] + sorted(df_hoy["gamusero"].unique().tolist())
+    gamuseros = ["Todos"] + sorted(df_hoy["gamusero"].dropna().unique().tolist())
 
     filtro_gamusero = st.selectbox(
         "Filtrar por personal",
@@ -69,86 +150,36 @@ def mostrar_lavadas_del_dia():
     st.divider()
 
     # =========================
-    # TABLA DE LAVADAS
+    # PREPARAR TABLA
     # =========================
 
     st.subheader("Detalle de lavadas")
-    st.caption("Selecciona una fila para modificar el nombre o eliminar el registro.")
+    st.caption("Presiona el botón Modificar para editar o eliminar una lavada.")
 
     df_mostrar = df_hoy.copy()
 
-    if "coin" not in df_mostrar.columns:
-        df_mostrar["coin"] = False
+    columnas_default = {
+        "coin": False,
+        "metodo_pago": "Efectivo",
+        "nombre_cliente": "",
+        "telefono_cliente": "",
+        "observaciones": ""
+    }
 
-    if "metodo_pago" not in df_mostrar.columns:
-        df_mostrar["metodo_pago"] = "Efectivo"
-
-    if "nombre_cliente" not in df_mostrar.columns:
-        df_mostrar["nombre_cliente"] = ""
-
-    if "telefono_cliente" not in df_mostrar.columns:
-        df_mostrar["telefono_cliente"] = ""
+    for columna, valor in columnas_default.items():
+        if columna not in df_mostrar.columns:
+            df_mostrar[columna] = valor
 
     df_mostrar["coin"] = df_mostrar["coin"].fillna(False).astype(bool)
-    df_mostrar["metodo_pago"] = df_mostrar["metodo_pago"].fillna("Efectivo")
+    df_mostrar["metodo_pago"] = df_mostrar["metodo_pago"].fillna("Efectivo").astype(str)
     df_mostrar["nombre_cliente"] = df_mostrar["nombre_cliente"].fillna("").astype(str)
     df_mostrar["telefono_cliente"] = df_mostrar["telefono_cliente"].fillna("").astype(str)
+    df_mostrar["observaciones"] = df_mostrar["observaciones"].fillna("").astype(str)
 
-    # Formatear valores monetarios
-    df_mostrar["valor_lavada"] = df_mostrar["valor_lavada"].apply(formato_pesos)
-    df_mostrar["pago_gamusero"] = df_mostrar["pago_gamusero"].apply(formato_pesos)
-    df_mostrar["ganancia_negocio"] = df_mostrar["ganancia_negocio"].apply(formato_pesos)
-
-    # Seleccionar columnas completas
-    df_mostrar = df_mostrar[
-        [
-            "id",
-            "fecha",
-            "hora",
-            "gamusero",
-            "nombre_cliente",
-            "telefono_cliente",
-            "placa",
-            "valor_lavada",
-            "pago_gamusero",
-            "ganancia_negocio",
-            "metodo_pago",
-            "coin",
-            "observaciones"
-        ]
-    ]
-
-    # Renombrar columnas
-    df_mostrar = df_mostrar.rename(columns={
-        "id": "Lavada #",
-        "fecha": "Fecha",
-        "hora": "Hora",
-        "gamusero": "Personal",
-        "nombre_cliente": "Cliente",
-        "telefono_cliente": "Teléfono",
-        "placa": "Placa",
-        "valor_lavada": "Valor",
-        "pago_gamusero": "40%",
-        "ganancia_negocio": "60%",
-        "observaciones": "Observaciones",
-        "coin": "Coin",
-        "metodo_pago": "Método de pago"
-    })
-
-    # Tabla compacta para evitar scroll horizontal
-    df_tabla = df_mostrar[
-        [
-            "Lavada #",
-            "Hora",
-            "Personal",
-            "Cliente",
-            "Teléfono",
-            "Placa",
-            "Valor",
-            "Coin",
-            "Método de pago"
-        ]
-    ]
+    df_mostrar = df_mostrar.sort_values(
+        by=["fecha", "hora", "id"],
+        ascending=[False, False, False]
+    )
 
     # =========================
     # POPUP / MODAL
@@ -156,34 +187,30 @@ def mostrar_lavadas_del_dia():
 
     @st.dialog("Modificar lavada")
     def abrir_popup_lavada(registro):
-        id_lavada = int(registro["Lavada #"])
-        nombre_actual = registro["Personal"]
-        coin_actual = bool(registro["Coin"])
-        metodo_pago_actual = registro.get("Método de pago", "Efectivo")
+        id_lavada = int(registro["id"])
+        nombre_actual = registro["gamusero"]
+        coin_actual = bool(registro["coin"])
+        metodo_pago_actual = registro.get("metodo_pago", "Efectivo")
 
         if metodo_pago_actual not in ["Efectivo", "Nequi"]:
             metodo_pago_actual = "Efectivo"
 
+        valor_formateado = formato_pesos(int(registro["valor_lavada"]))
+        pago_formateado = formato_pesos(int(registro["pago_gamusero"]))
+        negocio_formateado = formato_pesos(int(registro["ganancia_negocio"]))
+
         st.write(f"**Lavada #:** {id_lavada}")
-        st.write(f"**Fecha:** {registro['Fecha']}")
-        st.write(f"**Hora:** {registro['Hora']}")
-        st.write(f"**Cliente:** {registro['Cliente'] if registro['Cliente'] else 'Sin registrar'}")
-        st.write(f"**Teléfono:** {registro['Teléfono'] if registro['Teléfono'] else 'Sin registrar'}")
-        st.write(f"**Placa:** {registro['Placa']}")
-        st.write(f"**Valor:** {registro['Valor']}")
-        st.write(f"**40% personal:** {registro['40%']}")
-        st.write(f"**60% negocio:** {registro['60%']}")
+        st.write(f"**Fecha:** {registro['fecha']}")
+        st.write(f"**Hora:** {registro['hora']}")
+        st.write(f"**Cliente:** {registro['nombre_cliente'] if registro['nombre_cliente'] else 'Sin registrar'}")
+        st.write(f"**Teléfono:** {registro['telefono_cliente'] if registro['telefono_cliente'] else 'Sin registrar'}")
+        st.write(f"**Placa:** {registro['placa']}")
+        st.write(f"**Valor:** {valor_formateado}")
+        st.write(f"**40% personal:** {pago_formateado}")
+        st.write(f"**60% negocio:** {negocio_formateado}")
 
-            # Convertir el valor actual de texto a número
-        valor_actual = int(
-            str(registro["Valor"])
-            .replace("$", "")
-            .replace(".", "")
-            .replace(",", "")
-            .strip()
-        )
+        valor_actual = int(registro["valor_lavada"])
 
-        # Lista de valores permitidos: solo superiores al valor actual
         opciones_valor = [
             valor for valor in range(20000, 60001, 5000)
             if valor > valor_actual
@@ -204,22 +231,25 @@ def mostrar_lavadas_del_dia():
         else:
             st.info("Esta lavada ya tiene el valor máximo permitido.")
 
-        if registro["Observaciones"]:
-            st.write(f"**Observaciones:** {registro['Observaciones']}")
+        if registro["observaciones"]:
+            st.write(f"**Observaciones:** {registro['observaciones']}")
 
         nuevo_nombre = st.text_input(
             "Nombre del personal",
             value=nombre_actual
         )
+
         nuevo_coin = st.checkbox(
             "¿Se le dio coin?",
             value=coin_actual
         )
+
         nuevo_metodo_pago = st.selectbox(
             "Método de pago",
             ["Efectivo", "Nequi"],
             index=0 if metodo_pago_actual == "Efectivo" else 1
         )
+
         col_guardar, col_eliminar = st.columns(2)
 
         with col_guardar:
@@ -236,6 +266,7 @@ def mostrar_lavadas_del_dia():
                         id_registro=id_lavada,
                         coin=nuevo_coin
                     )
+
                     actualizar_metodo_pago_lavada(
                         id_registro=id_lavada,
                         metodo_pago=nuevo_metodo_pago
@@ -262,65 +293,106 @@ def mostrar_lavadas_del_dia():
                 st.info("Solo admin puede eliminar.")
 
     # =========================
-    # TABLA SELECCIONABLE
+    # TABLA PERSONALIZADA CON BOTÓN MODIFICAR
     # =========================
 
-    evento_tabla = st.dataframe(
-        df_tabla,
-        use_container_width=True,
-        hide_index=True,
-        on_select="rerun",
-        selection_mode="single-row",
-        column_config={
-            "Cliente": st.column_config.TextColumn(
-                "Cliente",
-                width="medium"
-            ),
-            "Teléfono": st.column_config.TextColumn(
-                "Teléfono",
-                width="medium"
-            ),
-            "Lavada #": st.column_config.NumberColumn(
-                "Lavada #",
-                width="small"
-            ),
-            "Hora": st.column_config.TextColumn(
-                "Hora",
-                width="small"
-            ),
-            "Personal": st.column_config.TextColumn(
-                "Personal",
-                width="medium"
-            ),
-            "Placa": st.column_config.TextColumn(
-                "Placa",
-                width="small"
-            ),
-            "Valor": st.column_config.TextColumn(
-                "Valor",
-                width="small"
-            ),
-            "Coin": st.column_config.CheckboxColumn(
-                "Coin",
-                width="small",
-            ), 
-            "Método de pago": st.column_config.TextColumn(
-                "Método de pago",
-                width="small"
-            ),
-        }
+    col_accion, col_id, col_hora, col_personal, col_cliente, col_telefono, col_placa, col_valor, col_coin, col_pago = st.columns(
+        [1.1, 0.8, 0.9, 1.6, 1.6, 1.5, 1.1, 1.1, 0.8, 1.2]
     )
 
-    # Abrir popup cuando se seleccione una fila
-    filas_seleccionadas = evento_tabla.selection.rows
+    with col_accion:
+        st.markdown('<div class="tabla-header-lavadas">Acción</div>', unsafe_allow_html=True)
+    with col_id:
+        st.markdown('<div class="tabla-header-lavadas">Lavada #</div>', unsafe_allow_html=True)
+    with col_hora:
+        st.markdown('<div class="tabla-header-lavadas">Hora</div>', unsafe_allow_html=True)
+    with col_personal:
+        st.markdown('<div class="tabla-header-lavadas">Personal</div>', unsafe_allow_html=True)
+    with col_cliente:
+        st.markdown('<div class="tabla-header-lavadas">Cliente</div>', unsafe_allow_html=True)
+    with col_telefono:
+        st.markdown('<div class="tabla-header-lavadas">Teléfono</div>', unsafe_allow_html=True)
+    with col_placa:
+        st.markdown('<div class="tabla-header-lavadas">Placa</div>', unsafe_allow_html=True)
+    with col_valor:
+        st.markdown('<div class="tabla-header-lavadas">Valor</div>', unsafe_allow_html=True)
+    with col_coin:
+        st.markdown('<div class="tabla-header-lavadas">Coin</div>', unsafe_allow_html=True)
+    with col_pago:
+        st.markdown('<div class="tabla-header-lavadas">Pago</div>', unsafe_allow_html=True)
 
-    if filas_seleccionadas:
-        indice_fila = filas_seleccionadas[0]
+    for _, registro in df_mostrar.iterrows():
+        col_accion, col_id, col_hora, col_personal, col_cliente, col_telefono, col_placa, col_valor, col_coin, col_pago = st.columns(
+            [1.1, 0.8, 0.9, 1.6, 1.6, 1.5, 1.1, 1.1, 0.8, 1.2]
+        )
 
-        id_seleccionado = df_tabla.iloc[indice_fila]["Lavada #"]
+        with col_accion:
+            if st.button(
+                "Modificar",
+                key=f"modificar_lavada_{int(registro['id'])}",
+                use_container_width=True,
+                type="primary"
+            ):
+                abrir_popup_lavada(registro)
 
-        registro_seleccionado = df_mostrar[
-            df_mostrar["Lavada #"] == id_seleccionado
-        ].iloc[0]
+        with col_id:
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{int(registro["id"])}</div>',
+                unsafe_allow_html=True
+            )
 
-        abrir_popup_lavada(registro_seleccionado)
+        with col_hora:
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{registro["hora"]}</div>',
+                unsafe_allow_html=True
+            )
+
+        with col_personal:
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{registro["gamusero"]}</div>',
+                unsafe_allow_html=True
+            )
+
+        with col_cliente:
+            cliente = registro["nombre_cliente"] if registro["nombre_cliente"] else "Sin registrar"
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{cliente}</div>',
+                unsafe_allow_html=True
+            )
+
+        with col_telefono:
+            telefono = registro["telefono_cliente"] if registro["telefono_cliente"] else "Sin registrar"
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{telefono}</div>',
+                unsafe_allow_html=True
+            )
+
+        with col_placa:
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{registro["placa"]}</div>',
+                unsafe_allow_html=True
+            )
+
+        with col_valor:
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{formato_pesos(int(registro["valor_lavada"]))}</div>',
+                unsafe_allow_html=True
+            )
+
+        with col_coin:
+            if bool(registro["coin"]):
+                st.markdown(
+                    '<div class="coin-si">✓</div>',
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    '<div class="coin-no">✕</div>',
+                    unsafe_allow_html=True
+                )
+
+        with col_pago:
+            st.markdown(
+                f'<div class="texto-tabla-lavadas">{registro["metodo_pago"]}</div>',
+                unsafe_allow_html=True
+            )

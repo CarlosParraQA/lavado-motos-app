@@ -700,3 +700,5 @@ elif vista == "Cierre":
 elif vista == "Historial":
     st.session_state.vista = "Inicio"
     st.rerun()
+
+    
