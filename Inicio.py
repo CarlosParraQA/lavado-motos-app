@@ -26,6 +26,12 @@ def cambiar_vista(nombre_vista):
     st.rerun()
 
 
+def abrir_historial_inicio():
+    st.session_state.ver_historial_inicio = True
+    st.session_state.vista = "Inicio"
+    st.rerun()
+
+
 def preparar_dataframe_lavados(df):
     """
     Normaliza columnas para evitar errores si algún campo viene vacío
@@ -96,8 +102,8 @@ def mostrar_inicio_sin_registros():
             cambiar_vista("Lavadas")
 
     with col3:
-        if st.button("Consultar historial", use_container_width=True):
-            cambiar_vista("Historial")
+        if st.button("Consultar historial / Excel", use_container_width=True):
+            abrir_historial_inicio()
 
     st.divider()
 
@@ -121,9 +127,9 @@ def mostrar_inicio_sin_registros():
 
     with col3:
         with st.container(border=True):
-            st.markdown("#### 📊 Seguimiento diario")
+            st.markdown("#### 📊 Seguimiento general")
             st.write(
-                "Consulta las lavadas del día, pagos pendientes, historial y cierres."
+                "Consulta las lavadas del día, pagos pendientes, historial general y exporta reportes en Excel."
             )
 
 
@@ -205,8 +211,8 @@ def mostrar_inicio():
             cambiar_vista("Cierre")
 
     with col4:
-        if st.button("Historial general", use_container_width=True):
-            cambiar_vista("Historial")
+        if st.button("Historial / Excel", use_container_width=True):
+            abrir_historial_inicio()
 
     st.divider()
 
@@ -377,6 +383,15 @@ def mostrar_inicio():
             )
 
 
+def mostrar_historial_en_inicio():
+    st.divider()
+
+    expandido = st.session_state.get("ver_historial_inicio", False)
+
+    with st.expander("Consultar historial general y descargar Excel", expanded=expandido):
+        mostrar_historial_general()
+
+
 # =========================
 # INICIO DE LA APP
 # =========================
@@ -392,15 +407,23 @@ vista = st.session_state.get("vista", "Inicio")
 
 if vista == "Inicio":
     mostrar_inicio()
+    mostrar_historial_en_inicio()
 
 elif vista == "Registrar":
+    st.session_state.ver_historial_inicio = False
     mostrar_registrar_lavada()
 
 elif vista == "Lavadas":
+    st.session_state.ver_historial_inicio = False
     mostrar_lavadas_del_dia()
 
 elif vista == "Cierre":
+    st.session_state.ver_historial_inicio = False
     mostrar_cierre_del_dia()
 
 elif vista == "Historial":
-    mostrar_historial_general()
+    # Por si quedó guardada una sesión anterior con esta vista,
+    # redirige al Inicio y abre el historial allí.
+    st.session_state.vista = "Inicio"
+    st.session_state.ver_historial_inicio = True
+    st.rerun()

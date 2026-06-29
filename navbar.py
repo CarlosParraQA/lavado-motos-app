@@ -241,18 +241,17 @@ def navbar():
         "Inicio": "Inicio",
         "Registrar": "Registrar Nuevo Servicio",
         "Lavadas": "Servicios del Día",
-        "Cierre": "Pago a Empleados",
-        "Historial": "Historial General"
+        "Cierre": "Pago a Empleados"
     }
 
     if "vista" not in st.session_state:
         st.session_state.vista = "Inicio"
 
-    col1, col2, col3, col4, col5 = st.columns(
-        [1.2, 1.8, 1.8, 2.2, 2]
+    col1, col2, col3, col4 = st.columns(
+        [1.2, 1.8, 1.8, 2.2]
     )
 
-    columnas = [col1, col2, col3, col4, col5]
+    columnas = [col1, col2, col3, col4]
 
     for col, (clave, etiqueta) in zip(columnas, opciones.items()):
         with col:
