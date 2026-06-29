@@ -57,7 +57,7 @@ def aplicar_estilos_lavadas():
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 5px 5px;
+                padding: 4px 4px;
                 color: #22c55e;
                 font-size: 22px;
                 font-weight: 900;
@@ -69,7 +69,7 @@ def aplicar_estilos_lavadas():
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 5px 5px;
+                padding: 4px 4px;
                 color: #ef4444;
                 font-size: 22px;
                 font-weight: 900;
