@@ -241,7 +241,7 @@ def navbar():
         "Inicio": "Inicio",
         "Registrar": "Registrar Nuevo Servicio",
         "Lavadas": "Servicios del Día",
-        "Cierre": "Pago a Empleados"
+        "Cierre": "Pagos y Cierre de Caja"
     }
 
     if "vista" not in st.session_state:
