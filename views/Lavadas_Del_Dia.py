@@ -81,8 +81,8 @@ def aplicar_estilos_lavadas():
                 background-color: #f97316 !important;
                 color: white !important;
                 border: 1px solid #f97316 !important;
-                border-radius: 5px !important;
-                min-height: 36px !important;
+                border-radius: 1px !important;
+                min-height: 34px !important;
                 padding: 6px 10px !important;
                 font-weight: 900 !important;
                 box-shadow: none !important;
