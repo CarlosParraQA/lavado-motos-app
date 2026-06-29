@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 st.set_page_config(
@@ -73,6 +73,7 @@ def preparar_dataframe_lavados(df):
         ).fillna(0).astype(int)
 
     return df
+
 
 def mostrar_grafica_lavadas(df):
     st.markdown("### Tendencia de lavadas")
@@ -179,7 +180,9 @@ def mostrar_grafica_lavadas(df):
     # =========================
 
     elif tipo_vista == "Mes":
-        df_grafica["periodo_mes"] = df_grafica["fecha_dt"].dt.to_period("M").astype(str)
+        df_grafica["periodo_mes"] = (
+            df_grafica["fecha_dt"].dt.to_period("M").astype(str)
+        )
 
         meses = sorted(
             df_grafica["periodo_mes"].unique(),
@@ -258,9 +261,9 @@ def mostrar_grafica_lavadas(df):
             key="grafica_semana"
         )
 
-        semana_fin = semana_seleccionada + pd.Timedelta(days=6).date()
-        semana_anterior_inicio = semana_seleccionada - pd.Timedelta(days=7).date()
-        semana_anterior_fin = semana_seleccionada - pd.Timedelta(days=1).date()
+        semana_fin = semana_seleccionada + timedelta(days=6)
+        semana_anterior_inicio = semana_seleccionada - timedelta(days=7)
+        semana_anterior_fin = semana_seleccionada - timedelta(days=1)
 
         df_actual = df_grafica[
             (df_grafica["fecha_dt"].dt.date >= semana_seleccionada) &
@@ -300,10 +303,25 @@ def mostrar_grafica_lavadas(df):
             how="left"
         ).fillna(0)
 
-        resumen["Periodo"] = pd.to_datetime(resumen["Fecha"]).dt.strftime("%a %d/%m")
+        nombres_dias = {
+            0: "Lun",
+            1: "Mar",
+            2: "Mié",
+            3: "Jue",
+            4: "Vie",
+            5: "Sáb",
+            6: "Dom"
+        }
+
+        resumen["Periodo"] = pd.to_datetime(resumen["Fecha"]).dt.strftime("%d/%m")
+        resumen["Dia"] = pd.to_datetime(resumen["Fecha"]).dt.weekday.map(nombres_dias)
+        resumen["Periodo"] = resumen["Dia"] + " " + resumen["Periodo"]
         resumen["Lavadas"] = resumen["Lavadas"].astype(int)
 
-        titulo_periodo = f"Semana del {semana_seleccionada.strftime('%d/%m/%Y')}"
+        titulo_periodo = (
+            f"Semana del {semana_seleccionada.strftime('%d/%m/%Y')} "
+            f"al {semana_fin.strftime('%d/%m/%Y')}"
+        )
 
     # =========================
     # VISTA POR DÍA / HORA
@@ -322,7 +340,7 @@ def mostrar_grafica_lavadas(df):
             key="grafica_dia"
         )
 
-        fecha_anterior = fecha_seleccionada - pd.Timedelta(days=1).date()
+        fecha_anterior = fecha_seleccionada - timedelta(days=1)
 
         df_actual = df_grafica[
             df_grafica["fecha_dt"].dt.date == fecha_seleccionada
@@ -417,6 +435,7 @@ def mostrar_grafica_lavadas(df):
         grafica,
         height=320
     )
+
 
 def mostrar_inicio_sin_registros():
     st.info(
