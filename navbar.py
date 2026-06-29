@@ -98,7 +98,7 @@ def aplicar_estilos():
                 border-radius: 12px;
                 border: 1px solid #374151;
 
-                font-size: 17px !important;
+                font-size: 30px !important;
                 font-weight: 700 !important;
                 min-height: 52px !important;
                 padding: 12px 18px !important;
