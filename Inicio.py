@@ -26,12 +26,6 @@ def cambiar_vista(nombre_vista):
     st.rerun()
 
 
-def abrir_historial_inicio():
-    st.session_state.ver_historial_inicio = True
-    st.session_state.vista = "Inicio"
-    st.rerun()
-
-
 def preparar_dataframe_lavados(df):
     """
     Normaliza columnas para evitar errores si algún campo viene vacío
@@ -88,22 +82,9 @@ def preparar_dataframe_lavados(df):
 
 def mostrar_inicio_sin_registros():
     st.info(
-        "Todavía no hay lavadas registradas. Puedes iniciar registrando el primer servicio del día."
+        "Todavía no hay lavadas registradas. Cuando se registre el primer servicio, "
+        "aquí aparecerá el resumen de la operación."
     )
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        if st.button("Registrar primera lavada", use_container_width=True):
-            cambiar_vista("Registrar")
-
-    with col2:
-        if st.button("Ver servicios del día", use_container_width=True):
-            cambiar_vista("Lavadas")
-
-    with col3:
-        if st.button("Consultar historial / Excel", use_container_width=True):
-            abrir_historial_inicio()
 
     st.divider()
 
@@ -191,32 +172,6 @@ def mostrar_inicio():
     st.divider()
 
     # =========================
-    # ACCESOS RÁPIDOS
-    # =========================
-
-    st.markdown("### Accesos rápidos")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        if st.button("Registrar lavada", use_container_width=True):
-            cambiar_vista("Registrar")
-
-    with col2:
-        if st.button("Servicios del día", use_container_width=True):
-            cambiar_vista("Lavadas")
-
-    with col3:
-        if st.button("Pago empleados", use_container_width=True):
-            cambiar_vista("Cierre")
-
-    with col4:
-        if st.button("Historial / Excel", use_container_width=True):
-            abrir_historial_inicio()
-
-    st.divider()
-
-    # =========================
     # SI NO HAY REGISTROS HOY
     # =========================
 
@@ -238,11 +193,9 @@ def mostrar_inicio():
             with st.container(border=True):
                 st.markdown("### Recomendación")
                 st.write(
-                    "Usa el botón **Registrar lavada** para iniciar la operación del día."
+                    "Usa el menú superior para ingresar a **Registrar Nuevo Servicio** "
+                    "e iniciar la operación del día."
                 )
-
-                if st.button("Ir a registrar", use_container_width=True):
-                    cambiar_vista("Registrar")
 
         return
 
@@ -386,9 +339,7 @@ def mostrar_inicio():
 def mostrar_historial_en_inicio():
     st.divider()
 
-    expandido = st.session_state.get("ver_historial_inicio", False)
-
-    with st.expander("Consultar historial general y descargar Excel", expanded=expandido):
+    with st.expander("Consultar historial general y descargar Excel", expanded=False):
         mostrar_historial_general()
 
 
@@ -410,20 +361,14 @@ if vista == "Inicio":
     mostrar_historial_en_inicio()
 
 elif vista == "Registrar":
-    st.session_state.ver_historial_inicio = False
     mostrar_registrar_lavada()
 
 elif vista == "Lavadas":
-    st.session_state.ver_historial_inicio = False
     mostrar_lavadas_del_dia()
 
 elif vista == "Cierre":
-    st.session_state.ver_historial_inicio = False
     mostrar_cierre_del_dia()
 
 elif vista == "Historial":
-    # Por si quedó guardada una sesión anterior con esta vista,
-    # redirige al Inicio y abre el historial allí.
     st.session_state.vista = "Inicio"
-    st.session_state.ver_historial_inicio = True
     st.rerun()
