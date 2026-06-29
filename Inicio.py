@@ -74,6 +74,349 @@ def preparar_dataframe_lavados(df):
 
     return df
 
+def mostrar_grafica_lavadas(df):
+    st.markdown("### Tendencia de lavadas")
+    st.caption(
+        "Visualiza el incremento o disminución de lavadas según el periodo seleccionado."
+    )
+
+    if df.empty:
+        st.info("No hay datos suficientes para mostrar la gráfica.")
+        return
+
+    df_grafica = df.copy()
+
+    df_grafica["fecha_dt"] = pd.to_datetime(
+        df_grafica["fecha"],
+        errors="coerce"
+    )
+
+    df_grafica = df_grafica.dropna(subset=["fecha_dt"])
+
+    if df_grafica.empty:
+        st.info("No hay fechas válidas para construir la gráfica.")
+        return
+
+    tipo_vista = st.radio(
+        "Ver lavadas por:",
+        ["Año", "Mes", "Semana", "Día (por hora)"],
+        horizontal=True,
+        key="tipo_grafica_lavadas"
+    )
+
+    total_actual = 0
+    total_anterior = 0
+    titulo_periodo = ""
+
+    # =========================
+    # VISTA POR AÑO
+    # =========================
+
+    if tipo_vista == "Año":
+        anios = sorted(
+            df_grafica["fecha_dt"].dt.year.dropna().unique(),
+            reverse=True
+        )
+
+        anio_seleccionado = st.selectbox(
+            "Selecciona el año",
+            options=anios,
+            key="grafica_anio"
+        )
+
+        df_actual = df_grafica[
+            df_grafica["fecha_dt"].dt.year == anio_seleccionado
+        ]
+
+        df_anterior = df_grafica[
+            df_grafica["fecha_dt"].dt.year == anio_seleccionado - 1
+        ]
+
+        total_actual = len(df_actual)
+        total_anterior = len(df_anterior)
+
+        resumen = (
+            df_actual
+            .groupby(df_actual["fecha_dt"].dt.month)
+            .size()
+            .reset_index(name="Lavadas")
+        )
+
+        resumen.columns = ["Mes_num", "Lavadas"]
+
+        meses_base = pd.DataFrame({
+            "Mes_num": list(range(1, 13))
+        })
+
+        resumen = meses_base.merge(
+            resumen,
+            on="Mes_num",
+            how="left"
+        ).fillna(0)
+
+        nombres_meses = {
+            1: "Ene",
+            2: "Feb",
+            3: "Mar",
+            4: "Abr",
+            5: "May",
+            6: "Jun",
+            7: "Jul",
+            8: "Ago",
+            9: "Sep",
+            10: "Oct",
+            11: "Nov",
+            12: "Dic"
+        }
+
+        resumen["Periodo"] = resumen["Mes_num"].map(nombres_meses)
+        resumen["Lavadas"] = resumen["Lavadas"].astype(int)
+
+        titulo_periodo = f"Año {anio_seleccionado}"
+
+    # =========================
+    # VISTA POR MES
+    # =========================
+
+    elif tipo_vista == "Mes":
+        df_grafica["periodo_mes"] = df_grafica["fecha_dt"].dt.to_period("M").astype(str)
+
+        meses = sorted(
+            df_grafica["periodo_mes"].unique(),
+            reverse=True
+        )
+
+        mes_seleccionado = st.selectbox(
+            "Selecciona el mes",
+            options=meses,
+            key="grafica_mes"
+        )
+
+        periodo_actual = pd.Period(mes_seleccionado, freq="M")
+        periodo_anterior = periodo_actual - 1
+
+        df_actual = df_grafica[
+            df_grafica["fecha_dt"].dt.to_period("M") == periodo_actual
+        ]
+
+        df_anterior = df_grafica[
+            df_grafica["fecha_dt"].dt.to_period("M") == periodo_anterior
+        ]
+
+        total_actual = len(df_actual)
+        total_anterior = len(df_anterior)
+
+        fechas_mes = pd.date_range(
+            start=periodo_actual.start_time.date(),
+            end=periodo_actual.end_time.date(),
+            freq="D"
+        )
+
+        resumen = (
+            df_actual
+            .groupby(df_actual["fecha_dt"].dt.date)
+            .size()
+            .reset_index(name="Lavadas")
+        )
+
+        resumen.columns = ["Fecha", "Lavadas"]
+
+        base = pd.DataFrame({
+            "Fecha": [fecha.date() for fecha in fechas_mes]
+        })
+
+        resumen = base.merge(
+            resumen,
+            on="Fecha",
+            how="left"
+        ).fillna(0)
+
+        resumen["Periodo"] = pd.to_datetime(resumen["Fecha"]).dt.strftime("%d/%m")
+        resumen["Lavadas"] = resumen["Lavadas"].astype(int)
+
+        titulo_periodo = f"Mes {mes_seleccionado}"
+
+    # =========================
+    # VISTA POR SEMANA
+    # =========================
+
+    elif tipo_vista == "Semana":
+        df_grafica["semana_inicio"] = (
+            df_grafica["fecha_dt"] -
+            pd.to_timedelta(df_grafica["fecha_dt"].dt.weekday, unit="D")
+        ).dt.date
+
+        semanas = sorted(
+            df_grafica["semana_inicio"].unique(),
+            reverse=True
+        )
+
+        semana_seleccionada = st.selectbox(
+            "Selecciona la semana",
+            options=semanas,
+            format_func=lambda fecha: f"Semana del {fecha.strftime('%d/%m/%Y')}",
+            key="grafica_semana"
+        )
+
+        semana_fin = semana_seleccionada + pd.Timedelta(days=6).date()
+        semana_anterior_inicio = semana_seleccionada - pd.Timedelta(days=7).date()
+        semana_anterior_fin = semana_seleccionada - pd.Timedelta(days=1).date()
+
+        df_actual = df_grafica[
+            (df_grafica["fecha_dt"].dt.date >= semana_seleccionada) &
+            (df_grafica["fecha_dt"].dt.date <= semana_fin)
+        ]
+
+        df_anterior = df_grafica[
+            (df_grafica["fecha_dt"].dt.date >= semana_anterior_inicio) &
+            (df_grafica["fecha_dt"].dt.date <= semana_anterior_fin)
+        ]
+
+        total_actual = len(df_actual)
+        total_anterior = len(df_anterior)
+
+        fechas_semana = pd.date_range(
+            start=semana_seleccionada,
+            periods=7,
+            freq="D"
+        )
+
+        resumen = (
+            df_actual
+            .groupby(df_actual["fecha_dt"].dt.date)
+            .size()
+            .reset_index(name="Lavadas")
+        )
+
+        resumen.columns = ["Fecha", "Lavadas"]
+
+        base = pd.DataFrame({
+            "Fecha": [fecha.date() for fecha in fechas_semana]
+        })
+
+        resumen = base.merge(
+            resumen,
+            on="Fecha",
+            how="left"
+        ).fillna(0)
+
+        resumen["Periodo"] = pd.to_datetime(resumen["Fecha"]).dt.strftime("%a %d/%m")
+        resumen["Lavadas"] = resumen["Lavadas"].astype(int)
+
+        titulo_periodo = f"Semana del {semana_seleccionada.strftime('%d/%m/%Y')}"
+
+    # =========================
+    # VISTA POR DÍA / HORA
+    # =========================
+
+    else:
+        fechas = sorted(
+            df_grafica["fecha_dt"].dt.date.unique(),
+            reverse=True
+        )
+
+        fecha_seleccionada = st.selectbox(
+            "Selecciona el día",
+            options=fechas,
+            format_func=lambda fecha: fecha.strftime("%d/%m/%Y"),
+            key="grafica_dia"
+        )
+
+        fecha_anterior = fecha_seleccionada - pd.Timedelta(days=1).date()
+
+        df_actual = df_grafica[
+            df_grafica["fecha_dt"].dt.date == fecha_seleccionada
+        ].copy()
+
+        df_anterior = df_grafica[
+            df_grafica["fecha_dt"].dt.date == fecha_anterior
+        ]
+
+        total_actual = len(df_actual)
+        total_anterior = len(df_anterior)
+
+        if "hora" in df_actual.columns:
+            horas = pd.to_datetime(
+                df_actual["hora"].astype(str),
+                format="%H:%M:%S",
+                errors="coerce"
+            ).dt.hour
+
+            if horas.isna().all():
+                horas = pd.to_datetime(
+                    df_actual["hora"].astype(str),
+                    errors="coerce"
+                ).dt.hour
+
+            df_actual["hora_num"] = horas.fillna(0).astype(int)
+        else:
+            df_actual["hora_num"] = 0
+
+        resumen = (
+            df_actual
+            .groupby("hora_num")
+            .size()
+            .reset_index(name="Lavadas")
+        )
+
+        resumen.columns = ["Hora", "Lavadas"]
+
+        horas_base = pd.DataFrame({
+            "Hora": list(range(0, 24))
+        })
+
+        resumen = horas_base.merge(
+            resumen,
+            on="Hora",
+            how="left"
+        ).fillna(0)
+
+        resumen["Periodo"] = resumen["Hora"].apply(
+            lambda hora: f"{int(hora):02d}:00"
+        )
+
+        resumen["Lavadas"] = resumen["Lavadas"].astype(int)
+
+        titulo_periodo = f"Día {fecha_seleccionada.strftime('%d/%m/%Y')}"
+
+    # =========================
+    # DELTA / INCREMENTO
+    # =========================
+
+    diferencia = total_actual - total_anterior
+
+    if total_anterior > 0:
+        porcentaje = (diferencia / total_anterior) * 100
+        texto_delta = f"{diferencia:+} lavadas ({porcentaje:+.1f}%)"
+    else:
+        texto_delta = f"{diferencia:+} lavadas"
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric(
+        "Lavadas del periodo",
+        total_actual,
+        delta=texto_delta
+    )
+
+    col2.metric(
+        "Periodo anterior",
+        total_anterior
+    )
+
+    col3.metric(
+        "Diferencia",
+        diferencia
+    )
+
+    st.markdown(f"#### {titulo_periodo}")
+
+    grafica = resumen[["Periodo", "Lavadas"]].set_index("Periodo")
+
+    st.line_chart(
+        grafica,
+        height=320
+    )
 
 def mostrar_inicio_sin_registros():
     st.info(
@@ -207,6 +550,14 @@ def mostrar_inicio():
                 st.markdown("### 1 servicio registrado")
             else:
                 st.markdown(f"### {total_servicios} servicios registrados")
+
+    st.divider()
+
+    # =========================
+    # GRÁFICA DE TENDENCIA
+    # =========================
+
+    mostrar_grafica_lavadas(df)
 
     st.divider()
 
