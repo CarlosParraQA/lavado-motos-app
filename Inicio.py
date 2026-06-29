@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 
 st.set_page_config(
     page_title="Moto Space Wash",
-    page_icon="🏍️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )

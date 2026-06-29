@@ -126,7 +126,7 @@ def calcular_porcentaje_desde_pago(total_realizado, valor_pagado):
 
 
 def mostrar_cierre_del_dia():
-    st.header("Pago a empleados")
+    st.header("Pagos a Colaboradores y Cierre de Caja")
     st.caption(
         "Consulta lo realizado por cada empleado y registra el pago correspondiente."
     )
