@@ -78,9 +78,9 @@ def aplicar_estilos_lavadas():
 
             /* Botón Modificar */
             div[data-testid="stButton"] > button[kind="primary"] {
-                background-color: #f97316 !important;
+                background-color: #8F3221 !important;
                 color: white !important;
-                border: 1px solid #f97316 !important;
+                border: 1px solid #8F3221 !important;
                 border-radius: 1px !important;
                 min-height: 34px !important;
                 padding: 6px 10px !important;
