@@ -518,14 +518,6 @@ def mostrar_inicio():
     # MÉTRICAS PRINCIPALES
     # =========================
 
-    col1, col2, col3, col4, col5 = st.columns(5)
-
-    col1.metric("Servicios hoy", total_servicios)
-    col2.metric("Total vendido", formato_pesos(total_vendido))
-    col3.metric("Pago personal", formato_pesos(total_pago_gamusero))
-    col4.metric("Ganancia negocio", formato_pesos(total_ganancia))
-    col5.metric("Coins entregadas", total_coins)
-
     st.divider()
 
     # =========================
