@@ -19,9 +19,18 @@ def cargar_sesion_desde_token():
 
     for usuario, token_guardado in tokens_sesion.items():
         if token_url == token_guardado:
+            usuario = usuario.strip().lower()
+
             st.session_state.logueado = True
             st.session_state.usuario = usuario
-            st.session_state.rol = usuario.lower()
+            st.session_state.rol = usuario
+            st.session_state.logout_manual = False
+
+            if usuario == "operador":
+                st.session_state.vista = "Registrar"
+            else:
+                st.session_state.vista = "Inicio"
+
             return True
 
 
@@ -250,9 +259,20 @@ def login():
     if st.query_params.get("logout", "") == "1" or st.session_state.logout_manual:
         st.session_state.logueado = False
         st.session_state.usuario = ""
+        st.session_state.rol = ""
         mostrar_formulario_login()
 
     if st.session_state.logueado:
+        usuario_actual = (
+            st.session_state
+            .get("usuario", "")
+            .strip()
+            .lower()
+        )
+
+        if usuario_actual:
+            st.session_state.rol = usuario_actual
+
         return True
 
     if cargar_sesion_desde_token():

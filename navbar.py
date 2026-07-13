@@ -1,24 +1,39 @@
-import streamlit as st
-from pathlib import Path
 import base64
+from pathlib import Path
+
+import streamlit as st
+
 from auth import cerrar_sesion
 
 
+# =========================================================
+# CARGAR LOGO
+# =========================================================
+
 def cargar_logo_base64(ruta_logo="assets/logo.png"):
+    """
+    Convierte el logo en Base64 para mostrarlo dentro del encabezado.
+    Si el archivo no existe, retorna una cadena vacía.
+    """
+
     logo_path = Path(ruta_logo)
 
     if not logo_path.exists():
         return ""
 
-    with open(logo_path, "rb") as file:
-        return base64.b64encode(file.read()).decode()
+    with open(logo_path, "rb") as archivo:
+        return base64.b64encode(archivo.read()).decode("utf-8")
 
+
+# =========================================================
+# ESTILOS GENERALES
+# =========================================================
 
 def aplicar_estilos():
     st.markdown(
         """
         <style>
-            /* Ocultar sidebar y header nativo de Streamlit */
+            /* Ocultar sidebar y encabezado nativo de Streamlit */
             [data-testid="stSidebar"] {
                 display: none !important;
             }
@@ -39,7 +54,7 @@ def aplicar_estilos():
                 padding-right: 1rem !important;
             }
 
-            /* Header compacto */
+            /* Encabezado principal */
             .header-card {
                 border: 1px solid #374151;
                 border-radius: 14px;
@@ -86,7 +101,7 @@ def aplicar_estilos():
                 line-height: 1.2;
             }
 
-            /* Caja usuario */
+            /* Información del usuario */
             .user-box {
                 font-size: 18px;
                 color: #e5e7eb;
@@ -128,7 +143,7 @@ def aplicar_estilos():
                 line-height: 1.1 !important;
             }
 
-            /* Responsive */
+            /* Diseño para dispositivos móviles */
             @media (max-width: 768px) {
                 .block-container {
                     max-width: 100% !important;
@@ -187,22 +202,86 @@ def aplicar_estilos():
     )
 
 
+# =========================================================
+# BARRA DE NAVEGACIÓN
+# =========================================================
+
 def navbar():
-    usuario_actual = st.session_state.get("usuario", "Sin usuario")
-    rol_actual = st.session_state.get("rol", "").lower()
+    """
+    Muestra el encabezado y las opciones de navegación según el rol.
+
+    Admin y socio:
+        - Inicio
+        - Registrar
+        - Servicios del día
+        - Cierre de caja
+
+    Operador:
+        - Registrar
+        - Servicios del día
+        - Cierre de caja
+    """
+
+    usuario_actual = (
+        st.session_state
+        .get("usuario", "")
+        .strip()
+        .lower()
+    )
+
+    # Primero intenta obtener el rol guardado.
+    # Si está vacío, utiliza el nombre del usuario como rol.
+    rol_actual = (
+        st.session_state.get("rol")
+        or usuario_actual
+    ).strip().lower()
+
+    # Guardamos nuevamente el rol para mantenerlo disponible.
+    st.session_state.rol = rol_actual
+
+    # Validar que el usuario tenga un rol permitido.
+    roles_validos = ["admin", "socio", "operador"]
+
+    if rol_actual not in roles_validos:
+        st.error(
+            "El usuario no tiene un rol válido. "
+            "Cierra sesión e ingresa nuevamente."
+        )
+
+        if st.button(
+            "Cerrar sesión",
+            use_container_width=True,
+            key="cerrar_sesion_rol_invalido"
+        ):
+            cerrar_sesion()
+
+        st.stop()
 
     logo_base64 = cargar_logo_base64("assets/logo.png")
 
     if logo_base64:
-        logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="header-logo">'
+        logo_html = (
+            f'<img src="data:image/png;base64,{logo_base64}" '
+            f'class="header-logo">'
+        )
     else:
-        logo_html = '<div class="header-logo" style="font-size:42px; display:flex; align-items:center; justify-content:center;">🏍️</div>'
+        logo_html = """
+            <div
+                class="header-logo"
+                style="
+                    font-size: 42px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                "
+            >
+                🏍️
+            </div>
+        """
 
-    # =========================
-    # HEADER SUPERIOR COMPACTO
-    # Logo a la izquierda
-    # Usuario y cerrar sesión a la derecha
-    # =========================
+    # =====================================================
+    # ENCABEZADO SUPERIOR
+    # =====================================================
 
     col_logo, col_usuario = st.columns([4, 1.35])
 
@@ -212,9 +291,15 @@ def navbar():
             <div class="header-card">
                 <div class="header-brand">
                     {logo_html}
+
                     <div class="header-text">
-                        <div class="navbar-title">Moto Space Wash</div>
-                        <div class="navbar-subtitle">Sistema de registro de lavadas</div>
+                        <div class="navbar-title">
+                            Moto Space Wash
+                        </div>
+
+                        <div class="navbar-subtitle">
+                            Sistema de registro de lavadas
+                        </div>
                     </div>
                 </div>
             </div>
@@ -226,18 +311,22 @@ def navbar():
         st.markdown(
             f"""
             <div class="user-box">
-                👤 {usuario_actual}
+                👤 {usuario_actual.capitalize()}
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        if st.button("Cerrar sesión", use_container_width=True):
+        if st.button(
+            "Cerrar sesión",
+            use_container_width=True,
+            key="boton_cerrar_sesion"
+        ):
             cerrar_sesion()
 
-    # =========================
-    # BOTONES DE NAVEGACIÓN
-    # =========================
+    # =====================================================
+    # OPCIONES SEGÚN EL ROL
+    # =====================================================
 
     if rol_actual in ["admin", "socio"]:
         opciones = {
@@ -247,6 +336,13 @@ def navbar():
             "Cierre": "Pagos y Cierre de Caja"
         }
 
+        proporciones_columnas = [
+            1.2,
+            1.8,
+            1.8,
+            2.2
+        ]
+
     else:
         opciones = {
             "Registrar": "Registrar Nuevo Servicio",
@@ -254,22 +350,57 @@ def navbar():
             "Cierre": "Pagos y Cierre de Caja"
         }
 
+        proporciones_columnas = [
+            1.8,
+            1.8,
+            2.2
+        ]
+
+    # =====================================================
+    # DEFINIR VISTA INICIAL
+    # =====================================================
+
     if "vista" not in st.session_state:
         if rol_actual == "operador":
             st.session_state.vista = "Registrar"
         else:
             st.session_state.vista = "Inicio"
 
-    if rol_actual == "operador" and st.session_state.vista == "Inicio":
+    # Si el operador quedó anteriormente en Inicio,
+    # se redirige automáticamente a Registrar.
+    if (
+        rol_actual == "operador"
+        and st.session_state.get("vista") == "Inicio"
+    ):
         st.session_state.vista = "Registrar"
 
-    if rol_actual in ["admin", "socio"]:
-        columnas = st.columns([1.2, 1.8, 1.8, 2.2])
-    else:
-        columnas = st.columns([1.8, 1.8, 2.2])
+    # Si admin o socio tienen una vista inexistente,
+    # se envían nuevamente al Inicio.
+    if (
+        rol_actual in ["admin", "socio"]
+        and st.session_state.get("vista") not in opciones
+    ):
+        st.session_state.vista = "Inicio"
 
-    for col, (clave, etiqueta) in zip(columnas, opciones.items()):
-        with col:
+    # Si el operador tiene una vista que no le corresponde,
+    # se envía a Registrar.
+    if (
+        rol_actual == "operador"
+        and st.session_state.get("vista") not in opciones
+    ):
+        st.session_state.vista = "Registrar"
+
+    # =====================================================
+    # BOTONES DE NAVEGACIÓN
+    # =====================================================
+
+    columnas = st.columns(proporciones_columnas)
+
+    for columna, (clave, etiqueta) in zip(
+        columnas,
+        opciones.items()
+    ):
+        with columna:
             if st.button(
                 etiqueta,
                 use_container_width=True,

@@ -37,8 +37,10 @@ def preparar_dataframe_lavados(df):
     existen valores vacíos o columnas faltantes en la base de datos.
     """
 
-    if df.empty:
-        return df
+    if df is None or df.empty:
+        return pd.DataFrame()
+
+    df = df.copy()
 
     columnas_por_defecto = {
         "id": 0,
@@ -184,11 +186,12 @@ def mostrar_resumen_pagos(df_hoy):
         with st.container(border=True):
             st.markdown("#### 🧾 Estado operativo")
 
-            texto_servicios = (
-                "1 servicio registrado"
-                if total_servicios == 1
-                else f"{total_servicios} servicios registrados"
-            )
+            if total_servicios == 1:
+                texto_servicios = "1 servicio registrado"
+            else:
+                texto_servicios = (
+                    f"{total_servicios} servicios registrados"
+                )
 
             st.markdown(f"### {texto_servicios}")
 
@@ -216,8 +219,6 @@ def mostrar_ultimos_servicios(df_hoy):
         if columna in df_hoy.columns
     ]
 
-    ultimos = df_hoy[columnas_existentes].copy()
-
     if "id" in df_hoy.columns:
         ultimos = (
             df_hoy
@@ -230,12 +231,18 @@ def mostrar_ultimos_servicios(df_hoy):
             .copy()
         )
     else:
-        ultimos = ultimos.tail(8).iloc[::-1].copy()
+        ultimos = (
+            df_hoy[columnas_existentes]
+            .tail(8)
+            .iloc[::-1]
+            .copy()
+        )
 
     if "valor_lavada" in ultimos.columns:
-        ultimos["valor_lavada"] = ultimos[
-            "valor_lavada"
-        ].apply(formato_pesos)
+        ultimos["valor_lavada"] = (
+            ultimos["valor_lavada"]
+            .apply(formato_pesos)
+        )
 
     if "coin" in ultimos.columns:
         ultimos["coin"] = ultimos["coin"].apply(
@@ -282,13 +289,15 @@ def mostrar_resumen_colaboradores(df_hoy):
         .reset_index()
     )
 
-    resumen["total_realizado"] = resumen[
-        "total_realizado"
-    ].apply(formato_pesos)
+    resumen["total_realizado"] = (
+        resumen["total_realizado"]
+        .apply(formato_pesos)
+    )
 
-    resumen["pago_estimado"] = resumen[
-        "pago_estimado"
-    ].apply(formato_pesos)
+    resumen["pago_estimado"] = (
+        resumen["pago_estimado"]
+        .apply(formato_pesos)
+    )
 
     resumen = resumen.rename(
         columns={
@@ -319,6 +328,7 @@ def mostrar_inicio():
     fecha_hoy_visual = fecha_hoy.strftime("%d/%m/%Y")
 
     st.markdown("## Panel de control")
+
     st.caption(
         f"Resumen general de la operación del día - "
         f"{fecha_hoy_visual}"
@@ -353,6 +363,7 @@ def mostrar_inicio():
 
         with st.container(border=True):
             st.markdown("### Estado del día")
+
             st.write(
                 "La operación de hoy todavía no tiene lavadas "
                 "registradas. Cuando se registre el primer servicio, "
@@ -384,20 +395,77 @@ def mostrar_inicio():
 login()
 
 aplicar_estilos()
-navbar()
 
 crear_tabla()
 
-vista = st.session_state.get(
-    "vista",
-    "Inicio"
+navbar()
+
+
+# =========================================================
+# OBTENER USUARIO, ROL Y VISTA
+# =========================================================
+
+usuario_actual = (
+    st.session_state
+    .get("usuario", "")
+    .strip()
+    .lower()
 )
 
-rol_actual = st.session_state.get("rol", "").lower()
+rol_actual = (
+    st.session_state.get("rol")
+    or usuario_actual
+).strip().lower()
 
-if rol_actual == "operador" and vista == "Inicio":
+st.session_state.rol = rol_actual
+
+
+# =========================================================
+# VALIDACIÓN DEL ROL
+# =========================================================
+
+roles_validos = [
+    "admin",
+    "socio",
+    "operador"
+]
+
+if rol_actual not in roles_validos:
+    st.error(
+        "El usuario no tiene un rol válido. "
+        "Cierra sesión e ingresa nuevamente."
+    )
+    st.stop()
+
+
+# =========================================================
+# DEFINIR VISTA INICIAL
+# =========================================================
+
+if "vista" not in st.session_state:
+    if rol_actual == "operador":
+        st.session_state.vista = "Registrar"
+    else:
+        st.session_state.vista = "Inicio"
+
+
+# =========================================================
+# PROTEGER LA VISTA INICIO
+# =========================================================
+
+if (
+    rol_actual == "operador"
+    and st.session_state.get("vista") == "Inicio"
+):
     st.session_state.vista = "Registrar"
     st.rerun()
+
+
+vista = st.session_state.get(
+    "vista",
+    "Registrar" if rol_actual == "operador" else "Inicio"
+)
+
 
 # =========================================================
 # NAVEGACIÓN
@@ -414,19 +482,32 @@ if vista == "Inicio":
 
     mostrar_historial_general()
 
+
 elif vista == "Registrar":
     mostrar_registrar_lavada()
+
 
 elif vista == "Lavadas":
     mostrar_lavadas_del_dia()
 
+
 elif vista == "Cierre":
     mostrar_cierre_del_dia()
 
+
 elif vista == "Historial":
-    st.session_state["vista"] = "Inicio"
+    if rol_actual in ["admin", "socio"]:
+        st.session_state.vista = "Inicio"
+    else:
+        st.session_state.vista = "Registrar"
+
     st.rerun()
 
+
 else:
-    st.session_state["vista"] = "Inicio"
+    if rol_actual in ["admin", "socio"]:
+        st.session_state.vista = "Inicio"
+    else:
+        st.session_state.vista = "Registrar"
+
     st.rerun()
