@@ -360,6 +360,7 @@ def navbar():
             "Inicio": "Inicio",
             "Registrar": "Registrar Nuevo Servicio",
             "Lavadas": "Servicios del Día",
+            "Cierre": "Pagos y Cierre de Caja"
         }
 
         proporciones_columnas = [
@@ -378,7 +379,8 @@ def navbar():
 
         proporciones_columnas = [
             1.8,
-            1.8
+            1.8,
+            2.2
         ]
 
     # =====================================================
