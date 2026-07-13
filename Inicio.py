@@ -96,7 +96,11 @@ def preparar_dataframe_lavados(df):
             .astype(int)
         )
 
-    df["coin"] = df["coin"].fillna(False).astype(bool)
+    df["coin"] = (
+        df["coin"]
+        .fillna(False)
+        .astype(bool)
+    )
 
     return df
 
@@ -175,12 +179,16 @@ def mostrar_resumen_pagos(df_hoy):
     with col_efectivo:
         with st.container(border=True):
             st.markdown("#### 💵 Efectivo")
-            st.markdown(f"### {formato_pesos(total_efectivo)}")
+            st.markdown(
+                f"### {formato_pesos(total_efectivo)}"
+            )
 
     with col_nequi:
         with st.container(border=True):
             st.markdown("#### 📱 Nequi")
-            st.markdown(f"### {formato_pesos(total_nequi)}")
+            st.markdown(
+                f"### {formato_pesos(total_nequi)}"
+            )
 
     with col_estado:
         with st.container(border=True):
@@ -193,79 +201,9 @@ def mostrar_resumen_pagos(df_hoy):
                     f"{total_servicios} servicios registrados"
                 )
 
-            st.markdown(f"### {texto_servicios}")
-
-
-# =========================================================
-# ÚLTIMOS SERVICIOS
-# =========================================================
-
-def mostrar_ultimos_servicios(df_hoy):
-    st.markdown("### Últimos servicios registrados")
-
-    columnas_mostrar = [
-        "hora",
-        "placa",
-        "gamusero",
-        "nombre_cliente",
-        "valor_lavada",
-        "metodo_pago",
-        "coin"
-    ]
-
-    columnas_existentes = [
-        columna
-        for columna in columnas_mostrar
-        if columna in df_hoy.columns
-    ]
-
-    if "id" in df_hoy.columns:
-        ultimos = (
-            df_hoy
-            .sort_values(
-                by="id",
-                ascending=False
+            st.markdown(
+                f"### {texto_servicios}"
             )
-            .head(8)
-            [columnas_existentes]
-            .copy()
-        )
-    else:
-        ultimos = (
-            df_hoy[columnas_existentes]
-            .tail(8)
-            .iloc[::-1]
-            .copy()
-        )
-
-    if "valor_lavada" in ultimos.columns:
-        ultimos["valor_lavada"] = (
-            ultimos["valor_lavada"]
-            .apply(formato_pesos)
-        )
-
-    if "coin" in ultimos.columns:
-        ultimos["coin"] = ultimos["coin"].apply(
-            lambda valor: "Sí" if valor else "No"
-        )
-
-    ultimos = ultimos.rename(
-        columns={
-            "hora": "Hora",
-            "placa": "Placa",
-            "gamusero": "Colaborador",
-            "nombre_cliente": "Cliente",
-            "valor_lavada": "Valor",
-            "metodo_pago": "Método de pago",
-            "coin": "Coin"
-        }
-    )
-
-    st.dataframe(
-        ultimos,
-        use_container_width=True,
-        hide_index=True
-    )
 
 
 # =========================================================
@@ -287,6 +225,10 @@ def mostrar_resumen_colaboradores(df_hoy):
             pago_estimado=("pago_gamusero", "sum")
         )
         .reset_index()
+        .sort_values(
+            by="servicios",
+            ascending=False
+        )
     )
 
     resumen["total_realizado"] = (
@@ -324,8 +266,13 @@ def mostrar_inicio():
         ZoneInfo("America/Bogota")
     ).date()
 
-    fecha_hoy_texto = fecha_hoy.strftime("%Y-%m-%d")
-    fecha_hoy_visual = fecha_hoy.strftime("%d/%m/%Y")
+    fecha_hoy_texto = fecha_hoy.strftime(
+        "%Y-%m-%d"
+    )
+
+    fecha_hoy_visual = fecha_hoy.strftime(
+        "%d/%m/%Y"
+    )
 
     st.markdown("## Panel de control")
 
@@ -367,8 +314,8 @@ def mostrar_inicio():
             st.write(
                 "La operación de hoy todavía no tiene lavadas "
                 "registradas. Cuando se registre el primer servicio, "
-                "aquí aparecerán los totales, los últimos servicios "
-                "y el resumen por colaborador."
+                "aquí aparecerán los totales y el resumen "
+                "por colaborador."
             )
 
         return
@@ -377,15 +324,7 @@ def mostrar_inicio():
 
     st.divider()
 
-    col_izquierda, col_derecha = st.columns(
-        [1.35, 1]
-    )
-
-    with col_izquierda:
-        mostrar_ultimos_servicios(df_hoy)
-
-    with col_derecha:
-        mostrar_resumen_colaboradores(df_hoy)
+    mostrar_resumen_colaboradores(df_hoy)
 
 
 # =========================================================
@@ -450,12 +389,13 @@ if "vista" not in st.session_state:
 
 
 # =========================================================
-# PROTEGER LA VISTA INICIO
+# PROTEGER VISTAS SEGÚN EL ROL
 # =========================================================
 
 if (
     rol_actual == "operador"
-    and st.session_state.get("vista") == "Inicio"
+    and st.session_state.get("vista")
+    in ["Inicio", "Cierre", "Historial"]
 ):
     st.session_state.vista = "Registrar"
     st.rerun()
