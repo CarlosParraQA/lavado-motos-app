@@ -492,6 +492,10 @@ elif vista == "Lavadas":
 
 
 elif vista == "Cierre":
+    if rol_actual not in ["admin", "socio"]:
+        st.session_state.vista = "Registrar"
+        st.rerun()
+
     mostrar_cierre_del_dia()
 
 

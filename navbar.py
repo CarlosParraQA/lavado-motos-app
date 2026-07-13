@@ -342,14 +342,12 @@ def navbar():
     else:
         opciones = {
             "Registrar": "Registrar Nuevo Servicio",
-            "Lavadas": "Servicios del Día",
-            "Cierre": "Pagos y Cierre de Caja"
+            "Lavadas": "Servicios del Día"
         }
 
         proporciones_columnas = [
             1.8,
-            1.8,
-            2.2
+            1.8
         ]
 
     # =====================================================
