@@ -591,11 +591,11 @@ def mostrar_inicio():
         ganancia_final_negocio=ganancia_final_negocio
     )
 
-    col_descarga, col_espacio = st.columns(
-        [1.4, 3]
+    col_izquierda, col_centro, col_derecha = st.columns(
+        [1, 2, 1]
     )
 
-    with col_descarga:
+    with col_centro:
         st.download_button(
             label="📥 Descargar reporte en Excel",
             data=archivo_excel,

@@ -196,6 +196,37 @@ def aplicar_estilos():
                     font-weight: 800 !important;
                 }
             }
+            /* =========================
+   BOTÓN DESCARGAR EXCEL
+========================= */
+
+div.st-key-descargar_historial_excel
+div[data-testid="stDownloadButton"] > button {
+    background-color: #16a34a !important;
+    color: white !important;
+    border: 1px solid #16a34a !important;
+    border-radius: 12px !important;
+    min-height: 56px !important;
+    padding: 12px 24px !important;
+    font-size: 19px !important;
+    font-weight: 900 !important;
+}
+
+div.st-key-descargar_historial_excel
+div[data-testid="stDownloadButton"] > button:hover {
+    background-color: #15803d !important;
+    border-color: #15803d !important;
+    color: white !important;
+    transform: scale(1.02);
+}
+
+div.st-key-descargar_historial_excel
+div[data-testid="stDownloadButton"] > button p,
+div.st-key-descargar_historial_excel
+div[data-testid="stDownloadButton"] > button span {
+    font-size: 19px !important;
+    font-weight: 900 !important;
+}
         </style>
         """,
         unsafe_allow_html=True
