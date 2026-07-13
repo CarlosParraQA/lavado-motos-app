@@ -33,8 +33,7 @@ st.set_page_config(
 
 def obtener_pagos_empleados(fecha_inicio, fecha_fin):
     """
-    Consulta los pagos realizados a empleados dentro
-    del rango de fechas seleccionado.
+    Consulta los pagos realizados dentro del rango de fechas.
     """
 
     try:
@@ -59,8 +58,8 @@ def obtener_pagos_empleados(fecha_inicio, fecha_fin):
 
 def preparar_dataframe_lavados(df):
     """
-    Agrega las columnas faltantes y normaliza los datos
-    para evitar errores al construir el historial.
+    Agrega columnas faltantes y normaliza los datos
+    para evitar errores en la vista y en el Excel.
     """
 
     if df is None or df.empty:
@@ -132,16 +131,290 @@ def preparar_dataframe_lavados(df):
 
 
 # =========================================================
+# NORMALIZAR DATOS DE PAGOS
+# =========================================================
+
+def preparar_dataframe_pagos(df_pagos):
+    """
+    Agrega columnas faltantes y normaliza los pagos.
+    """
+
+    columnas_por_defecto = {
+        "fecha": "",
+        "empleado": "",
+        "rol": "",
+        "cantidad_servicios": 0,
+        "total_realizado": 0,
+        "valor_pagar": 0,
+        "pagado_por": ""
+    }
+
+    if df_pagos is None or df_pagos.empty:
+        return pd.DataFrame(
+            columns=list(columnas_por_defecto.keys())
+        )
+
+    df_pagos = df_pagos.copy()
+
+    for columna, valor_defecto in columnas_por_defecto.items():
+        if columna not in df_pagos.columns:
+            df_pagos[columna] = valor_defecto
+
+    columnas_texto = [
+        "fecha",
+        "empleado",
+        "rol",
+        "pagado_por"
+    ]
+
+    for columna in columnas_texto:
+        df_pagos[columna] = (
+            df_pagos[columna]
+            .fillna("")
+            .astype(str)
+        )
+
+    columnas_numericas = [
+        "cantidad_servicios",
+        "total_realizado",
+        "valor_pagar"
+    ]
+
+    for columna in columnas_numericas:
+        df_pagos[columna] = (
+            pd.to_numeric(
+                df_pagos[columna],
+                errors="coerce"
+            )
+            .fillna(0)
+        )
+
+    return df_pagos
+
+
+# =========================================================
+# GENERAR ARCHIVO EXCEL
+# =========================================================
+
+def generar_excel_historial(
+    df_filtrado,
+    df_pagos,
+    total_vendido,
+    total_pagado_empleados,
+    total_pagado_encargado,
+    total_pagado_general,
+    ganancia_final_negocio
+):
+    """
+    Genera un Excel con tres hojas:
+
+    1. Resumen financiero.
+    2. Pagos realizados.
+    3. Todos los servicios filtrados.
+    """
+
+    buffer = BytesIO()
+
+    # =====================================================
+    # HOJA 1: RESUMEN FINANCIERO
+    # =====================================================
+
+    resumen_financiero = pd.DataFrame(
+        [
+            {
+                "Total vendido": total_vendido,
+                "Pagado a empleados": total_pagado_empleados,
+                "Pagado al encargado": total_pagado_encargado,
+                "Total pagado": total_pagado_general,
+                "Ganancia final del negocio": ganancia_final_negocio
+            }
+        ]
+    )
+
+    # =====================================================
+    # HOJA 2: PAGOS REALIZADOS
+    # =====================================================
+
+    pagos_excel = preparar_dataframe_pagos(df_pagos)
+
+    pagos_excel = pagos_excel[
+        [
+            "fecha",
+            "empleado",
+            "rol",
+            "cantidad_servicios",
+            "total_realizado",
+            "valor_pagar",
+            "pagado_por"
+        ]
+    ].copy()
+
+    pagos_excel = pagos_excel.rename(
+        columns={
+            "fecha": "Fecha",
+            "empleado": "Empleado",
+            "rol": "Rol",
+            "cantidad_servicios": "Servicios",
+            "total_realizado": "Total realizado",
+            "valor_pagar": "Valor pagado",
+            "pagado_por": "Pagado por"
+        }
+    )
+
+    # =====================================================
+    # HOJA 3: SERVICIOS FILTRADOS
+    # =====================================================
+
+    servicios_excel = preparar_dataframe_lavados(
+        df_filtrado
+    )
+
+    servicios_excel = servicios_excel[
+        [
+            "id",
+            "fecha",
+            "hora",
+            "gamusero",
+            "nombre_cliente",
+            "telefono_cliente",
+            "placa",
+            "valor_lavada",
+            "pago_gamusero",
+            "ganancia_negocio",
+            "coin",
+            "metodo_pago",
+            "observaciones"
+        ]
+    ].copy()
+
+    servicios_excel = servicios_excel.sort_values(
+        by=[
+            "fecha",
+            "hora",
+            "id"
+        ],
+        ascending=[
+            False,
+            False,
+            False
+        ]
+    )
+
+    servicios_excel["coin"] = (
+        servicios_excel["coin"]
+        .apply(
+            lambda valor: "Sí" if bool(valor) else "No"
+        )
+    )
+
+    servicios_excel["nombre_cliente"] = (
+        servicios_excel["nombre_cliente"]
+        .fillna("")
+        .replace("", "Sin registrar")
+    )
+
+    servicios_excel["telefono_cliente"] = (
+        servicios_excel["telefono_cliente"]
+        .fillna("")
+        .replace("", "Sin registrar")
+    )
+
+    servicios_excel["metodo_pago"] = (
+        servicios_excel["metodo_pago"]
+        .fillna("Efectivo")
+        .replace("", "Efectivo")
+    )
+
+    servicios_excel = servicios_excel.rename(
+        columns={
+            "id": "Lavada #",
+            "fecha": "Fecha",
+            "hora": "Hora",
+            "gamusero": "Nombre del trabajador",
+            "nombre_cliente": "Cliente",
+            "telefono_cliente": "Teléfono",
+            "placa": "Placa",
+            "valor_lavada": "Valor de la lavada",
+            "pago_gamusero": "Pago del trabajador",
+            "ganancia_negocio": "Ganancia del negocio",
+            "coin": "Coin",
+            "metodo_pago": "Método de pago",
+            "observaciones": "Observaciones"
+        }
+    )
+
+    # =====================================================
+    # CREAR ARCHIVO
+    # =====================================================
+
+    with pd.ExcelWriter(
+        buffer,
+        engine="openpyxl"
+    ) as writer:
+
+        resumen_financiero.to_excel(
+            writer,
+            sheet_name="Resumen financiero",
+            index=False
+        )
+
+        pagos_excel.to_excel(
+            writer,
+            sheet_name="Pagos realizados",
+            index=False
+        )
+
+        servicios_excel.to_excel(
+            writer,
+            sheet_name="Servicios filtrados",
+            index=False
+        )
+
+        # Ajustar ancho de las columnas
+        for hoja in writer.book.worksheets:
+            for columna in hoja.columns:
+                ancho_maximo = 0
+                letra_columna = columna[0].column_letter
+
+                for celda in columna:
+                    contenido = (
+                        ""
+                        if celda.value is None
+                        else str(celda.value)
+                    )
+
+                    ancho_maximo = max(
+                        ancho_maximo,
+                        len(contenido)
+                    )
+
+                hoja.column_dimensions[
+                    letra_columna
+                ].width = min(
+                    ancho_maximo + 2,
+                    45
+                )
+
+    buffer.seek(0)
+
+    return buffer.getvalue()
+
+
+# =========================================================
 # NUEVO INICIO
 # =========================================================
 
 def mostrar_inicio():
     """
-    Muestra el historial, resumen financiero y detalle
-    de lavadas como página principal.
+    Muestra el resumen financiero, pagos realizados
+    y detalle de servicios como página de Inicio.
     """
 
     st.header("Historial general")
+
+    # =====================================================
+    # CONSULTAR LAVADAS
+    # =====================================================
 
     try:
         df = obtener_lavados()
@@ -185,16 +458,26 @@ def mostrar_inicio():
 
     if fecha_inicio > fecha_fin:
         st.error(
-            "La fecha inicial no puede ser mayor que la fecha final."
+            "La fecha inicial no puede ser mayor "
+            "que la fecha final."
         )
         return
 
-    fecha_inicio_texto = fecha_inicio.strftime("%Y-%m-%d")
-    fecha_fin_texto = fecha_fin.strftime("%Y-%m-%d")
+    fecha_inicio_texto = fecha_inicio.strftime(
+        "%Y-%m-%d"
+    )
+
+    fecha_fin_texto = fecha_fin.strftime(
+        "%Y-%m-%d"
+    )
 
     df_filtrado = df.loc[
-        (df["fecha"] >= fecha_inicio_texto)
-        & (df["fecha"] <= fecha_fin_texto)
+        (
+            df["fecha"] >= fecha_inicio_texto
+        )
+        & (
+            df["fecha"] <= fecha_fin_texto
+        )
     ].copy()
 
     if df_filtrado.empty:
@@ -204,16 +487,24 @@ def mostrar_inicio():
         return
 
     # =====================================================
-    # RESUMEN FINANCIERO
+    # CONSULTAR PAGOS
     # =====================================================
-
-    total_vendido = int(
-        df_filtrado["valor_lavada"].sum()
-    )
 
     df_pagos = obtener_pagos_empleados(
         fecha_inicio_texto,
         fecha_fin_texto
+    )
+
+    df_pagos = preparar_dataframe_pagos(
+        df_pagos
+    )
+
+    # =====================================================
+    # CALCULAR RESUMEN FINANCIERO
+    # =====================================================
+
+    total_vendido = int(
+        df_filtrado["valor_lavada"].sum()
     )
 
     if df_pagos.empty:
@@ -222,21 +513,7 @@ def mostrar_inicio():
         total_pagado_general = 0
 
     else:
-        columnas_pagos_default = {
-            "fecha": "",
-            "empleado": "",
-            "rol": "",
-            "cantidad_servicios": 0,
-            "total_realizado": 0,
-            "valor_pagar": 0,
-            "pagado_por": ""
-        }
-
-        for columna, valor_defecto in columnas_pagos_default.items():
-            if columna not in df_pagos.columns:
-                df_pagos[columna] = valor_defecto
-
-        df_pagos["rol"] = (
+        rol_normalizado = (
             df_pagos["rol"]
             .fillna("")
             .astype(str)
@@ -244,32 +521,16 @@ def mostrar_inicio():
             .str.lower()
         )
 
-        df_pagos["valor_pagar"] = (
-            pd.to_numeric(
-                df_pagos["valor_pagar"],
-                errors="coerce"
-            )
-            .fillna(0)
-        )
-
-        df_pagos["total_realizado"] = (
-            pd.to_numeric(
-                df_pagos["total_realizado"],
-                errors="coerce"
-            )
-            .fillna(0)
-        )
-
         total_pagado_empleados = int(
             df_pagos.loc[
-                df_pagos["rol"] == "gamusero",
+                rol_normalizado == "gamusero",
                 "valor_pagar"
             ].sum()
         )
 
         total_pagado_encargado = int(
             df_pagos.loc[
-                df_pagos["rol"] == "encargado",
+                rol_normalizado == "encargado",
                 "valor_pagar"
             ].sum()
         )
@@ -281,6 +542,10 @@ def mostrar_inicio():
     ganancia_final_negocio = (
         total_vendido - total_pagado_general
     )
+
+    # =====================================================
+    # MÉTRICAS FINANCIERAS
+    # =====================================================
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -312,6 +577,46 @@ def mostrar_inicio():
                 formato_pesos(ganancia_final_negocio)
             )
 
+    # =====================================================
+    # BOTÓN DE DESCARGA
+    # =====================================================
+
+    archivo_excel = generar_excel_historial(
+        df_filtrado=df_filtrado,
+        df_pagos=df_pagos,
+        total_vendido=total_vendido,
+        total_pagado_empleados=total_pagado_empleados,
+        total_pagado_encargado=total_pagado_encargado,
+        total_pagado_general=total_pagado_general,
+        ganancia_final_negocio=ganancia_final_negocio
+    )
+
+    col_descarga, col_espacio = st.columns(
+        [1.4, 3]
+    )
+
+    with col_descarga:
+        st.download_button(
+            label="📥 Descargar reporte en Excel",
+            data=archivo_excel,
+            file_name=(
+                f"historial_lavado_motos_"
+                f"{fecha_inicio_texto}_a_"
+                f"{fecha_fin_texto}.xlsx"
+            ),
+            mime=(
+                "application/vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            ),
+            use_container_width=True,
+            key="descargar_historial_excel"
+        )
+
+    st.caption(
+        f"El archivo contiene {len(df_filtrado)} "
+        f"servicio(s) del rango seleccionado."
+    )
+
     st.divider()
 
     # =====================================================
@@ -325,44 +630,39 @@ def mostrar_inicio():
             "No hay pagos registrados en este rango de fechas."
         )
 
-        df_pagos_mostrar = pd.DataFrame()
-
     else:
-        df_pagos_mostrar = df_pagos.copy()
-
-        df_pagos_mostrar["valor_pagar"] = (
-            df_pagos_mostrar["valor_pagar"]
-            .apply(formato_pesos)
-        )
+        df_pagos_mostrar = df_pagos[
+            [
+                "fecha",
+                "empleado",
+                "rol",
+                "cantidad_servicios",
+                "total_realizado",
+                "valor_pagar",
+                "pagado_por"
+            ]
+        ].copy()
 
         df_pagos_mostrar["total_realizado"] = (
             df_pagos_mostrar["total_realizado"]
             .apply(formato_pesos)
         )
 
-        columnas_pagos = [
-            "fecha",
-            "empleado",
-            "rol",
-            "cantidad_servicios",
-            "total_realizado",
-            "valor_pagar",
-            "pagado_por"
-        ]
+        df_pagos_mostrar["valor_pagar"] = (
+            df_pagos_mostrar["valor_pagar"]
+            .apply(formato_pesos)
+        )
 
-        df_pagos_mostrar = (
-            df_pagos_mostrar[columnas_pagos]
-            .rename(
-                columns={
-                    "fecha": "Fecha",
-                    "empleado": "Empleado",
-                    "rol": "Rol",
-                    "cantidad_servicios": "Servicios",
-                    "total_realizado": "Total realizado",
-                    "valor_pagar": "Valor pagado",
-                    "pagado_por": "Pagado por"
-                }
-            )
+        df_pagos_mostrar = df_pagos_mostrar.rename(
+            columns={
+                "fecha": "Fecha",
+                "empleado": "Empleado",
+                "rol": "Rol",
+                "cantidad_servicios": "Servicios",
+                "total_realizado": "Total realizado",
+                "valor_pagar": "Valor pagado",
+                "pagado_por": "Pagado por"
+            }
         )
 
         st.dataframe(
@@ -396,49 +696,60 @@ def mostrar_inicio():
         .apply(formato_pesos)
     )
 
-    columnas_detalle = [
-        "id",
-        "fecha",
-        "hora",
-        "gamusero",
-        "nombre_cliente",
-        "telefono_cliente",
-        "placa",
-        "valor_lavada",
-        "pago_gamusero",
-        "ganancia_negocio",
-        "coin",
-        "metodo_pago",
-        "observaciones"
-    ]
+    df_detalle = df_detalle[
+        [
+            "id",
+            "fecha",
+            "hora",
+            "gamusero",
+            "nombre_cliente",
+            "telefono_cliente",
+            "placa",
+            "valor_lavada",
+            "pago_gamusero",
+            "ganancia_negocio",
+            "coin",
+            "metodo_pago",
+            "observaciones"
+        ]
+    ].copy()
 
-    df_detalle = (
-        df_detalle[columnas_detalle]
-        .sort_values(
-            by=["fecha", "hora", "id"],
-            ascending=[False, False, False]
-        )
-        .rename(
-            columns={
-                "id": "Lavada #",
-                "fecha": "Fecha",
-                "hora": "Hora",
-                "gamusero": "Nombre del trabajador",
-                "nombre_cliente": "Cliente",
-                "telefono_cliente": "Teléfono",
-                "placa": "Placa",
-                "valor_lavada": "Valor",
-                "pago_gamusero": "Pago trabajador",
-                "ganancia_negocio": "Ganancia negocio",
-                "coin": "Coin",
-                "metodo_pago": "Método de pago",
-                "observaciones": "Observaciones"
-            }
-        )
+    df_detalle = df_detalle.sort_values(
+        by=[
+            "fecha",
+            "hora",
+            "id"
+        ],
+        ascending=[
+            False,
+            False,
+            False
+        ]
     )
 
-    df_detalle["Coin"] = df_detalle["Coin"].apply(
-        lambda valor: "Sí" if valor else "No"
+    df_detalle = df_detalle.rename(
+        columns={
+            "id": "Lavada #",
+            "fecha": "Fecha",
+            "hora": "Hora",
+            "gamusero": "Nombre del trabajador",
+            "nombre_cliente": "Cliente",
+            "telefono_cliente": "Teléfono",
+            "placa": "Placa",
+            "valor_lavada": "Valor",
+            "pago_gamusero": "Pago trabajador",
+            "ganancia_negocio": "Ganancia negocio",
+            "coin": "Coin",
+            "metodo_pago": "Método de pago",
+            "observaciones": "Observaciones"
+        }
+    )
+
+    df_detalle["Coin"] = (
+        df_detalle["Coin"]
+        .apply(
+            lambda valor: "Sí" if valor else "No"
+        )
     )
 
     df_detalle["Cliente"] = (
@@ -461,75 +772,6 @@ def mostrar_inicio():
         df_detalle,
         use_container_width=True,
         hide_index=True
-    )
-
-    st.divider()
-
-    # =====================================================
-    # EXPORTAR A EXCEL
-    # =====================================================
-
-    resumen_financiero = pd.DataFrame(
-        [
-            {
-                "Total vendido": total_vendido,
-                "Pagado a empleados": total_pagado_empleados,
-                "Pagado al encargado": total_pagado_encargado,
-                "Total pagado": total_pagado_general,
-                "Ganancia final negocio": ganancia_final_negocio
-            }
-        ]
-    )
-
-    resumen_financiero_mostrar = (
-        resumen_financiero.copy()
-    )
-
-    for columna in resumen_financiero_mostrar.columns:
-        resumen_financiero_mostrar[columna] = (
-            resumen_financiero_mostrar[columna]
-            .apply(formato_pesos)
-        )
-
-    buffer = BytesIO()
-
-    with pd.ExcelWriter(
-        buffer,
-        engine="openpyxl"
-    ) as writer:
-
-        resumen_financiero_mostrar.to_excel(
-            writer,
-            sheet_name="Resumen financiero",
-            index=False
-        )
-
-        if not df_pagos_mostrar.empty:
-            df_pagos_mostrar.to_excel(
-                writer,
-                sheet_name="Pagos realizados",
-                index=False
-            )
-
-        df_detalle.to_excel(
-            writer,
-            sheet_name="Historial detallado",
-            index=False
-        )
-
-    buffer.seek(0)
-
-    st.download_button(
-        label="Descargar historial en Excel",
-        data=buffer,
-        file_name=(
-            f"historial_lavado_motos_"
-            f"{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx"
-        ),
-        mime=(
-            "application/vnd.openxmlformats-officedocument."
-            "spreadsheetml.sheet"
-        )
     )
 
 
@@ -601,11 +843,19 @@ if "vista" not in st.session_state:
 if (
     rol_actual == "operador"
     and st.session_state.get("vista")
-    in ["Inicio", "Cierre", "Historial"]
+    in [
+        "Inicio",
+        "Cierre",
+        "Historial"
+    ]
 ):
     st.session_state.vista = "Registrar"
     st.rerun()
 
+
+# =========================================================
+# OBTENER VISTA ACTUAL
+# =========================================================
 
 vista = st.session_state.get(
     "vista",
@@ -618,7 +868,10 @@ vista = st.session_state.get(
 # =========================================================
 
 if vista == "Inicio":
-    if rol_actual not in ["admin", "socio"]:
+    if rol_actual not in [
+        "admin",
+        "socio"
+    ]:
         st.session_state.vista = "Registrar"
         st.rerun()
 
@@ -634,7 +887,10 @@ elif vista == "Lavadas":
 
 
 elif vista == "Cierre":
-    if rol_actual not in ["admin", "socio"]:
+    if rol_actual not in [
+        "admin",
+        "socio"
+    ]:
         st.session_state.vista = "Registrar"
         st.rerun()
 
@@ -642,9 +898,13 @@ elif vista == "Cierre":
 
 
 elif vista == "Historial":
-    # Ya no existe como vista separada.
-    if rol_actual in ["admin", "socio"]:
+    # Historial ya no existe como vista independiente.
+    if rol_actual in [
+        "admin",
+        "socio"
+    ]:
         st.session_state.vista = "Inicio"
+
     else:
         st.session_state.vista = "Registrar"
 
@@ -652,8 +912,12 @@ elif vista == "Historial":
 
 
 else:
-    if rol_actual in ["admin", "socio"]:
+    if rol_actual in [
+        "admin",
+        "socio"
+    ]:
         st.session_state.vista = "Inicio"
+
     else:
         st.session_state.vista = "Registrar"
 
