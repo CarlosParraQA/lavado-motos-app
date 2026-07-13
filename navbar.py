@@ -288,22 +288,18 @@ def navbar():
     with col_logo:
         st.markdown(
             f"""
-            <div class="header-card">
-                <div class="header-brand">
-                    {logo_html}
-
-                    <div class="header-text">
-                        <div class="navbar-title">
-                            Moto Space Wash
-                        </div>
-
-                        <div class="navbar-subtitle">
-                            Sistema de registro de lavadas
-                        </div>
-                    </div>
+    <div class="header-card">
+        <div class="header-brand">
+            {logo_html}
+            <div class="header-text">
+                <div class="navbar-title">Moto Space Wash</div>
+                <div class="navbar-subtitle">
+                    Sistema de registro de lavadas
                 </div>
             </div>
-            """,
+        </div>
+    </div>
+    """,
             unsafe_allow_html=True
         )
 
