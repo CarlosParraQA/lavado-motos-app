@@ -189,6 +189,8 @@ def aplicar_estilos():
 
 def navbar():
     usuario_actual = st.session_state.get("usuario", "Sin usuario")
+    rol_actual = st.session_state.get("rol", "").lower()
+
     logo_base64 = cargar_logo_base64("assets/logo.png")
 
     if logo_base64:
@@ -237,21 +239,34 @@ def navbar():
     # BOTONES DE NAVEGACIÓN
     # =========================
 
-    opciones = {
-        "Inicio": "Inicio",
-        "Registrar": "Registrar Nuevo Servicio",
-        "Lavadas": "Servicios del Día",
-        "Cierre": "Pagos y Cierre de Caja"
-    }
+    if rol_actual in ["admin", "socio"]:
+        opciones = {
+            "Inicio": "Inicio",
+            "Registrar": "Registrar Nuevo Servicio",
+            "Lavadas": "Servicios del Día",
+            "Cierre": "Pagos y Cierre de Caja"
+        }
+
+    else:
+        opciones = {
+            "Registrar": "Registrar Nuevo Servicio",
+            "Lavadas": "Servicios del Día",
+            "Cierre": "Pagos y Cierre de Caja"
+        }
 
     if "vista" not in st.session_state:
-        st.session_state.vista = "Inicio"
+        if rol_actual == "operador":
+            st.session_state.vista = "Registrar"
+        else:
+            st.session_state.vista = "Inicio"
 
-    col1, col2, col3, col4 = st.columns(
-        [1.2, 1.8, 1.8, 2.2]
-    )
+    if rol_actual == "operador" and st.session_state.vista == "Inicio":
+        st.session_state.vista = "Registrar"
 
-    columnas = [col1, col2, col3, col4]
+    if rol_actual in ["admin", "socio"]:
+        columnas = st.columns([1.2, 1.8, 1.8, 2.2])
+    else:
+        columnas = st.columns([1.8, 1.8, 2.2])
 
     for col, (clave, etiqueta) in zip(columnas, opciones.items()):
         with col:

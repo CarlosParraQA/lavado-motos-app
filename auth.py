@@ -21,9 +21,8 @@ def cargar_sesion_desde_token():
         if token_url == token_guardado:
             st.session_state.logueado = True
             st.session_state.usuario = usuario
+            st.session_state.rol = usuario.lower()
             return True
-
-    return False
 
 
 def procesar_login_empleados(usuario, clave):
@@ -38,6 +37,7 @@ def procesar_login_empleados(usuario, clave):
     if usuario in usuarios and clave == usuarios[usuario]:
         st.session_state.logueado = True
         st.session_state.usuario = usuario
+        st.session_state.rol = usuario.lower()
         st.session_state.logout_manual = False
         st.session_state.mostrar_login_empleados = False
         st.session_state.pantalla_acceso = "inicio"
@@ -235,6 +235,9 @@ def login():
     if "usuario" not in st.session_state:
         st.session_state.usuario = ""
 
+    if "rol" not in st.session_state:
+        st.session_state.rol = ""
+
     if "logout_manual" not in st.session_state:
         st.session_state.logout_manual = False
 
@@ -265,6 +268,8 @@ def cerrar_sesion():
 
     st.session_state.logueado = False
     st.session_state.usuario = ""
+    st.session_state.rol = ""
+    st.session_state.vista = "Inicio"
     st.session_state.logout_manual = True
     st.session_state.pantalla_acceso = "inicio"
     st.session_state.mostrar_login_empleados = False

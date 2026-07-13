@@ -393,12 +393,21 @@ vista = st.session_state.get(
     "Inicio"
 )
 
+rol_actual = st.session_state.get("rol", "").lower()
+
+if rol_actual == "operador" and vista == "Inicio":
+    st.session_state.vista = "Registrar"
+    st.rerun()
 
 # =========================================================
 # NAVEGACIÓN
 # =========================================================
 
 if vista == "Inicio":
+    if rol_actual not in ["admin", "socio"]:
+        st.session_state.vista = "Registrar"
+        st.rerun()
+
     mostrar_inicio()
 
     st.divider()
