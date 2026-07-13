@@ -247,8 +247,6 @@ def mostrar_resumen_lavadas(df_hoy):
         .reset_index(drop=True)
     )
 
-    st.subheader("Resumen de lavadas del día")
-
     # Total general + cada colaborador
     cantidad_tarjetas = 1 + len(resumen_colaboradores)
 
@@ -296,6 +294,8 @@ def mostrar_lavadas_del_dia():
     fecha_visual = datetime.now(
         ZoneInfo("America/Bogota")
     ).strftime("%d/%m/%Y")
+
+    st.header(f"Servicios de {fecha_visual}")
 
     # =====================================================
     # CONSULTAR INFORMACIÓN
