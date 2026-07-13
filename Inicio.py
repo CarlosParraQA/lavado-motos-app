@@ -1,457 +1,354 @@
 import streamlit as st
 import pandas as pd
-
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
-from database import crear_tabla, obtener_lavados
-from auth import login
-from navbar import aplicar_estilos, navbar
+from database import obtener_lavados, supabase
 from utils import formato_pesos
-
-from views.Registrar_Lavada import mostrar_registrar_lavada
-from views.Lavadas_Del_Dia import mostrar_lavadas_del_dia
-from views.Cierre_Del_Dia import mostrar_cierre_del_dia
-from views.Historial_General import mostrar_historial_general
+from io import BytesIO
 
 
-# =========================================================
-# CONFIGURACIÓN DE LA APLICACIÓN
-# =========================================================
+def obtener_pagos_empleados(fecha_inicio, fecha_fin):
+    try:
+        response = (
+            supabase
+            .table("pagos_empleados")
+            .select("*")
+            .gte("fecha", fecha_inicio)
+            .lte("fecha", fecha_fin)
+            .execute()
+        )
 
-st.set_page_config(
-    page_title="Moto Space Wash",
-    page_icon="🏍️",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+        return pd.DataFrame(response.data or [])
 
-
-# =========================================================
-# PREPARACIÓN DE DATOS
-# =========================================================
-
-def preparar_dataframe_lavados(df):
-    """
-    Normaliza las columnas de lavados para evitar errores cuando
-    existen valores vacíos o columnas faltantes en la base de datos.
-    """
-
-    if df is None or df.empty:
+    except Exception:
         return pd.DataFrame()
 
-    df = df.copy()
 
-    columnas_por_defecto = {
-        "id": 0,
-        "fecha": "",
-        "hora": "",
-        "gamusero": "Sin asignar",
-        "placa": "",
-        "nombre_cliente": "",
-        "telefono_cliente": "",
-        "valor_lavada": 0,
-        "pago_gamusero": 0,
-        "ganancia_negocio": 0,
-        "coin": False,
-        "metodo_pago": "Efectivo",
-        "observaciones": ""
-    }
+def mostrar_historial_general():
+    st.header("Historial General del día")
 
-    for columna, valor_defecto in columnas_por_defecto.items():
-        if columna not in df.columns:
-            df[columna] = valor_defecto
+    # Obtener registros
+    df = obtener_lavados()
 
-    columnas_texto = {
-        "fecha": "",
-        "hora": "",
-        "gamusero": "Sin asignar",
-        "placa": "",
-        "nombre_cliente": "",
-        "telefono_cliente": "",
-        "metodo_pago": "Efectivo",
-        "observaciones": ""
-    }
+    if df.empty:
+        st.warning("No hay registros guardados.")
+        return
 
-    for columna, valor_defecto in columnas_texto.items():
-        df[columna] = (
-            df[columna]
-            .fillna(valor_defecto)
-            .astype(str)
+    # =========================
+    # FILTRO POR FECHAS
+    # =========================
+
+    fecha_colombia = datetime.now(ZoneInfo("America/Bogota")).date()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fecha_inicio = st.date_input(
+            "Fecha inicial",
+            value=fecha_colombia,
+            key="historial_fecha_inicio"
         )
 
-    columnas_numericas = [
-        "valor_lavada",
-        "pago_gamusero",
-        "ganancia_negocio"
-    ]
-
-    for columna in columnas_numericas:
-        df[columna] = (
-            pd.to_numeric(
-                df[columna],
-                errors="coerce"
-            )
-            .fillna(0)
-            .astype(int)
+    with col2:
+        fecha_fin = st.date_input(
+            "Fecha final",
+            value=fecha_colombia,
+            key="historial_fecha_fin"
         )
 
-    df["coin"] = (
-        df["coin"]
-        .fillna(False)
-        .astype(bool)
+    fecha_inicio_texto = fecha_inicio.strftime("%Y-%m-%d")
+    fecha_fin_texto = fecha_fin.strftime("%Y-%m-%d")
+
+    # Filtrar por rango de fechas
+    df_filtrado = df[
+        (df["fecha"] >= fecha_inicio_texto) &
+        (df["fecha"] <= fecha_fin_texto)
+    ].copy()
+
+    if df_filtrado.empty:
+        st.warning("No hay registros en ese rango de fechas.")
+        return
+
+    # =========================
+    # VALIDAR COLUMNAS NUEVAS
+    # =========================
+
+    if "coin" not in df_filtrado.columns:
+        df_filtrado["coin"] = False
+
+    if "metodo_pago" not in df_filtrado.columns:
+        df_filtrado["metodo_pago"] = "Efectivo"
+
+    if "nombre_cliente" not in df_filtrado.columns:
+        df_filtrado["nombre_cliente"] = ""
+
+    if "telefono_cliente" not in df_filtrado.columns:
+        df_filtrado["telefono_cliente"] = ""
+
+    df_filtrado["coin"] = df_filtrado["coin"].fillna(False).astype(bool)
+    df_filtrado["metodo_pago"] = df_filtrado["metodo_pago"].fillna("Efectivo")
+    df_filtrado["nombre_cliente"] = df_filtrado["nombre_cliente"].fillna("").astype(str)
+    df_filtrado["telefono_cliente"] = df_filtrado["telefono_cliente"].fillna("").astype(str)
+
+    # =========================
+    # RESUMEN FINANCIERO
+    # =========================
+
+    total_lavado = df_filtrado["valor_lavada"].sum()
+
+    df_pagos = obtener_pagos_empleados(
+        fecha_inicio_texto,
+        fecha_fin_texto
     )
 
-    return df
+    if df_pagos.empty:
+        total_pagado_empleados = 0
+        total_pagado_encargado = 0
+        total_pagado_general = 0
+    else:
+        df_pagos["rol"] = df_pagos["rol"].astype(str)
 
+        total_pagado_empleados = df_pagos[
+            df_pagos["rol"].str.lower() == "gamusero"
+        ]["valor_pagar"].sum()
 
-# =========================================================
-# INICIO SIN REGISTROS
-# =========================================================
+        total_pagado_encargado = df_pagos[
+            df_pagos["rol"].str.lower() == "encargado"
+        ]["valor_pagar"].sum()
 
-def mostrar_inicio_sin_registros():
-    st.info(
-        "Todavía no hay lavadas registradas. Cuando se registre el "
-        "primer servicio, aquí aparecerá el resumen de la operación."
+        total_pagado_general = df_pagos["valor_pagar"].sum()
+
+    ganancia_final_negocio = total_lavado - total_pagado_general
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric(
+        "Total vendido",
+        formato_pesos(total_lavado)
+    )
+
+    col2.metric(
+        "Pagado a empleados",
+        formato_pesos(total_pagado_empleados)
+    )
+
+    col3.metric(
+        "Pagado encargado",
+        formato_pesos(total_pagado_encargado)
+    )
+
+    col4.metric(
+        "Ganancia final negocio",
+        formato_pesos(ganancia_final_negocio)
     )
 
     st.divider()
 
-    st.markdown("### ¿Qué puedes hacer desde este sistema?")
+    # =========================
+    # DETALLE DE PAGOS REALIZADOS
+    # =========================
 
-    col1, col2, col3 = st.columns(3)
+    st.subheader("Pagos realizados")
 
-    with col1:
-        with st.container(border=True):
-            st.markdown("#### 🏍️ Registrar servicios")
-            st.write(
-                "Registra las lavadas realizadas, la placa, el cliente, "
-                "el valor, el método de pago y la entrega de coin."
-            )
+    if df_pagos.empty:
+        st.info("No hay pagos registrados en este rango de fechas.")
+        df_pagos_mostrar = pd.DataFrame()
+    else:
+        df_pagos_mostrar = df_pagos.copy()
 
-    with col2:
-        with st.container(border=True):
-            st.markdown("#### 💰 Control de pagos")
-            st.write(
-                "Calcula automáticamente el pago del personal y la "
-                "ganancia correspondiente al negocio."
-            )
+        df_pagos_mostrar["valor_pagar"] = df_pagos_mostrar["valor_pagar"].apply(formato_pesos)
+        df_pagos_mostrar["total_realizado"] = df_pagos_mostrar["total_realizado"].apply(formato_pesos)
 
-    with col3:
-        with st.container(border=True):
-            st.markdown("#### 📋 Seguimiento general")
-            st.write(
-                "Consulta las lavadas del día, los pagos pendientes, "
-                "el historial general y los reportes disponibles."
-            )
+        columnas_pagos = [
+            "fecha",
+            "empleado",
+            "rol",
+            "cantidad_servicios",
+            "total_realizado",
+            "valor_pagar",
+            "pagado_por"
+        ]
 
+        df_pagos_mostrar = df_pagos_mostrar[columnas_pagos]
 
-# =========================================================
-# RESUMEN DE PAGOS DEL DÍA
-# =========================================================
-
-def mostrar_resumen_pagos(df_hoy):
-    metodo_pago = (
-        df_hoy["metodo_pago"]
-        .fillna("")
-        .str.strip()
-        .str.lower()
-    )
-
-    total_efectivo = int(
-        df_hoy.loc[
-            metodo_pago == "efectivo",
-            "valor_lavada"
-        ].sum()
-    )
-
-    total_nequi = int(
-        df_hoy.loc[
-            metodo_pago == "nequi",
-            "valor_lavada"
-        ].sum()
-    )
-
-    total_servicios = len(df_hoy)
-
-    col_efectivo, col_nequi, col_estado = st.columns(3)
-
-    with col_efectivo:
-        with st.container(border=True):
-            st.markdown("#### 💵 Efectivo")
-            st.markdown(
-                f"### {formato_pesos(total_efectivo)}"
-            )
-
-    with col_nequi:
-        with st.container(border=True):
-            st.markdown("#### 📱 Nequi")
-            st.markdown(
-                f"### {formato_pesos(total_nequi)}"
-            )
-
-    with col_estado:
-        with st.container(border=True):
-            st.markdown("#### 🧾 Estado operativo")
-
-            if total_servicios == 1:
-                texto_servicios = "1 servicio registrado"
-            else:
-                texto_servicios = (
-                    f"{total_servicios} servicios registrados"
-                )
-
-            st.markdown(
-                f"### {texto_servicios}"
-            )
-
-
-# =========================================================
-# RESUMEN POR COLABORADOR
-# =========================================================
-
-def mostrar_resumen_colaboradores(df_hoy):
-    st.markdown("### Resumen por colaborador")
-
-    resumen = (
-        df_hoy
-        .groupby(
-            "gamusero",
-            dropna=False
-        )
-        .agg(
-            servicios=("id", "count"),
-            total_realizado=("valor_lavada", "sum"),
-            pago_estimado=("pago_gamusero", "sum")
-        )
-        .reset_index()
-        .sort_values(
-            by="servicios",
-            ascending=False
-        )
-    )
-
-    resumen["total_realizado"] = (
-        resumen["total_realizado"]
-        .apply(formato_pesos)
-    )
-
-    resumen["pago_estimado"] = (
-        resumen["pago_estimado"]
-        .apply(formato_pesos)
-    )
-
-    resumen = resumen.rename(
-        columns={
-            "gamusero": "Colaborador",
-            "servicios": "Servicios",
+        df_pagos_mostrar = df_pagos_mostrar.rename(columns={
+            "fecha": "Fecha",
+            "empleado": "Empleado",
+            "rol": "Rol",
+            "cantidad_servicios": "Servicios",
             "total_realizado": "Total realizado",
-            "pago_estimado": "Pago estimado"
+            "valor_pagar": "Valor pagado",
+            "pagado_por": "Pagado por",
+        })
+
+        st.dataframe(
+            df_pagos_mostrar,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    resumen_financiero_df = pd.DataFrame([{
+        "Total vendido": total_lavado,
+        "Pagado a empleados": total_pagado_empleados,
+        "Pagado encargado": total_pagado_encargado,
+        "Total pagado": total_pagado_general,
+        "Ganancia final negocio": ganancia_final_negocio
+    }])
+
+    resumen_financiero_mostrar = resumen_financiero_df.copy()
+
+    for columna in resumen_financiero_mostrar.columns:
+        resumen_financiero_mostrar[columna] = resumen_financiero_mostrar[columna].apply(formato_pesos)
+
+    st.divider()
+
+    # =========================
+    # HISTORIAL DETALLADO
+    # =========================
+
+    st.subheader("Detalle de lavadas")
+
+    df_detalle = df_filtrado.copy()
+
+    # Formatear valores monetarios
+    df_detalle["valor_lavada"] = df_detalle["valor_lavada"].apply(formato_pesos)
+    df_detalle["pago_gamusero"] = df_detalle["pago_gamusero"].apply(formato_pesos)
+    df_detalle["ganancia_negocio"] = df_detalle["ganancia_negocio"].apply(formato_pesos)
+
+    # Seleccionar columnas
+    df_detalle = df_detalle[
+        [
+            "id",
+            "fecha",
+            "hora",
+            "gamusero",
+            "nombre_cliente",
+            "telefono_cliente",
+            "placa",
+            "valor_lavada",
+            "pago_gamusero",
+            "ganancia_negocio",
+            "coin",
+            "metodo_pago",
+            "observaciones"
+        ]
+    ]
+
+    # Renombrar columnas
+    df_detalle = df_detalle.rename(columns={
+        "id": "Lavada #",
+        "fecha": "Fecha",
+        "hora": "Hora",
+        "gamusero": "Nombre del Trabajador",
+        "nombre_cliente": "Cliente",
+        "telefono_cliente": "Teléfono",
+        "placa": "Placa",
+        "valor_lavada": "Valor",
+        "pago_gamusero": "40% correspondiente al trabajador",
+        "ganancia_negocio": "60% correspondiente al negocio",
+        "coin": "Coin",
+        "metodo_pago": "Método de pago",
+        "observaciones": "Observaciones"
+    })
+
+    df_detalle["Coin"] = df_detalle["Coin"].apply(lambda x: "Sí" if x else "No")
+    df_detalle["Método de pago"] = df_detalle["Método de pago"].fillna("Efectivo")
+    df_detalle["Cliente"] = df_detalle["Cliente"].replace("", "Sin registrar")
+    df_detalle["Teléfono"] = df_detalle["Teléfono"].replace("", "Sin registrar")
+
+    st.dataframe(
+        df_detalle,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Lavada #": st.column_config.NumberColumn(
+                "Lavada #",
+                width="small"
+            ),
+            "Fecha": st.column_config.TextColumn(
+                "Fecha",
+                width="small"
+            ),
+            "Hora": st.column_config.TextColumn(
+                "Hora",
+                width="small"
+            ),
+            "Nombre del Trabajador": st.column_config.TextColumn(
+                "Nombre del Trabajador",
+                width="medium"
+            ),
+            "Cliente": st.column_config.TextColumn(
+                "Cliente",
+                width="medium"
+            ),
+            "Teléfono": st.column_config.TextColumn(
+                "Teléfono",
+                width="medium"
+            ),
+            "Placa": st.column_config.TextColumn(
+                "Placa",
+                width="small"
+            ),
+            "Valor": st.column_config.TextColumn(
+                "Valor",
+                width="small"
+            ),
+            "40% correspondiente al trabajador": st.column_config.TextColumn(
+                "40% correspondiente al trabajador",
+                width="medium"
+            ),
+            "60% correspondiente al negocio": st.column_config.TextColumn(
+                "60% correspondiente al negocio",
+                width="medium"
+            ),
+            "Coin": st.column_config.TextColumn(
+                "Coin",
+                width="small"
+            ),
+            "Método de pago": st.column_config.TextColumn(
+                "Método de pago",
+                width="small"
+            ),
+            "Observaciones": st.column_config.TextColumn(
+                "Observaciones",
+                width="medium"
+            ),
         }
     )
 
-    st.dataframe(
-        resumen,
-        use_container_width=True,
-        hide_index=True
-    )
-
-
-# =========================================================
-# PANEL PRINCIPAL
-# =========================================================
-
-def mostrar_inicio():
-    fecha_hoy = datetime.now(
-        ZoneInfo("America/Bogota")
-    ).date()
-
-    fecha_hoy_texto = fecha_hoy.strftime(
-        "%Y-%m-%d"
-    )
-
-    fecha_hoy_visual = fecha_hoy.strftime(
-        "%d/%m/%Y"
-    )
-
-    st.markdown("## Panel de control")
-
-    st.caption(
-        f"Resumen general de la operación del día - "
-        f"{fecha_hoy_visual}"
-    )
-
-    try:
-        df = obtener_lavados()
-
-    except Exception as error:
-        st.error(
-            "No se pudo cargar la información de las lavadas."
-        )
-        st.exception(error)
-        return
-
-    if df is None or df.empty:
-        mostrar_inicio_sin_registros()
-        return
-
-    df = preparar_dataframe_lavados(df)
-
-    df_hoy = df.loc[
-        df["fecha"] == fecha_hoy_texto
-    ].copy()
-
     st.divider()
 
-    if df_hoy.empty:
-        st.warning(
-            "Aún no hay servicios registrados para el día de hoy."
+    # =========================
+    # EXPORTAR A EXCEL
+    # =========================
+
+    buffer = BytesIO()
+
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        resumen_financiero_mostrar.to_excel(
+            writer,
+            sheet_name="Resumen financiero",
+            index=False
         )
 
-        with st.container(border=True):
-            st.markdown("### Estado del día")
-
-            st.write(
-                "La operación de hoy todavía no tiene lavadas "
-                "registradas. Cuando se registre el primer servicio, "
-                "aquí aparecerán los totales y el resumen "
-                "por colaborador."
+        if not df_pagos_mostrar.empty:
+            df_pagos_mostrar.to_excel(
+                writer,
+                sheet_name="Pagos realizados",
+                index=False
             )
 
-        return
+        df_detalle.to_excel(
+            writer,
+            sheet_name="Historial detallado",
+            index=False
+        )
 
-    mostrar_resumen_pagos(df_hoy)
+    buffer.seek(0)
 
-    st.divider()
-
-    mostrar_resumen_colaboradores(df_hoy)
-
-
-# =========================================================
-# INICIALIZACIÓN
-# =========================================================
-
-login()
-
-aplicar_estilos()
-
-crear_tabla()
-
-navbar()
-
-
-# =========================================================
-# OBTENER USUARIO, ROL Y VISTA
-# =========================================================
-
-usuario_actual = (
-    st.session_state
-    .get("usuario", "")
-    .strip()
-    .lower()
-)
-
-rol_actual = (
-    st.session_state.get("rol")
-    or usuario_actual
-).strip().lower()
-
-st.session_state.rol = rol_actual
-
-
-# =========================================================
-# VALIDACIÓN DEL ROL
-# =========================================================
-
-roles_validos = [
-    "admin",
-    "socio",
-    "operador"
-]
-
-if rol_actual not in roles_validos:
-    st.error(
-        "El usuario no tiene un rol válido. "
-        "Cierra sesión e ingresa nuevamente."
+    st.download_button(
+        label="Descargar historial en Excel",
+        data=buffer,
+        file_name=f"historial_lavado_motos_{fecha_inicio_texto}_a_{fecha_fin_texto}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    st.stop()
-
-
-# =========================================================
-# DEFINIR VISTA INICIAL
-# =========================================================
-
-if "vista" not in st.session_state:
-    if rol_actual == "operador":
-        st.session_state.vista = "Registrar"
-    else:
-        st.session_state.vista = "Inicio"
-
-
-# =========================================================
-# PROTEGER VISTAS SEGÚN EL ROL
-# =========================================================
-
-if (
-    rol_actual == "operador"
-    and st.session_state.get("vista")
-    in ["Inicio", "Cierre", "Historial"]
-):
-    st.session_state.vista = "Registrar"
-    st.rerun()
-
-
-vista = st.session_state.get(
-    "vista",
-    "Registrar" if rol_actual == "operador" else "Inicio"
-)
-
-
-# =========================================================
-# NAVEGACIÓN
-# =========================================================
-
-if vista == "Inicio":
-    if rol_actual not in ["admin", "socio"]:
-        st.session_state.vista = "Registrar"
-        st.rerun()
-
-    mostrar_inicio()
-
-    st.divider()
-
-    mostrar_historial_general()
-
-
-elif vista == "Registrar":
-    mostrar_registrar_lavada()
-
-
-elif vista == "Lavadas":
-    mostrar_lavadas_del_dia()
-
-
-elif vista == "Cierre":
-    if rol_actual not in ["admin", "socio"]:
-        st.session_state.vista = "Registrar"
-        st.rerun()
-
-    mostrar_cierre_del_dia()
-
-
-elif vista == "Historial":
-    if rol_actual in ["admin", "socio"]:
-        st.session_state.vista = "Inicio"
-    else:
-        st.session_state.vista = "Registrar"
-
-    st.rerun()
-
-
-else:
-    if rol_actual in ["admin", "socio"]:
-        st.session_state.vista = "Inicio"
-    else:
-        st.session_state.vista = "Registrar"
-
-    st.rerun()
