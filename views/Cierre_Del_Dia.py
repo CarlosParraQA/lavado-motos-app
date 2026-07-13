@@ -272,18 +272,6 @@ def mostrar_cierre_del_dia():
                     )
                 )
 
-    total_servicios = 0 if df_fecha.empty else int(df_fecha["id"].count())
-    total_realizado = sum(int(item["total_realizado"]) for item in registros_pago)
-    total_a_pagar = sum(int(item["valor_pagar"]) for item in registros_pago)
-
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("Servicios del día", total_servicios)
-    col2.metric("Total realizado", formato_pesos(total_realizado))
-    col3.metric("Total a pagar", formato_pesos(total_a_pagar))
-
-    st.divider()
-
     st.subheader("Detalle de pago por colaborador")
 
     for registro in registros_pago:
