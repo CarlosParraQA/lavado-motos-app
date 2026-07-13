@@ -297,11 +297,6 @@ def mostrar_lavadas_del_dia():
         ZoneInfo("America/Bogota")
     ).strftime("%d/%m/%Y")
 
-    st.header("Servicios del día")
-    st.caption(
-        f"Lavadas registradas el {fecha_visual}"
-    )
-
     # =====================================================
     # CONSULTAR INFORMACIÓN
     # =====================================================
