@@ -597,7 +597,7 @@ def mostrar_inicio():
 
     with col_centro:
         st.download_button(
-            label="📥 Descargar reporte en Excel",
+            label="Reporte en Excel",
             data=archivo_excel,
             file_name=(
                 f"historial_lavado_motos_"
@@ -611,11 +611,6 @@ def mostrar_inicio():
             use_container_width=True,
             key="descargar_historial_excel"
         )
-
-    st.caption(
-        f"El archivo contiene {len(df_filtrado)} "
-        f"servicio(s) del rango seleccionado."
-    )
 
     st.divider()
 
