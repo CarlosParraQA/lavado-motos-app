@@ -220,8 +220,8 @@ def normalizar_dataframe_lavadas(df):
 
 def mostrar_resumen_lavadas(df_hoy):
     """
-    Muestra el total de lavadas y la cantidad realizada
-    por cada colaborador.
+    Muestra en una sola fila el total de lavadas
+    y la cantidad realizada por cada colaborador.
     """
 
     total_lavadas = len(df_hoy)
@@ -249,27 +249,20 @@ def mostrar_resumen_lavadas(df_hoy):
 
     st.subheader("Resumen de lavadas del día")
 
-    with st.container(border=True):
-        st.metric(
-            label="🏍️ Total de lavadas",
-            value=total_lavadas
-        )
+    # Total general + cada colaborador
+    cantidad_tarjetas = 1 + len(resumen_colaboradores)
 
-    if resumen_colaboradores.empty:
-        return
+    columnas = st.columns(cantidad_tarjetas)
 
-    st.markdown("#### Lavadas por colaborador")
+    # Primera tarjeta: total general
+    with columnas[0]:
+        with st.container(border=True):
+            st.metric(
+                label="🏍️ Total de lavadas",
+                value=total_lavadas
+            )
 
-    cantidad_colaboradores = len(resumen_colaboradores)
-
-    # Se utilizan máximo cuatro columnas por fila.
-    cantidad_columnas = min(
-        cantidad_colaboradores,
-        4
-    )
-
-    columnas = st.columns(cantidad_columnas)
-
+    # Siguientes tarjetas: colaboradores
     for indice, fila in resumen_colaboradores.iterrows():
         colaborador = str(
             fila["gamusero"]
@@ -282,17 +275,12 @@ def mostrar_resumen_lavadas(df_hoy):
             fila["cantidad_lavadas"]
         )
 
-        columna = columnas[
-            indice % cantidad_columnas
-        ]
-
-        with columna:
+        with columnas[indice + 1]:
             with st.container(border=True):
                 st.metric(
                     label=f"👤 {colaborador}",
                     value=cantidad_lavadas
                 )
-
 
 # =========================================================
 # VISTA PRINCIPAL
