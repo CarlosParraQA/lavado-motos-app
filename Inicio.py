@@ -840,7 +840,6 @@ if (
     and st.session_state.get("vista")
     in [
         "Inicio",
-        "Cierre",
         "Historial"
     ]
 ):
@@ -863,10 +862,7 @@ vista = st.session_state.get(
 # =========================================================
 
 if vista == "Inicio":
-    if rol_actual not in [
-        "admin",
-        "socio"
-    ]:
+    if rol_actual not in ["admin", "socio"]:
         st.session_state.vista = "Registrar"
         st.rerun()
 
@@ -882,24 +878,12 @@ elif vista == "Lavadas":
 
 
 elif vista == "Cierre":
-    if rol_actual not in [
-        "admin",
-        "socio"
-    ]:
-        st.session_state.vista = "Registrar"
-        st.rerun()
-
     mostrar_cierre_del_dia()
 
 
 elif vista == "Historial":
-    # Historial ya no existe como vista independiente.
-    if rol_actual in [
-        "admin",
-        "socio"
-    ]:
+    if rol_actual in ["admin", "socio"]:
         st.session_state.vista = "Inicio"
-
     else:
         st.session_state.vista = "Registrar"
 
@@ -907,12 +891,8 @@ elif vista == "Historial":
 
 
 else:
-    if rol_actual in [
-        "admin",
-        "socio"
-    ]:
+    if rol_actual in ["admin", "socio"]:
         st.session_state.vista = "Inicio"
-
     else:
         st.session_state.vista = "Registrar"
 
