@@ -22,7 +22,9 @@ def cargar_logo_base64(ruta_logo="assets/logo.png"):
         return ""
 
     with open(logo_path, "rb") as archivo:
-        return base64.b64encode(archivo.read()).decode("utf-8")
+        return base64.b64encode(
+            archivo.read()
+        ).decode("utf-8")
 
 
 # =========================================================
@@ -135,12 +137,40 @@ def aplicar_estilos():
                 border-color: #6b7280 !important;
             }
 
-            /* Texto interno de los botones */
             div[data-testid="stButton"] > button p,
             div[data-testid="stButton"] > button span {
                 font-size: 18px !important;
                 font-weight: 900 !important;
                 line-height: 1.1 !important;
+            }
+
+            /* Botón descargar Excel */
+            div.st-key-descargar_historial_excel
+            div[data-testid="stDownloadButton"] > button {
+                background-color: #16a34a !important;
+                color: white !important;
+                border: 1px solid #16a34a !important;
+                border-radius: 12px !important;
+                min-height: 56px !important;
+                padding: 12px 24px !important;
+                font-size: 19px !important;
+                font-weight: 900 !important;
+            }
+
+            div.st-key-descargar_historial_excel
+            div[data-testid="stDownloadButton"] > button:hover {
+                background-color: #15803d !important;
+                border-color: #15803d !important;
+                color: white !important;
+                transform: scale(1.02);
+            }
+
+            div.st-key-descargar_historial_excel
+            div[data-testid="stDownloadButton"] > button p,
+            div.st-key-descargar_historial_excel
+            div[data-testid="stDownloadButton"] > button span {
+                font-size: 19px !important;
+                font-weight: 900 !important;
             }
 
             /* Diseño para dispositivos móviles */
@@ -195,38 +225,20 @@ def aplicar_estilos():
                     font-size: 13px !important;
                     font-weight: 800 !important;
                 }
+
+                div.st-key-descargar_historial_excel
+                div[data-testid="stDownloadButton"] > button {
+                    min-height: 48px !important;
+                    padding: 10px 14px !important;
+                }
+
+                div.st-key-descargar_historial_excel
+                div[data-testid="stDownloadButton"] > button p,
+                div.st-key-descargar_historial_excel
+                div[data-testid="stDownloadButton"] > button span {
+                    font-size: 15px !important;
+                }
             }
-            /* =========================
-   BOTÓN DESCARGAR EXCEL
-========================= */
-
-div.st-key-descargar_historial_excel
-div[data-testid="stDownloadButton"] > button {
-    background-color: #16a34a !important;
-    color: white !important;
-    border: 1px solid #16a34a !important;
-    border-radius: 12px !important;
-    min-height: 56px !important;
-    padding: 12px 24px !important;
-    font-size: 19px !important;
-    font-weight: 900 !important;
-}
-
-div.st-key-descargar_historial_excel
-div[data-testid="stDownloadButton"] > button:hover {
-    background-color: #15803d !important;
-    border-color: #15803d !important;
-    color: white !important;
-    transform: scale(1.02);
-}
-
-div.st-key-descargar_historial_excel
-div[data-testid="stDownloadButton"] > button p,
-div.st-key-descargar_historial_excel
-div[data-testid="stDownloadButton"] > button span {
-    font-size: 19px !important;
-    font-weight: 900 !important;
-}
         </style>
         """,
         unsafe_allow_html=True
@@ -239,18 +251,18 @@ div[data-testid="stDownloadButton"] > button span {
 
 def navbar():
     """
-    Muestra el encabezado y las opciones de navegación según el rol.
+    Muestra el encabezado y las opciones según el rol.
 
     Admin y socio:
         - Inicio
         - Registrar
-        - Servicios del día
-        - Cierre de caja
+        - Servicios del Día
+        - Pagos y Cierre de Caja
 
     Operador:
         - Registrar
-        - Servicios del día
-        - Cierre de caja
+        - Servicios del Día
+        - Pagos y Cierre de Caja
     """
 
     usuario_actual = (
@@ -260,18 +272,18 @@ def navbar():
         .lower()
     )
 
-    # Primero intenta obtener el rol guardado.
-    # Si está vacío, utiliza el nombre del usuario como rol.
     rol_actual = (
         st.session_state.get("rol")
         or usuario_actual
     ).strip().lower()
 
-    # Guardamos nuevamente el rol para mantenerlo disponible.
     st.session_state.rol = rol_actual
 
-    # Validar que el usuario tenga un rol permitido.
-    roles_validos = ["admin", "socio", "operador"]
+    roles_validos = [
+        "admin",
+        "socio",
+        "operador"
+    ]
 
     if rol_actual not in roles_validos:
         st.error(
@@ -288,7 +300,9 @@ def navbar():
 
         st.stop()
 
-    logo_base64 = cargar_logo_base64("assets/logo.png")
+    logo_base64 = cargar_logo_base64(
+        "assets/logo.png"
+    )
 
     if logo_base64:
         logo_html = (
@@ -297,50 +311,54 @@ def navbar():
         )
     else:
         logo_html = """
-            <div
-                class="header-logo"
-                style="
-                    font-size: 42px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                "
-            >
-                🏍️
-            </div>
-        """
+<div
+    class="header-logo"
+    style="
+        font-size: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    "
+>
+    🏍️
+</div>
+"""
 
     # =====================================================
     # ENCABEZADO SUPERIOR
     # =====================================================
 
-    col_logo, col_usuario = st.columns([4, 1.35])
+    col_logo, col_usuario = st.columns(
+        [4, 1.35]
+    )
 
     with col_logo:
         st.markdown(
             f"""
-    <div class="header-card">
-        <div class="header-brand">
-            {logo_html}
-            <div class="header-text">
-                <div class="navbar-title">Moto Space Wash</div>
-                <div class="navbar-subtitle">
-                    Sistema de registro de lavadas
-                </div>
+<div class="header-card">
+    <div class="header-brand">
+        {logo_html}
+        <div class="header-text">
+            <div class="navbar-title">
+                Moto Space Wash
+            </div>
+            <div class="navbar-subtitle">
+                Sistema de registro de lavadas
             </div>
         </div>
     </div>
-    """,
+</div>
+""",
             unsafe_allow_html=True
         )
 
     with col_usuario:
         st.markdown(
             f"""
-            <div class="user-box">
-                👤 {usuario_actual.capitalize()}
-            </div>
-            """,
+<div class="user-box">
+    👤 {usuario_actual.capitalize()}
+</div>
+""",
             unsafe_allow_html=True
         )
 
@@ -393,24 +411,22 @@ def navbar():
         else:
             st.session_state.vista = "Inicio"
 
-    # Si el operador quedó anteriormente en Inicio,
-    # se redirige automáticamente a Registrar.
+    # El operador no puede entrar al Inicio.
     if (
         rol_actual == "operador"
         and st.session_state.get("vista") == "Inicio"
     ):
         st.session_state.vista = "Registrar"
 
-    # Si admin o socio tienen una vista inexistente,
-    # se envían nuevamente al Inicio.
+    # Admin y socio vuelven a Inicio si la vista no existe.
     if (
         rol_actual in ["admin", "socio"]
         and st.session_state.get("vista") not in opciones
     ):
         st.session_state.vista = "Inicio"
 
-    # Si el operador tiene una vista que no le corresponde,
-    # se envía a Registrar.
+    # El operador vuelve a Registrar si la vista no existe.
+    # Cierre sí está permitido porque está dentro de opciones.
     if (
         rol_actual == "operador"
         and st.session_state.get("vista") not in opciones
@@ -421,7 +437,9 @@ def navbar():
     # BOTONES DE NAVEGACIÓN
     # =====================================================
 
-    columnas = st.columns(proporciones_columnas)
+    columnas = st.columns(
+        proporciones_columnas
+    )
 
     for columna, (clave, etiqueta) in zip(
         columnas,
