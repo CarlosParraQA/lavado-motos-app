@@ -681,30 +681,39 @@ def mostrar_inicio():
     # MÉTRICAS FINANCIERAS
     # =====================================================
 
-    col1, col2, col3, col4 = st.columns(4)
+    cantidad_servicios = len(df_filtrado)
+
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
+        with st.container(border=True):
+            st.metric(
+                "Cantidad de lavadas",
+                cantidad_servicios
+            )
+
+    with col2:
         with st.container(border=True):
             st.metric(
                 "Total vendido",
                 formato_pesos(total_vendido)
             )
 
-    with col2:
+    with col3:
         with st.container(border=True):
             st.metric(
                 "Pagos realizados",
                 formato_pesos(total_pagado_general)
             )
 
-    with col3:
+    with col4:
         with st.container(border=True):
             st.metric(
                 "Gastos",
                 formato_pesos(total_gastos)
             )
 
-    with col4:
+    with col5:
         with st.container(border=True):
             st.metric(
                 "Ganancia final del negocio",
@@ -803,11 +812,6 @@ def mostrar_inicio():
     st.divider()
 
     cantidad_servicios = len(df_filtrado)
-
-    st.metric(
-        "Cantidad de servicios realizados",
-        cantidad_servicios
-    )
 
     # =====================================================
     # GASTOS REGISTRADOS
