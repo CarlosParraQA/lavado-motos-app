@@ -392,73 +392,76 @@ def mostrar_cierre_del_dia():
                 ""
             )
 
-    with st.container(border=True):
+            # IMPORTANTE:
+            # Todo este bloque debe quedar dentro del for
+            with st.container(border=True):
 
-        col_info, col_valor, col_accion = st.columns(
-            [5, 1.5, 1.5],
-            vertical_alignment="center"
-        )
-
-        with col_info:
-            st.markdown(
-                f"### {concepto}"
-            )
-
-            detalles = []
-
-            if categoria:
-                detalles.append(
-                    f"**Categoría:** {categoria}"
+                col_info, col_valor, col_accion = st.columns(
+                    [5, 1.5, 1.5],
+                    vertical_alignment="center"
                 )
 
-            if metodo_pago:
-                detalles.append(
-                    f"**Método de pago:** {metodo_pago}"
-                )
-
-            if hora:
-                detalles.append(
-                    f"**Hora:** {hora}"
-                )
-
-            st.markdown(" · ".join(detalles))
-
-            if observaciones:
-                st.caption(
-                    f"Observaciones: {observaciones}"
-                )
-
-            if registrado_por:
-                st.caption(
-                    f"Registrado por: {registrado_por}"
-                )
-
-        with col_valor:
-            st.markdown(
-                f"""
-                <div style="
-                    text-align:center;
-                    font-size:26px;
-                    font-weight:700;
-                    padding-top:8px;
-                ">
-                    {formato_pesos(valor)}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        with col_accion:
-            if puede_gestionar_pagos:
-                if st.button(
-                    "Eliminar Gasto",
-                    key=f"eliminar_gasto_{gasto['id']}",
-                    help="Eliminar gasto",
-                    use_container_width=True
-                ):
-                    abrir_confirmacion_eliminar_gasto(
-                        gasto
+                with col_info:
+                    st.markdown(
+                        f"### {concepto}"
                     )
+
+                    detalles = []
+
+                    if categoria:
+                        detalles.append(
+                            f"**Categoría:** {categoria}"
+                        )
+
+                    if metodo_pago:
+                        detalles.append(
+                            f"**Método de pago:** {metodo_pago}"
+                        )
+
+                    if hora:
+                        detalles.append(
+                            f"**Hora:** {hora}"
+                        )
+
+                    st.markdown(
+                        " · ".join(detalles)
+                    )
+
+                    if observaciones:
+                        st.caption(
+                            f"Observaciones: {observaciones}"
+                        )
+
+                    if registrado_por:
+                        st.caption(
+                            f"Registrado por: {registrado_por}"
+                        )
+
+                with col_valor:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            text-align: center;
+                            font-size: 26px;
+                            font-weight: 700;
+                            padding-top: 8px;
+                        ">
+                            {formato_pesos(valor)}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                with col_accion:
+                    if puede_gestionar_pagos:
+                        if st.button(
+                            "🗑️ Eliminar",
+                            key=f"eliminar_gasto_{gasto['id']}",
+                            use_container_width=True
+                        ):
+                            abrir_confirmacion_eliminar_gasto(
+                                gasto
+                            )
 
     st.divider()
 
