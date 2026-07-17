@@ -810,6 +810,79 @@ def mostrar_inicio():
     )
 
     # =====================================================
+    # GASTOS REGISTRADOS
+    # =====================================================
+
+    st.subheader("Gastos registrados")
+
+    if df_gastos.empty:
+        st.info(
+            "No hay gastos registrados en este rango de fechas."
+        )
+
+    else:
+        df_gastos_mostrar = df_gastos.copy()
+
+        columnas_gastos = {
+            "fecha": "",
+            "hora": "",
+            "concepto": "",
+            "categoria": "",
+            "valor": 0,
+            "metodo_pago": "",
+            "observaciones": "",
+            "registrado_por": ""
+        }
+
+        for columna, valor_defecto in columnas_gastos.items():
+            if columna not in df_gastos_mostrar.columns:
+                df_gastos_mostrar[columna] = valor_defecto
+
+        df_gastos_mostrar["valor"] = (
+            pd.to_numeric(
+                df_gastos_mostrar["valor"],
+                errors="coerce"
+            )
+            .fillna(0)
+            .astype(int)
+            .apply(formato_pesos)
+        )
+
+        df_gastos_mostrar = df_gastos_mostrar[
+            [
+                "fecha",
+                "hora",
+                "concepto",
+                "categoria",
+                "valor",
+                "metodo_pago",
+                "observaciones",
+                "registrado_por"
+            ]
+        ].copy()
+
+        df_gastos_mostrar = df_gastos_mostrar.rename(
+            columns={
+                "fecha": "Fecha",
+                "hora": "Hora",
+                "concepto": "Concepto",
+                "categoria": "Categoría",
+                "valor": "Valor",
+                "metodo_pago": "Método de pago",
+                "observaciones": "Observaciones",
+                "registrado_por": "Registrado por"
+            }
+        )
+
+        st.dataframe(
+            df_gastos_mostrar,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    st.divider()
+
+    # =====================================================
     # DETALLE DE LAVADAS
     # =====================================================
 
