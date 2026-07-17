@@ -51,7 +51,30 @@ def obtener_pagos_empleados(fecha_inicio, fecha_fin):
     except Exception:
         return pd.DataFrame()
 
+# =========================================================
+# CONSULTAR GASTOS
+# =========================================================
 
+def obtener_gastos(fecha_inicio, fecha_fin):
+    """
+    Consulta los gastos registrados dentro del rango de fechas.
+    """
+
+    try:
+        response = (
+            supabase
+            .table("gastos")
+            .select("*")
+            .gte("fecha", fecha_inicio)
+            .lte("fecha", fecha_fin)
+            .execute()
+        )
+
+        return pd.DataFrame(response.data or [])
+
+    except Exception:
+        return pd.DataFrame()
+    
 # =========================================================
 # NORMALIZAR DATOS DE LAVADAS
 # =========================================================
@@ -500,6 +523,38 @@ def mostrar_inicio():
     )
 
     # =====================================================
+    # CONSULTAR GASTOS
+    # =====================================================
+
+    df_gastos = obtener_gastos(
+        fecha_inicio_texto,
+        fecha_fin_texto
+    )
+
+    if df_gastos is None or df_gastos.empty:
+        df_gastos = pd.DataFrame()
+        total_gastos = 0
+
+    else:
+        df_gastos = df_gastos.copy()
+
+        if "valor" not in df_gastos.columns:
+            df_gastos["valor"] = 0
+
+        df_gastos["valor"] = (
+            pd.to_numeric(
+                df_gastos["valor"],
+                errors="coerce"
+            )
+            .fillna(0)
+            .astype(int)
+        )
+
+        total_gastos = int(
+            df_gastos["valor"].sum()
+        )
+
+    # =====================================================
     # CALCULAR RESUMEN FINANCIERO
     # =====================================================
 
@@ -540,7 +595,9 @@ def mostrar_inicio():
         )
 
     ganancia_final_negocio = (
-        total_vendido - total_pagado_general
+        total_vendido
+        - total_pagado_general
+        - total_gastos
     )
 
     # =====================================================
@@ -559,15 +616,15 @@ def mostrar_inicio():
     with col2:
         with st.container(border=True):
             st.metric(
-                "Pagado a empleados",
-                formato_pesos(total_pagado_empleados)
+                "Pagos realizados",
+                formato_pesos(total_pagado_general)
             )
 
     with col3:
         with st.container(border=True):
             st.metric(
-                "Pagado al encargado",
-                formato_pesos(total_pagado_encargado)
+                "Gastos",
+                formato_pesos(total_gastos)
             )
 
     with col4:
@@ -576,7 +633,7 @@ def mostrar_inicio():
                 "Ganancia final del negocio",
                 formato_pesos(ganancia_final_negocio)
             )
-
+            
     # =====================================================
     # BOTÓN DE DESCARGA
     # =====================================================
