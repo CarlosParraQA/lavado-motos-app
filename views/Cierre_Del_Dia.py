@@ -451,7 +451,7 @@ def mostrar_cierre_del_dia():
         with col_accion:
             if puede_gestionar_pagos:
                 if st.button(
-                    "🗑️",
+                    "Eliminar Gasto",
                     key=f"eliminar_gasto_{gasto['id']}",
                     help="Eliminar gasto",
                     use_container_width=True
