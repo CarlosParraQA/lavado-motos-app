@@ -208,3 +208,74 @@ def actualizar_valor_lavada(id_registro, nuevo_valor_lavada):
         "pago_gamusero": pago_gamusero,
         "ganancia_negocio": ganancia_negocio
     }).eq("id", int(id_registro)).execute()
+
+
+# =========================
+# GASTOS
+# =========================
+
+def guardar_gasto(
+    fecha,
+    concepto,
+    categoria,
+    valor,
+    metodo_pago,
+    observaciones=""
+):
+    """
+    Registra un gasto en Supabase.
+    """
+
+    usuario_actual = st.session_state.get(
+        "usuario",
+        "Sin usuario"
+    )
+
+    fecha_hora_colombia = datetime.now(
+        ZoneInfo("America/Bogota")
+    )
+
+    data = {
+        "fecha": str(fecha),
+        "hora": fecha_hora_colombia.strftime("%H:%M:%S"),
+        "concepto": concepto.strip(),
+        "categoria": categoria,
+        "valor": int(valor),
+        "metodo_pago": metodo_pago,
+        "observaciones": observaciones.strip(),
+        "registrado_por": usuario_actual
+    }
+
+    supabase.table("gastos").insert(data).execute()
+
+
+def obtener_gastos_fecha(fecha):
+    """
+    Obtiene los gastos registrados para una fecha.
+    """
+
+    try:
+        response = (
+            supabase
+            .table("gastos")
+            .select("*")
+            .eq("fecha", str(fecha))
+            .order("hora", desc=True)
+            .execute()
+        )
+
+        return response.data or []
+
+    except Exception:
+        return []
+
+
+def eliminar_gasto(id_gasto):
+    """
+    Elimina un gasto por su ID.
+    """
+
+    supabase.table("gastos").delete().eq(
+        "id",
+        int(id_gasto)
+    ).execute()

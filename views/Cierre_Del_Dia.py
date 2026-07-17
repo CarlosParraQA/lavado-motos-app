@@ -3,7 +3,13 @@ import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from database import obtener_lavados, supabase
+from database import (
+    obtener_lavados,
+    guardar_gasto,
+    obtener_gastos_fecha,
+    eliminar_gasto,
+    supabase
+)
 from utils import formato_pesos
 
 
@@ -125,6 +131,154 @@ def calcular_porcentaje_desde_pago(total_realizado, valor_pagado):
         return 40
 
 
+def abrir_formulario_gasto(fecha):
+    @st.dialog("Registrar gasto")
+    def formulario_gasto():
+        st.caption(
+            f"El gasto quedará registrado para la fecha {fecha}."
+        )
+
+        concepto = st.text_input(
+            "Concepto del gasto",
+            placeholder="Ejemplo: Compra de jabón"
+        )
+
+        categoria = st.selectbox(
+            "Categoría",
+            [
+                "Insumos",
+                "Mantenimiento",
+                "Servicios",
+                "Transporte",
+                "Alimentación",
+                "Nómina",
+                "Otro"
+            ]
+        )
+
+        valor = st.number_input(
+            "Valor del gasto",
+            min_value=0,
+            step=1000,
+            format="%d"
+        )
+
+        metodo_pago = st.selectbox(
+            "Método de pago",
+            [
+                "Efectivo",
+                "Nequi",
+                "Daviplata",
+                "Transferencia",
+                "Otro"
+            ]
+        )
+
+        observaciones = st.text_area(
+            "Observaciones",
+            placeholder="Información adicional del gasto"
+        )
+
+        col_guardar, col_cancelar = st.columns(2)
+
+        with col_guardar:
+            if st.button(
+                "Guardar gasto",
+                type="primary",
+                use_container_width=True
+            ):
+                if not concepto.strip():
+                    st.warning(
+                        "Debes escribir el concepto del gasto."
+                    )
+                    return
+
+                if valor <= 0:
+                    st.warning(
+                        "El valor debe ser mayor a cero."
+                    )
+                    return
+
+                try:
+                    guardar_gasto(
+                        fecha=fecha,
+                        concepto=concepto,
+                        categoria=categoria,
+                        valor=valor,
+                        metodo_pago=metodo_pago,
+                        observaciones=observaciones
+                    )
+
+                    st.success(
+                        "Gasto registrado correctamente."
+                    )
+
+                    st.rerun()
+
+                except Exception as error:
+                    st.error(
+                        "No se pudo registrar el gasto."
+                    )
+                    st.exception(error)
+
+        with col_cancelar:
+            if st.button(
+                "Cancelar",
+                use_container_width=True
+            ):
+                st.rerun()
+
+    formulario_gasto()
+
+def abrir_confirmacion_eliminar_gasto(gasto):
+    @st.dialog("Eliminar gasto")
+    def confirmar_eliminacion():
+        st.warning(
+            "¿Estás seguro de eliminar este gasto?"
+        )
+
+        st.write(
+            f"**Concepto:** {gasto.get('concepto', '')}"
+        )
+
+        st.write(
+            f"**Valor:** {formato_pesos(int(gasto.get('valor', 0) or 0))}"
+        )
+
+        col_eliminar, col_cancelar = st.columns(2)
+
+        with col_eliminar:
+            if st.button(
+                "Eliminar",
+                type="primary",
+                use_container_width=True
+            ):
+                try:
+                    eliminar_gasto(gasto["id"])
+
+                    st.success(
+                        "Gasto eliminado correctamente."
+                    )
+
+                    st.rerun()
+
+                except Exception as error:
+                    st.error(
+                        "No se pudo eliminar el gasto."
+                    )
+                    st.exception(error)
+
+        with col_cancelar:
+            if st.button(
+                "Cancelar",
+                use_container_width=True
+            ):
+                st.rerun()
+
+    confirmar_eliminacion()
+
+
+
 def mostrar_cierre_del_dia():
     st.header("Pagos a Colaboradores y Cierre de Caja")
     st.caption(
@@ -140,9 +294,154 @@ def mostrar_cierre_del_dia():
 
     fecha_texto = fecha_seleccionada.strftime("%Y-%m-%d")
 
-    usuario_actual = st.session_state.get("usuario", "").strip().lower()
-    usuarios_autorizados_pago = ["admin", "socio"]
-    puede_gestionar_pagos = usuario_actual in usuarios_autorizados_pago
+    usuario_actual = st.session_state.get(
+        "usuario",
+        ""
+    ).strip().lower()
+
+    usuarios_autorizados_pago = [
+        "admin",
+        "socio"
+    ]
+
+    puede_gestionar_pagos = (
+        usuario_actual in usuarios_autorizados_pago
+    )
+
+# =========================
+# MÓDULO DE GASTOS
+# =========================
+
+    st.divider()
+
+    col_titulo_gastos, col_boton_gastos = st.columns(
+        [3, 1]
+    )
+
+    with col_titulo_gastos:
+        st.subheader("Gastos del día")
+        st.caption(
+            "Registra y consulta los gastos correspondientes a la fecha seleccionada."
+        )
+
+    with col_boton_gastos:
+        if puede_gestionar_pagos:
+            if st.button(
+                "➕ Registrar gasto",
+                use_container_width=True
+            ):
+                abrir_formulario_gasto(fecha_texto)
+        else:
+            st.button(
+                "Sin permiso",
+                disabled=True,
+                use_container_width=True,
+                key="sin_permiso_gastos"
+            )
+
+    gastos_fecha = obtener_gastos_fecha(fecha_texto)
+
+    total_gastos = sum(
+        int(gasto.get("valor", 0) or 0)
+        for gasto in gastos_fecha
+    )
+
+    st.metric(
+        "Total de gastos",
+        formato_pesos(total_gastos)
+    )
+
+    if not gastos_fecha:
+        st.info(
+            "No hay gastos registrados para esta fecha."
+        )
+
+    else:
+        for gasto in gastos_fecha:
+            concepto = gasto.get(
+                "concepto",
+                "Sin concepto"
+            )
+
+            categoria = gasto.get(
+                "categoria",
+                "Sin categoría"
+            )
+
+            valor = int(
+                gasto.get("valor", 0) or 0
+            )
+
+            metodo_pago = gasto.get(
+                "metodo_pago",
+                "Sin información"
+            )
+
+            hora = gasto.get(
+                "hora",
+                ""
+            )
+
+            observaciones = gasto.get(
+                "observaciones",
+                ""
+            )
+
+            registrado_por = gasto.get(
+                "registrado_por",
+                ""
+            )
+
+            with st.container(border=True):
+                col_info, col_valor, col_accion = st.columns(
+                    [3, 1.3, 1]
+                )
+
+                with col_info:
+                    st.markdown(
+                        f"#### {concepto}"
+                    )
+
+                    st.write(
+                        f"**Categoría:** {categoria}"
+                    )
+
+                    st.write(
+                        f"**Método de pago:** {metodo_pago}"
+                    )
+
+                    if hora:
+                        st.write(
+                            f"**Hora:** {hora}"
+                        )
+
+                    if registrado_por:
+                        st.caption(
+                            f"Registrado por: {registrado_por}"
+                        )
+
+                    if observaciones:
+                        st.write(
+                            f"**Observaciones:** {observaciones}"
+                        )
+
+                with col_valor:
+                    st.markdown(
+                        f"### {formato_pesos(valor)}"
+                    )
+
+                with col_accion:
+                    if puede_gestionar_pagos:
+                        if st.button(
+                            "Eliminar",
+                            key=f"eliminar_gasto_{gasto['id']}",
+                            use_container_width=True
+                        ):
+                            abrir_confirmacion_eliminar_gasto(
+                                gasto
+                            )
+
+    st.divider()
 
     es_domingo = fecha_seleccionada.weekday() == 6
 
@@ -271,6 +570,54 @@ def mostrar_cierre_del_dia():
                         (porcentaje_individual / 100)
                     )
                 )
+
+    total_vendido = 0
+
+    if not df_fecha.empty:
+        total_vendido = int(
+            df_fecha["valor_lavada"].sum()
+        )
+
+    total_pagos_realizados = sum(
+        int(pago.get("valor_pagar", 0) or 0)
+        for pago in pagos_realizados
+    )
+
+    saldo_caja = (
+        total_vendido
+        - total_pagos_realizados
+        - total_gastos
+    )
+
+    st.subheader("Resumen de caja")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(
+            "Total vendido",
+            formato_pesos(total_vendido)
+        )
+
+    with col2:
+        st.metric(
+            "Pagos realizados",
+            formato_pesos(total_pagos_realizados)
+        )
+
+    with col3:
+        st.metric(
+            "Gastos",
+            formato_pesos(total_gastos)
+        )
+
+    with col4:
+        st.metric(
+            "Saldo de caja",
+            formato_pesos(saldo_caja)
+        )
+
+    st.divider()
 
     st.subheader("Detalle de pago por colaborador")
 
