@@ -802,6 +802,13 @@ def mostrar_inicio():
 
     st.divider()
 
+    cantidad_servicios = len(df_filtrado)
+
+    st.metric(
+        "Cantidad de servicios realizados",
+        cantidad_servicios
+    )
+
     # =====================================================
     # DETALLE DE LAVADAS
     # =====================================================
