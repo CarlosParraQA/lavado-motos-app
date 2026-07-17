@@ -222,12 +222,13 @@ def preparar_dataframe_pagos(df_pagos):
 def generar_excel_historial(
     df_filtrado,
     df_pagos,
+    df_gastos,
     total_vendido,
-    total_pagado_empleados,
-    total_pagado_encargado,
     total_pagado_general,
+    total_gastos,
     ganancia_final_negocio
 ):
+    
     """
     Genera un Excel con tres hojas:
 
@@ -246,9 +247,8 @@ def generar_excel_historial(
         [
             {
                 "Total vendido": total_vendido,
-                "Pagado a empleados": total_pagado_empleados,
-                "Pagado al encargado": total_pagado_encargado,
-                "Total pagado": total_pagado_general,
+                "Pagos realizados": total_pagado_general,
+                "Gastos": total_gastos,
                 "Ganancia final del negocio": ganancia_final_negocio
             }
         ]
@@ -285,7 +285,78 @@ def generar_excel_historial(
     )
 
     # =====================================================
-    # HOJA 3: SERVICIOS FILTRADOS
+    # HOJA 3: GASTOS
+    # =====================================================
+
+    if df_gastos is None or df_gastos.empty:
+        gastos_excel = pd.DataFrame(
+            columns=[
+                "Fecha",
+                "Hora",
+                "Concepto",
+                "Categoría",
+                "Valor",
+                "Método de pago",
+                "Observaciones",
+                "Registrado por"
+            ]
+        )
+
+    else:
+        gastos_excel = df_gastos.copy()
+
+        columnas_gastos = {
+            "fecha": "",
+            "hora": "",
+            "concepto": "",
+            "categoria": "",
+            "valor": 0,
+            "metodo_pago": "",
+            "observaciones": "",
+            "registrado_por": ""
+        }
+
+        for columna, valor_defecto in columnas_gastos.items():
+            if columna not in gastos_excel.columns:
+                gastos_excel[columna] = valor_defecto
+
+        gastos_excel["valor"] = (
+            pd.to_numeric(
+                gastos_excel["valor"],
+                errors="coerce"
+            )
+            .fillna(0)
+            .astype(int)
+        )
+
+        gastos_excel = gastos_excel[
+            [
+                "fecha",
+                "hora",
+                "concepto",
+                "categoria",
+                "valor",
+                "metodo_pago",
+                "observaciones",
+                "registrado_por"
+            ]
+        ].copy()
+
+        gastos_excel = gastos_excel.rename(
+            columns={
+                "fecha": "Fecha",
+                "hora": "Hora",
+                "concepto": "Concepto",
+                "categoria": "Categoría",
+                "valor": "Valor",
+                "metodo_pago": "Método de pago",
+                "observaciones": "Observaciones",
+                "registrado_por": "Registrado por"
+            }
+        )
+
+    # =====================================================
+    # HOJA 4: SERVICIOS FILTRADOS
     # =====================================================
 
     servicios_excel = preparar_dataframe_lavados(
@@ -384,6 +455,12 @@ def generar_excel_historial(
         pagos_excel.to_excel(
             writer,
             sheet_name="Pagos realizados",
+            index=False
+        )
+
+        gastos_excel.to_excel(
+            writer,
+            sheet_name="Gastos",
             index=False
         )
 
@@ -633,7 +710,7 @@ def mostrar_inicio():
                 "Ganancia final del negocio",
                 formato_pesos(ganancia_final_negocio)
             )
-            
+
     # =====================================================
     # BOTÓN DE DESCARGA
     # =====================================================
@@ -641,10 +718,10 @@ def mostrar_inicio():
     archivo_excel = generar_excel_historial(
         df_filtrado=df_filtrado,
         df_pagos=df_pagos,
+        df_gastos=df_gastos,
         total_vendido=total_vendido,
-        total_pagado_empleados=total_pagado_empleados,
-        total_pagado_encargado=total_pagado_encargado,
         total_pagado_general=total_pagado_general,
+        total_gastos=total_gastos,
         ganancia_final_negocio=ganancia_final_negocio
     )
 
