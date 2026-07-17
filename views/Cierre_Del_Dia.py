@@ -611,36 +611,6 @@ def mostrar_cierre_del_dia():
         - total_gastos
     )
 
-    st.subheader("Resumen de caja")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric(
-            "Total vendido",
-            formato_pesos(total_vendido)
-        )
-
-    with col2:
-        st.metric(
-            "Pagos realizados",
-            formato_pesos(total_pagos_realizados)
-        )
-
-    with col3:
-        st.metric(
-            "Gastos",
-            formato_pesos(total_gastos)
-        )
-
-    with col4:
-        st.metric(
-            "Saldo de caja",
-            formato_pesos(saldo_caja)
-        )
-
-    st.divider()
-
     st.subheader("Detalle de pago por colaborador")
 
     for registro in registros_pago:
