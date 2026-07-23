@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from zoneinfo import ZoneInfo
 from io import BytesIO
 
@@ -115,39 +115,87 @@ def obtener_gastos(fecha_inicio, fecha_fin):
 
 def normalizar_fecha(valor):
     """
-    Convierte diferentes formatos de fecha provenientes
-    de Supabase en una fecha válida de Pandas.
+    Convierte fechas provenientes de Supabase a datetime.date.
+
+    Soporta:
+    - 2026-06-08
+    - 08/06/2026
+    - 2026-06-08T15:30:00
+    - 2026-06-09T01:30:00+00:00
     """
 
-    if pd.isna(valor):
-        return pd.NaT
+    if valor is None or pd.isna(valor):
+        return None
+
+    # Si ya es datetime
+    if isinstance(valor, datetime):
+        if valor.tzinfo is not None:
+            return valor.astimezone(
+                ZoneInfo("America/Bogota")
+            ).date()
+
+        return valor.date()
+
+    # Si ya es date
+    if isinstance(valor, date):
+        return valor
 
     texto = str(valor).strip()
 
     if not texto:
-        return pd.NaT
+        return None
 
-    # Formatos ISO:
-    # 2026-06-08
-    # 2026-06-08T14:30:00
-    # 2026-06-08T14:30:00+00:00
+    # Fecha ISO sin hora: 2026-06-08
     if (
-        len(texto) >= 10
+        len(texto) == 10
         and texto[4] == "-"
         and texto[7] == "-"
     ):
-        return pd.to_datetime(
-            texto[:10],
+        fecha_convertida = pd.to_datetime(
+            texto,
             format="%Y-%m-%d",
             errors="coerce"
         )
 
-    # Formatos como 08/06/2026
-    return pd.to_datetime(
-        texto,
-        dayfirst=True,
-        errors="coerce"
+        if pd.isna(fecha_convertida):
+            return None
+
+        return fecha_convertida.date()
+
+    parte_hora = texto[10:] if len(texto) > 10 else ""
+
+    tiene_zona_horaria = (
+        texto.endswith("Z")
+        or "+" in parte_hora
+        or "-" in parte_hora
     )
+
+    # Timestamp con zona horaria
+    if tiene_zona_horaria:
+        fecha_convertida = pd.to_datetime(
+            texto,
+            errors="coerce",
+            utc=True
+        )
+
+        if pd.isna(fecha_convertida):
+            return None
+
+        return fecha_convertida.tz_convert(
+            "America/Bogota"
+        ).date()
+
+    # Otros formatos: 08/06/2026, 08-06-2026, etc.
+    fecha_convertida = pd.to_datetime(
+        texto,
+        errors="coerce",
+        dayfirst=True
+    )
+
+    if pd.isna(fecha_convertida):
+        return None
+
+    return fecha_convertida.date()
 
 def preparar_dataframe_lavados(df):
     """
@@ -180,15 +228,15 @@ def preparar_dataframe_lavados(df):
         if columna not in df.columns:
             df[columna] = valor_defecto
 
-        columnas_texto = {
-            "hora": "",
-            "gamusero": "Sin asignar",
-            "nombre_cliente": "",
-            "telefono_cliente": "",
-            "placa": "",
-            "metodo_pago": "Efectivo",
-            "observaciones": ""
-        }
+    columnas_texto = {
+        "hora": "",
+        "gamusero": "Sin asignar",
+        "nombre_cliente": "",
+        "telefono_cliente": "",
+        "placa": "",
+        "metodo_pago": "Efectivo",
+        "observaciones": ""
+    }
 
     for columna, valor_defecto in columnas_texto.items():
         df[columna] = (
@@ -197,18 +245,9 @@ def preparar_dataframe_lavados(df):
             .astype(str)
         )
 
-    # Normalizar la fecha correctamente
-    df["fecha"] = (
-        df["fecha"]
-        .apply(normalizar_fecha)
-    )
-
-    df["fecha"] = (
-        pd.to_datetime(
-            df["fecha"],
-            errors="coerce"
-        )
-        .dt.normalize()
+    # Convertir la fecha a datetime.date
+    df["fecha"] = df["fecha"].apply(
+        normalizar_fecha
     )
 
     columnas_numericas = [
@@ -654,15 +693,10 @@ def mostrar_inicio():
         "%Y-%m-%d"
     )
 
-    fecha_inicio_dt = pd.Timestamp(fecha_inicio)
-    fecha_fin_dt = pd.Timestamp(fecha_fin)
-
     df_filtrado = df.loc[
-        df["fecha"].between(
-            fecha_inicio_dt,
-            fecha_fin_dt,
-            inclusive="both"
-        )
+        df["fecha"].notna()
+        & (df["fecha"] >= fecha_inicio)
+        & (df["fecha"] <= fecha_fin)
     ].copy()
 
     if df_filtrado.empty:
@@ -676,13 +710,12 @@ def mostrar_inicio():
     # =====================================================
 
     df_pagos = obtener_pagos_empleados(
-        fecha_inicio_texto,
-        fecha_fin_texto
-    )
-
-    df_pagos = obtener_pagos_empleados(
         fecha_inicio,
         fecha_fin
+    )
+
+    df_pagos = preparar_dataframe_pagos(
+        df_pagos
     )
 
     # =====================================================
