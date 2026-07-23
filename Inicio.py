@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from io import BytesIO
 
@@ -33,22 +33,39 @@ st.set_page_config(
 
 def obtener_pagos_empleados(fecha_inicio, fecha_fin):
     """
-    Consulta los pagos realizados dentro del rango de fechas.
+    Consulta todos los pagos dentro del rango seleccionado,
+    incluyendo completamente el día final.
     """
 
     try:
+        fecha_fin_exclusiva = (
+            fecha_fin + timedelta(days=1)
+        )
+
         response = (
             supabase
             .table("pagos_empleados")
             .select("*")
-            .gte("fecha", fecha_inicio)
-            .lte("fecha", fecha_fin)
+            .gte(
+                "fecha",
+                fecha_inicio.isoformat()
+            )
+            .lt(
+                "fecha",
+                fecha_fin_exclusiva.isoformat()
+            )
             .execute()
         )
 
-        return pd.DataFrame(response.data or [])
+        return pd.DataFrame(
+            response.data or []
+        )
 
-    except Exception:
+    except Exception as error:
+        st.error(
+            "No se pudieron consultar los pagos."
+        )
+        st.exception(error)
         return pd.DataFrame()
 
 # =========================================================
@@ -57,27 +74,80 @@ def obtener_pagos_empleados(fecha_inicio, fecha_fin):
 
 def obtener_gastos(fecha_inicio, fecha_fin):
     """
-    Consulta los gastos registrados dentro del rango de fechas.
+    Consulta todos los gastos dentro del rango seleccionado,
+    incluyendo completamente el día final.
     """
 
     try:
+        fecha_fin_exclusiva = (
+            fecha_fin + timedelta(days=1)
+        )
+
         response = (
             supabase
             .table("gastos")
             .select("*")
-            .gte("fecha", fecha_inicio)
-            .lte("fecha", fecha_fin)
+            .gte(
+                "fecha",
+                fecha_inicio.isoformat()
+            )
+            .lt(
+                "fecha",
+                fecha_fin_exclusiva.isoformat()
+            )
             .execute()
         )
 
-        return pd.DataFrame(response.data or [])
+        return pd.DataFrame(
+            response.data or []
+        )
 
-    except Exception:
+    except Exception as error:
+        st.error(
+            "No se pudieron consultar los gastos."
+        )
+        st.exception(error)
         return pd.DataFrame()
     
 # =========================================================
 # NORMALIZAR DATOS DE LAVADAS
 # =========================================================
+
+def normalizar_fecha(valor):
+    """
+    Convierte diferentes formatos de fecha provenientes
+    de Supabase en una fecha válida de Pandas.
+    """
+
+    if pd.isna(valor):
+        return pd.NaT
+
+    texto = str(valor).strip()
+
+    if not texto:
+        return pd.NaT
+
+    # Formatos ISO:
+    # 2026-06-08
+    # 2026-06-08T14:30:00
+    # 2026-06-08T14:30:00+00:00
+    if (
+        len(texto) >= 10
+        and texto[4] == "-"
+        and texto[7] == "-"
+    ):
+        return pd.to_datetime(
+            texto[:10],
+            format="%Y-%m-%d",
+            errors="coerce"
+        )
+
+    # Formatos como 08/06/2026
+    return pd.to_datetime(
+        texto,
+        dayfirst=True,
+        errors="coerce"
+    )
 
 def preparar_dataframe_lavados(df):
     """
@@ -110,16 +180,15 @@ def preparar_dataframe_lavados(df):
         if columna not in df.columns:
             df[columna] = valor_defecto
 
-    columnas_texto = {
-        "fecha": "",
-        "hora": "",
-        "gamusero": "Sin asignar",
-        "nombre_cliente": "",
-        "telefono_cliente": "",
-        "placa": "",
-        "metodo_pago": "Efectivo",
-        "observaciones": ""
-    }
+        columnas_texto = {
+            "hora": "",
+            "gamusero": "Sin asignar",
+            "nombre_cliente": "",
+            "telefono_cliente": "",
+            "placa": "",
+            "metodo_pago": "Efectivo",
+            "observaciones": ""
+        }
 
     for columna, valor_defecto in columnas_texto.items():
         df[columna] = (
@@ -127,6 +196,20 @@ def preparar_dataframe_lavados(df):
             .fillna(valor_defecto)
             .astype(str)
         )
+
+    # Normalizar la fecha correctamente
+    df["fecha"] = (
+        df["fecha"]
+        .apply(normalizar_fecha)
+    )
+
+    df["fecha"] = (
+        pd.to_datetime(
+            df["fecha"],
+            errors="coerce"
+        )
+        .dt.normalize()
+    )
 
     columnas_numericas = [
         "valor_lavada",
@@ -571,12 +654,14 @@ def mostrar_inicio():
         "%Y-%m-%d"
     )
 
+    fecha_inicio_dt = pd.Timestamp(fecha_inicio)
+    fecha_fin_dt = pd.Timestamp(fecha_fin)
+
     df_filtrado = df.loc[
-        (
-            df["fecha"] >= fecha_inicio_texto
-        )
-        & (
-            df["fecha"] <= fecha_fin_texto
+        df["fecha"].between(
+            fecha_inicio_dt,
+            fecha_fin_dt,
+            inclusive="both"
         )
     ].copy()
 
@@ -595,8 +680,9 @@ def mostrar_inicio():
         fecha_fin_texto
     )
 
-    df_pagos = preparar_dataframe_pagos(
-        df_pagos
+    df_pagos = obtener_pagos_empleados(
+        fecha_inicio,
+        fecha_fin
     )
 
     # =====================================================
@@ -604,8 +690,8 @@ def mostrar_inicio():
     # =====================================================
 
     df_gastos = obtener_gastos(
-        fecha_inicio_texto,
-        fecha_fin_texto
+        fecha_inicio,
+        fecha_fin
     )
 
     if df_gastos is None or df_gastos.empty:
