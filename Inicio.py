@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from zoneinfo import ZoneInfo
 from io import BytesIO
 
-from database import crear_tabla, obtener_lavados, supabase
+from database import (crear_tabla,obtener_lavados_por_rango,supabase)
 from auth import login
 from navbar import aplicar_estilos, navbar
 from utils import formato_pesos
@@ -635,26 +635,6 @@ def mostrar_inicio():
     st.header("Historial general")
 
     # =====================================================
-    # CONSULTAR LAVADAS
-    # =====================================================
-
-    try:
-        df = obtener_lavados()
-
-    except Exception as error:
-        st.error(
-            "No se pudo cargar la información de las lavadas."
-        )
-        st.exception(error)
-        return
-
-    if df is None or df.empty:
-        st.warning("No hay registros guardados.")
-        return
-
-    df = preparar_dataframe_lavados(df)
-
-    # =====================================================
     # FILTRO POR FECHAS
     # =====================================================
 
@@ -693,17 +673,34 @@ def mostrar_inicio():
         "%Y-%m-%d"
     )
 
-    df_filtrado = df.loc[
-        df["fecha"].notna()
-        & (df["fecha"] >= fecha_inicio)
-        & (df["fecha"] <= fecha_fin)
-    ].copy()
+    # =====================================================
+    # CONSULTAR LAVADAS DEL RANGO
+    # =====================================================
 
-    if df_filtrado.empty:
+    try:
+        df_filtrado = obtener_lavados_por_rango(
+            fecha_inicio,
+            fecha_fin
+        )
+
+    except Exception as error:
+        st.error(
+            "No se pudo cargar la información "
+            "de las lavadas."
+        )
+        st.exception(error)
+        return
+
+    if df_filtrado is None or df_filtrado.empty:
         st.warning(
-            "No hay registros en el rango de fechas seleccionado."
+            "No hay registros en el rango "
+            "de fechas seleccionado."
         )
         return
+
+    df_filtrado = preparar_dataframe_lavados(
+        df_filtrado
+    )
 
     # =====================================================
     # CONSULTAR PAGOS

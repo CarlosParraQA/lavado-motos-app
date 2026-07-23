@@ -279,3 +279,43 @@ def eliminar_gasto(id_gasto):
         "id",
         int(id_gasto)
     ).execute()
+
+def obtener_lavados_por_rango(fecha_inicio, fecha_fin):
+    """
+    Consulta directamente en Supabase las lavadas del rango
+    seleccionado y pagina los resultados para evitar el
+    límite predeterminado de 1000 registros.
+    """
+
+    fecha_inicio_texto = fecha_inicio.strftime("%Y-%m-%d")
+    fecha_fin_texto = fecha_fin.strftime("%Y-%m-%d")
+
+    registros = []
+
+    tamano_pagina = 1000
+    desde = 0
+
+    while True:
+        hasta = desde + tamano_pagina - 1
+
+        response = (
+            supabase
+            .table("lavados")
+            .select("*")
+            .gte("fecha", fecha_inicio_texto)
+            .lte("fecha", fecha_fin_texto)
+            .order("id", desc=False)
+            .range(desde, hasta)
+            .execute()
+        )
+
+        lote = response.data or []
+
+        registros.extend(lote)
+
+        if len(lote) < tamano_pagina:
+            break
+
+        desde += tamano_pagina
+
+    return pd.DataFrame(registros)
