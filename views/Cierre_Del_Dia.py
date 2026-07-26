@@ -325,19 +325,11 @@ def mostrar_cierre_del_dia():
         )
 
     with col_boton_gastos:
-        if puede_gestionar_pagos:
-            if st.button(
-                "➕ Registrar gasto",
-                use_container_width=True
-            ):
-                abrir_formulario_gasto(fecha_texto)
-        else:
-            st.button(
-                "Sin permiso",
-                disabled=True,
-                use_container_width=True,
-                key="sin_permiso_gastos"
-            )
+        if st.button(
+            "➕ Registrar gasto",
+            use_container_width=True
+        ):
+            abrir_formulario_gasto(fecha_texto)
 
     gastos_fecha = obtener_gastos_fecha(fecha_texto)
 
