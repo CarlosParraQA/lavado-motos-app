@@ -13,7 +13,7 @@ from database import (
 from utils import formato_pesos
 
 
-PAGO_FIJO_OPERADOR = 60000
+PAGO_FIJO_OPERADOR = 70000
 
 
 def obtener_pagos_fecha(fecha):
