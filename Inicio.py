@@ -38,12 +38,12 @@ st.markdown("""
 <style>
 
 /* Ocultar botón inferior de administración de Streamlit */
-a[href="https://share.streamlit.io/user/carlosparraqa"] {
+[data-testid="appCreatorAvatar"] {
     display: none !important;
 }
 
 /* Alternativa para algunas versiones de Streamlit */
-[data-testid="stToolbarActionButton"] {
+[data-testid="appCreatorAvatar"] {
     display: none !important;
 }
 
