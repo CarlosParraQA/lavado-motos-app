@@ -1,4 +1,38 @@
 import streamlit as st
+
+st.markdown("""
+<style>
+
+/* Ocultar menú principal */
+#MainMenu {
+    visibility: hidden;
+}
+
+/* Ocultar footer */
+footer {
+    visibility: hidden;
+}
+
+/* Ocultar botón Deploy */
+.stDeployButton {
+    display: none;
+}
+
+/* Ocultar elementos de GitHub/Fork */
+[data-testid="stToolbar"] {
+    display: none;
+}
+
+[data-testid="stDecoration"] {
+    display: none;
+}
+
+[data-testid="stStatusWidget"] {
+    visibility: hidden;
+}
+
+</style>
+""", unsafe_allow_html=True)
 import pandas as pd
 
 from datetime import datetime, timedelta, date
