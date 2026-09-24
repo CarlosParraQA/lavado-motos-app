@@ -33,6 +33,23 @@ footer {
 
 </style>
 """, unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+
+/* Ocultar botón inferior de administración de Streamlit */
+[data-testid="stManageAppButton"] {
+    display: none !important;
+}
+
+/* Alternativa para algunas versiones de Streamlit */
+[data-testid="stToolbarActionButton"] {
+    display: none !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 import pandas as pd
 
 from datetime import datetime, timedelta, date
