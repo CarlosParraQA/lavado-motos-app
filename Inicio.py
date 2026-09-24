@@ -38,7 +38,7 @@ st.markdown("""
 <style>
 
 /* Ocultar botón inferior de administración de Streamlit */
-[data-testid="stManageAppButton"] {
+a[href="https://share.streamlit.io/user/carlosparraqa"] {
     display: none !important;
 }
 
