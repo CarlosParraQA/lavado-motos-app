@@ -34,6 +34,22 @@ footer {
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+
+/* Ocultar botón inferior de administración de Streamlit */
+[data-testid="stManageAppButton"] {
+    display: none !important;
+}
+
+/* Alternativa para algunas versiones de Streamlit */
+[data-testid="stToolbarActionButton"] {
+    display: none !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 def cargar_sesion_desde_token():
     """
     Recupera sesión desde token en la URL.
