@@ -38,7 +38,7 @@ st.markdown("""
 <style>
 
 /* Ocultar botón inferior de administración de Streamlit */
-[data-testid="stManageAppButton"] {
+[data-testid="appCreatorAvatar"] {
     display: none !important;
 }
 
