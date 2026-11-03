@@ -1,12 +1,12 @@
 # App Registro Lavado de Motos
 
-Aplicación sencilla en Python + Streamlit para registrar lavadas de motos por gamusero.
+Aplicación sencilla en Python + Streamlit para registrar lavadas de motos por lavador.
 
 ## Funcionalidades
 
-- Registrar lavadas por gamusero.
+- Registrar lavadas por lavador.
 - Seleccionar valores de $15.000, $20.000, $30.000 y $35.000.
-- Calcular automáticamente el 40% para el gamusero.
+- Calcular automáticamente el 40% para el lavador.
 - Calcular automáticamente el 60% para el negocio.
 - Ver lavadas del día.
 - Realizar cierre diario.

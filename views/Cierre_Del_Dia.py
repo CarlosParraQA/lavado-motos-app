@@ -71,7 +71,8 @@ def abrir_confirmacion_pago(registro):
         st.warning("Vas a registrar este pago como realizado.")
 
         st.write(f"**Empleado:** {registro['empleado']}")
-        st.write(f"**Rol:** {registro['rol']}")
+        rol_visible = "Lavador" if registro["rol"] == "Gamusero" else registro["rol"]
+        st.write(f"**Rol:** {rol_visible}")
         st.write(f"**Fecha:** {registro['fecha']}")
         st.write(f"**Servicios realizados:** {registro['cantidad_servicios']}")
         st.write(f"**Total realizado:** {formato_pesos(registro['total_realizado'])}")
@@ -626,7 +627,8 @@ def mostrar_cierre_del_dia():
 
             with col_info:
                 st.markdown(f"### {empleado}")
-                st.write(f"**Rol:** {rol}")
+                rol_visible = "Lavador" if rol == "Gamusero" else rol
+                st.write(f"**Rol:** {rol_visible}")
                 st.write(f"**Servicios realizados:** {cantidad_servicios}")
                 st.write(
                     f"**Total realizado:** {formato_pesos(total_realizado_empleado)}"

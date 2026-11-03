@@ -75,7 +75,7 @@ def mostrar_registrar_lavada():
     with col1:
         if operadores:
             gamusero = st.selectbox(
-                "Nombre del Responsable (Gamusero)",
+                "Nombre del responsable (Lavador)",
                 ["Selecciona un operador"] + operadores
             )
         else:
@@ -89,7 +89,7 @@ def mostrar_registrar_lavada():
     with col2:
         valor_lavada = st.selectbox(
             "Valor de la lavada",
-            [6000, 15000, 20000, 30000, 35000, 60000],
+            [8000, 15000, 20000, 30000, 35000, 50000],
             format_func=lambda x: formato_pesos(x)
         )
 
@@ -124,7 +124,7 @@ def mostrar_registrar_lavada():
             else "Sin registrar"
         ],
         "Valor lavada": [formato_pesos(valor_lavada)],
-        "40% gamusero": [formato_pesos(pago_calculado)],
+        "40% Lavador": [formato_pesos(pago_calculado)],
         "60% negocio": [formato_pesos(ganancia_calculada)],
         "Coin": ["Sí" if coin else "No"]
     })
@@ -146,7 +146,7 @@ def mostrar_registrar_lavada():
         telefono_cliente_normalizado = telefono_cliente.strip()
 
         if gamusero == "Selecciona un operador":
-            st.error("Debes seleccionar el gamusero.")
+            st.error("Debes seleccionar el lavador.")
             return
 
         gamusero_normalizado = gamusero.strip().title()
