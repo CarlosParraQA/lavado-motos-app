@@ -195,20 +195,18 @@ def actualizar_operador(id_operador, nuevo_nombre):
     }).eq("id", int(id_operador)).execute()
 
 
-def desactivar_operador(id_operador):
-    """Retira un operador de la lista sin borrar sus registros históricos."""
-
-    supabase.table("operadores").update({
-        "activo": False
-    }).eq("id", int(id_operador)).execute()
-
-
 def reactivar_operador(id_operador):
     """Vuelve a habilitar un operador previamente retirado."""
 
     supabase.table("operadores").update({
         "activo": True
     }).eq("id", int(id_operador)).execute()
+
+
+def eliminar_operador(id_operador):
+    """Elimina definitivamente un operador, sin alterar lavadas históricas."""
+
+    supabase.table("operadores").delete().eq("id", int(id_operador)).execute()
 
 
 def obtener_precios_lavada(solo_activos=True):
@@ -251,8 +249,8 @@ def actualizar_precio_lavada(id_precio, valor):
     }).eq("id", int(id_precio)).execute()
 
 
-def desactivar_precio_lavada(id_precio):
-    """Retira un precio de la lista sin alterar lavadas ya registradas."""
+def eliminar_precio_lavada(id_precio):
+    """Elimina definitivamente un precio, sin alterar lavadas históricas."""
 
     precios_activos = obtener_precios_lavada()
     precio_actual = next(
@@ -267,9 +265,7 @@ def desactivar_precio_lavada(id_precio):
     if precio_actual and len(precios_activos) <= 1:
         raise ValueError("Debe quedar al menos un precio disponible.")
 
-    supabase.table("precios_lavada").update({
-        "activo": False
-    }).eq("id", int(id_precio)).execute()
+    supabase.table("precios_lavada").delete().eq("id", int(id_precio)).execute()
 
 
 def reactivar_precio_lavada(id_precio):

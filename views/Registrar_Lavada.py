@@ -7,12 +7,12 @@ from database import (
     guardar_operador,
     obtener_operadores_admin,
     actualizar_operador,
-    desactivar_operador,
+    eliminar_operador,
     reactivar_operador,
     obtener_precios_lavada,
     guardar_precio_lavada,
     actualizar_precio_lavada,
-    desactivar_precio_lavada,
+    eliminar_precio_lavada,
     reactivar_precio_lavada
 )
 from utils import formato_pesos
@@ -21,7 +21,7 @@ from utils import formato_pesos
 @st.dialog("Administrar lavadores", width="large")
 def mostrar_modal_lavadores():
     st.caption(
-        "Agregar, modificar o retirar lavadores. Los cambios no alteran "
+        "Agregar, modificar o eliminar lavadores. Los cambios no alteran "
         "el historial de lavadas."
     )
 
@@ -94,25 +94,25 @@ def mostrar_modal_lavadores():
             st.error("No se pudo actualizar el lavador.")
             st.exception(error)
 
-    if operador["activo"]:
-        confirmar_desactivacion = st.checkbox(
-            f"Confirmo retirar a {operador['nombre']} de la lista.",
-            key=f"confirmar_desactivar_operador_{id_operador}"
-        )
-        if st.button(
-            "Eliminar lavador de la lista",
-            disabled=not confirmar_desactivacion,
-            key=f"desactivar_operador_{id_operador}",
-            use_container_width=True
-        ):
-            try:
-                desactivar_operador(id_operador)
-                st.success("Lavador retirado de la lista.")
-                st.rerun()
-            except Exception as error:
-                st.error("No se pudo retirar el lavador.")
-                st.exception(error)
-    elif st.button(
+    confirmar_eliminacion = st.checkbox(
+        f"Confirmo eliminar definitivamente a {operador['nombre']} de la base de datos.",
+        key=f"confirmar_eliminar_operador_{id_operador}"
+    )
+    if st.button(
+        "Eliminar lavador definitivamente",
+        disabled=not confirmar_eliminacion,
+        key=f"eliminar_operador_{id_operador}",
+        use_container_width=True
+    ):
+        try:
+            eliminar_operador(id_operador)
+            st.success("Lavador eliminado definitivamente.")
+            st.rerun()
+        except Exception as error:
+            st.error("No se pudo eliminar el lavador.")
+            st.exception(error)
+
+    if not operador["activo"] and st.button(
         "Reactivar lavador",
         key=f"reactivar_operador_{id_operador}",
         use_container_width=True
@@ -129,7 +129,7 @@ def mostrar_modal_lavadores():
 @st.dialog("Administrar precios", width="large")
 def mostrar_modal_precios():
     st.caption(
-        "Agregar, modificar o retirar precios. Los cambios aplican a nuevas "
+        "Agregar, modificar o eliminar precios. Los cambios aplican a nuevas "
         "lavadas y no alteran el historial."
     )
 
@@ -207,25 +207,25 @@ def mostrar_modal_precios():
             st.error("No se pudo actualizar el precio.")
             st.exception(error)
 
-    if precio["activo"]:
-        confirmar_eliminacion_precio = st.checkbox(
-            f"Confirmo retirar el precio {formato_pesos(precio['valor'])}.",
-            key=f"confirmar_desactivar_precio_{id_precio}"
-        )
-        if st.button(
-            "Eliminar precio de la lista",
-            disabled=not confirmar_eliminacion_precio,
-            key=f"desactivar_precio_{id_precio}",
-            use_container_width=True
-        ):
-            try:
-                desactivar_precio_lavada(id_precio)
-                st.success("Precio retirado de la lista.")
-                st.rerun()
-            except Exception as error:
-                st.error("No se pudo retirar el precio.")
-                st.exception(error)
-    elif st.button(
+    confirmar_eliminacion_precio = st.checkbox(
+        f"Confirmo eliminar definitivamente el precio {formato_pesos(precio['valor'])}.",
+        key=f"confirmar_eliminar_precio_{id_precio}"
+    )
+    if st.button(
+        "Eliminar precio definitivamente",
+        disabled=not confirmar_eliminacion_precio,
+        key=f"eliminar_precio_{id_precio}",
+        use_container_width=True
+    ):
+        try:
+            eliminar_precio_lavada(id_precio)
+            st.success("Precio eliminado definitivamente.")
+            st.rerun()
+        except Exception as error:
+            st.error("No se pudo eliminar el precio.")
+            st.exception(error)
+
+    if not precio["activo"] and st.button(
         "Reactivar precio",
         key=f"reactivar_precio_{id_precio}",
         use_container_width=True
