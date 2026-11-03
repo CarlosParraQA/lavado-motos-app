@@ -11,7 +11,8 @@ from database import (
     actualizar_nombre_gamusero,
     actualizar_coin_lavada,
     actualizar_metodo_pago_lavada,
-    actualizar_valor_lavada
+    actualizar_valor_lavada,
+    obtener_precios_lavada
 )
 
 from utils import formato_pesos
@@ -477,14 +478,17 @@ def mostrar_lavadas_del_dia():
         # CAMBIO DE VALOR
         # =================================================
 
+        try:
+            precios_configurados = obtener_precios_lavada()
+        except Exception as error:
+            st.error("No se pudieron cargar los precios configurados.")
+            st.exception(error)
+            precios_configurados = None
+
         opciones_valor = [
-            valor
-            for valor in range(
-                20000,
-                60001,
-                5000
-            )
-            if valor > valor_actual
+            int(precio["valor"])
+            for precio in (precios_configurados or [])
+            if int(precio["valor"]) > valor_actual
         ]
 
         cambiar_valor = False
@@ -502,10 +506,9 @@ def mostrar_lavadas_del_dia():
                     format_func=formato_pesos
                 )
 
-        else:
+        elif precios_configurados is not None:
             st.info(
-                "Esta lavada ya tiene el valor "
-                "máximo permitido."
+                "No hay precios configurados superiores al valor actual."
             )
 
         # =================================================

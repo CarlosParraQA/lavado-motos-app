@@ -5,9 +5,10 @@ Aplicación sencilla en Python + Streamlit para registrar lavadas de motos por l
 ## Funcionalidades
 
 - Registrar lavadas por lavador.
-- Seleccionar valores de $15.000, $20.000, $30.000 y $35.000.
+- Seleccionar y administrar los precios de las lavadas.
 - Calcular automáticamente el 40% para el lavador.
 - Calcular automáticamente el 60% para el negocio.
+- Administrar lavadores desde la cuenta de administrador.
 - Ver lavadas del día.
 - Realizar cierre diario.
 - Exportar cierres e historial a Excel.
@@ -37,6 +38,13 @@ lavado_motos_app/
 ```bash
 pip install -r requirements.txt
 ```
+
+## Configuración de precios en Supabase
+
+Antes de usar la administración de precios, ejecuta el contenido de
+[`supabase_precios_lavada.sql`](./supabase_precios_lavada.sql) en el SQL Editor
+de Supabase. Esto crea la tabla de precios y agrega los valores iniciales:
+$8.000, $15.000, $20.000, $30.000, $35.000 y $50.000.
 
 ## Ejecución
 

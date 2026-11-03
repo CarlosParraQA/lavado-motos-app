@@ -158,6 +158,128 @@ def guardar_operador(nombre_operador):
             "activo": True
         }).execute()
 
+
+def obtener_operadores_admin():
+    """Obtiene operadores activos e inactivos para su administración."""
+
+    response = (
+        supabase
+        .table("operadores")
+        .select("id, nombre, activo")
+        .order("nombre")
+        .execute()
+    )
+
+    return response.data or []
+
+
+def actualizar_operador(id_operador, nuevo_nombre):
+    """Actualiza el nombre de un operador sin alterar el historial de lavadas."""
+
+    nuevo_nombre = nuevo_nombre.strip().title()
+    if not nuevo_nombre:
+        raise ValueError("El nombre del lavador no puede estar vacío.")
+
+    existentes = obtener_operadores_admin()
+    duplicado = any(
+        int(operador["id"]) != int(id_operador)
+        and str(operador.get("nombre") or "").strip().casefold()
+        == nuevo_nombre.casefold()
+        for operador in existentes
+    )
+    if duplicado:
+        raise ValueError("Ya existe un lavador con ese nombre.")
+
+    supabase.table("operadores").update({
+        "nombre": nuevo_nombre
+    }).eq("id", int(id_operador)).execute()
+
+
+def desactivar_operador(id_operador):
+    """Retira un operador de la lista sin borrar sus registros históricos."""
+
+    supabase.table("operadores").update({
+        "activo": False
+    }).eq("id", int(id_operador)).execute()
+
+
+def reactivar_operador(id_operador):
+    """Vuelve a habilitar un operador previamente retirado."""
+
+    supabase.table("operadores").update({
+        "activo": True
+    }).eq("id", int(id_operador)).execute()
+
+
+def obtener_precios_lavada(solo_activos=True):
+    """Obtiene los precios configurados para registrar lavadas."""
+
+    query = (
+        supabase
+        .table("precios_lavada")
+        .select("id, valor, activo")
+    )
+    if solo_activos:
+        query = query.eq("activo", True)
+
+    response = query.order("valor").execute()
+    return response.data or []
+
+
+def guardar_precio_lavada(valor):
+    """Agrega un precio disponible para nuevas lavadas."""
+
+    valor = int(valor)
+    if valor <= 0:
+        raise ValueError("El precio debe ser mayor que cero.")
+
+    supabase.table("precios_lavada").insert({
+        "valor": valor,
+        "activo": True
+    }).execute()
+
+
+def actualizar_precio_lavada(id_precio, valor):
+    """Actualiza un precio configurado."""
+
+    valor = int(valor)
+    if valor <= 0:
+        raise ValueError("El precio debe ser mayor que cero.")
+
+    supabase.table("precios_lavada").update({
+        "valor": valor
+    }).eq("id", int(id_precio)).execute()
+
+
+def desactivar_precio_lavada(id_precio):
+    """Retira un precio de la lista sin alterar lavadas ya registradas."""
+
+    precios_activos = obtener_precios_lavada()
+    precio_actual = next(
+        (
+            precio
+            for precio in precios_activos
+            if int(precio["id"]) == int(id_precio)
+        ),
+        None
+    )
+
+    if precio_actual and len(precios_activos) <= 1:
+        raise ValueError("Debe quedar al menos un precio disponible.")
+
+    supabase.table("precios_lavada").update({
+        "activo": False
+    }).eq("id", int(id_precio)).execute()
+
+
+def reactivar_precio_lavada(id_precio):
+    """Vuelve a habilitar un precio previamente retirado."""
+
+    supabase.table("precios_lavada").update({
+        "activo": True
+    }).eq("id", int(id_precio)).execute()
+
+
 # =========================
 # ELIMINAR REGISTRO
 # =========================
