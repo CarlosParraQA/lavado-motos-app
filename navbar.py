@@ -35,20 +35,41 @@ def aplicar_estilos():
     st.markdown(
         """
         <style>
-            /* Ocultar sidebar y encabezado nativo de Streamlit */
+            :root {
+                --moto-bg: #101113;
+                --moto-surface: #1b1d21;
+                --moto-surface-raised: #24272c;
+                --moto-border: #383c43;
+                --moto-text: #f5f5f4;
+                --moto-muted: #aaa49d;
+                --moto-orange: #f15a24;
+                --moto-orange-hover: #ff7338;
+                --moto-yellow: #ffc247;
+                --moto-success: #45b87a;
+                --moto-danger: #ef6a5b;
+            }
+
+            html, body, [data-testid="stAppViewContainer"], .stApp {
+                background-color: var(--moto-bg) !important;
+                color: var(--moto-text) !important;
+            }
+
+            [data-testid="stMain"] > div {
+                background:
+                    radial-gradient(ellipse at 50% -25%, rgba(241, 90, 36, 0.09), transparent 55%),
+                    var(--moto-bg);
+            }
+
             [data-testid="stSidebar"] {
                 display: none !important;
             }
-
             [data-testid="collapsedControl"] {
                 display: none !important;
             }
-
             header[data-testid="stHeader"] {
                 display: none !important;
             }
 
-            /* Contenedor principal */
             .block-container {
                 max-width: 96% !important;
                 padding-top: 1rem !important;
@@ -56,13 +77,39 @@ def aplicar_estilos():
                 padding-right: 1rem !important;
             }
 
-            /* Encabezado principal */
+            [data-testid="stMarkdown"],
+            [data-testid="stText"],
+            [data-testid="stCaption"],
+            [data-testid="stWidgetLabel"],
+            [data-testid="stMarkdownContainer"] {
+                color: var(--moto-text);
+            }
+
+            h1, h2, h3, h4, h5, h6,
+            [data-testid="stHeading"] {
+                color: var(--moto-text) !important;
+                letter-spacing: -0.02em;
+            }
+
+            [data-testid="stCaption"],
+            [data-testid="stCaptionContainer"] {
+                color: var(--moto-muted) !important;
+            }
+
+            a, [data-testid="stMarkdownContainer"] a {
+                color: var(--moto-orange-hover) !important;
+            }
+
+            hr {
+                border-color: var(--moto-border) !important;
+            }
+
             .header-card {
-                border: 1px solid #374151;
-                border-radius: 14px;
+                border: 1px solid var(--moto-border);
+                border-radius: 16px;
                 padding: 10px 14px;
                 margin-bottom: 8px;
-                background-color: transparent;
+                background: linear-gradient(110deg, rgba(241, 90, 36, 0.08), var(--moto-surface) 38%);
                 min-height: 88px;
                 display: flex;
                 align-items: center;
@@ -91,22 +138,21 @@ def aplicar_estilos():
             .navbar-title {
                 font-size: 30px;
                 font-weight: 800;
-                color: white;
+                color: var(--moto-text);
                 margin: 0;
                 line-height: 1.1;
             }
 
             .navbar-subtitle {
                 font-size: 16px;
-                color: #9ca3af;
+                color: var(--moto-muted);
                 margin-top: 3px;
                 line-height: 1.2;
             }
 
-            /* Información del usuario */
             .user-box {
                 font-size: 18px;
-                color: #e5e7eb;
+                color: var(--moto-text);
                 font-weight: 800;
                 text-align: center;
                 min-height: 42px;
@@ -115,65 +161,195 @@ def aplicar_estilos():
                 justify-content: center;
                 margin-bottom: 6px;
                 white-space: nowrap;
-                border: 1px solid #374151;
+                border: 1px solid var(--moto-border);
                 border-radius: 12px;
                 padding: 8px 12px;
-                background-color: transparent;
+                background-color: var(--moto-surface);
             }
 
-            /* Botones generales */
-            div[data-testid="stButton"] > button {
-                background-color: #374151 !important;
-                color: white !important;
+            div[data-testid="stButton"] > button,
+            div[data-testid="stFormSubmitButton"] > button,
+            div[data-testid="stDownloadButton"] > button {
+                background: var(--moto-surface-raised) !important;
+                color: var(--moto-text) !important;
                 border-radius: 12px !important;
-                border: 1px solid #374151 !important;
-                min-height: 54px !important;
-                padding: 12px 18px !important;
+                border: 1px solid var(--moto-border) !important;
+                min-height: 46px !important;
+                padding: 10px 16px !important;
                 width: 100% !important;
+                box-shadow: none !important;
+                transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease !important;
             }
 
-            div[data-testid="stButton"] > button:hover {
-                background-color: #4b5563 !important;
-                border-color: #6b7280 !important;
+            div[data-testid="stButton"] > button:hover,
+            div[data-testid="stFormSubmitButton"] > button:hover,
+            div[data-testid="stDownloadButton"] > button:hover {
+                background: var(--moto-surface) !important;
+                border-color: var(--moto-orange) !important;
+                color: var(--moto-text) !important;
+                transform: translateY(-1px);
+            }
+
+            div[data-testid="stButton"] > button[kind="primary"],
+            div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
+                background: var(--moto-orange) !important;
+                border-color: var(--moto-orange) !important;
+                color: #171310 !important;
+            }
+
+            div[data-testid="stButton"] > button[kind="primary"]:hover,
+            div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
+                background: var(--moto-orange-hover) !important;
+                border-color: var(--moto-orange-hover) !important;
+                color: #171310 !important;
             }
 
             div[data-testid="stButton"] > button p,
-            div[data-testid="stButton"] > button span {
-                font-size: 18px !important;
-                font-weight: 900 !important;
+            div[data-testid="stButton"] > button span,
+            div[data-testid="stFormSubmitButton"] > button p,
+            div[data-testid="stDownloadButton"] > button p {
+                font-size: 15px !important;
+                font-weight: 700 !important;
                 line-height: 1.1 !important;
             }
 
-            /* Botón descargar Excel */
-            div.st-key-descargar_historial_excel
-            div[data-testid="stDownloadButton"] > button {
-                background-color: #16a34a !important;
-                color: white !important;
-                border: 1px solid #16a34a !important;
+            input, textarea,
+            [data-baseweb="input"] > div,
+            [data-baseweb="textarea"],
+            [data-baseweb="select"] > div,
+            [data-baseweb="base-input"] {
+                background-color: var(--moto-surface) !important;
+                color: var(--moto-text) !important;
+                border-color: var(--moto-border) !important;
+                border-radius: 10px !important;
+            }
+
+            input::placeholder, textarea::placeholder {
+                color: var(--moto-muted) !important;
+            }
+
+            input:focus, textarea:focus,
+            [data-baseweb="input"]:focus-within,
+            [data-baseweb="textarea"]:focus-within,
+            [data-baseweb="select"]:focus-within {
+                border-color: var(--moto-orange) !important;
+                box-shadow: 0 0 0 1px var(--moto-orange) !important;
+            }
+
+            [data-baseweb="popover"],
+            [data-baseweb="menu"],
+            [role="listbox"] {
+                background-color: var(--moto-surface-raised) !important;
+                color: var(--moto-text) !important;
+                border: 1px solid var(--moto-border) !important;
+            }
+
+            [role="option"]:hover,
+            [role="option"][aria-selected="true"] {
+                background-color: rgba(241, 90, 36, 0.2) !important;
+            }
+
+            [data-testid="stVerticalBlockBorderWrapper"] > div {
+                border-color: var(--moto-border) !important;
+                border-radius: 14px !important;
+                background-color: rgba(27, 29, 33, 0.72);
+            }
+
+            [data-testid="stExpander"] {
+                background-color: var(--moto-surface);
+                border: 1px solid var(--moto-border) !important;
                 border-radius: 12px !important;
-                min-height: 56px !important;
-                padding: 12px 24px !important;
-                font-size: 19px !important;
-                font-weight: 900 !important;
             }
 
-            div.st-key-descargar_historial_excel
-            div[data-testid="stDownloadButton"] > button:hover {
-                background-color: #15803d !important;
-                border-color: #15803d !important;
-                color: white !important;
-                transform: scale(1.02);
+            [data-testid="stExpander"] summary:hover {
+                color: var(--moto-orange-hover) !important;
             }
 
-            div.st-key-descargar_historial_excel
-            div[data-testid="stDownloadButton"] > button p,
-            div.st-key-descargar_historial_excel
-            div[data-testid="stDownloadButton"] > button span {
-                font-size: 19px !important;
-                font-weight: 900 !important;
+            [data-baseweb="tab-list"] {
+                gap: 8px;
+                border-bottom: 1px solid var(--moto-border);
             }
 
-            /* Diseño para dispositivos móviles */
+            [data-baseweb="tab"] {
+                color: var(--moto-muted) !important;
+            }
+
+            [data-baseweb="tab"][aria-selected="true"] {
+                color: var(--moto-orange-hover) !important;
+                border-bottom-color: var(--moto-orange) !important;
+            }
+
+            [data-testid="stDialog"] {
+                background-color: var(--moto-surface) !important;
+                border: 1px solid var(--moto-border) !important;
+                border-radius: 18px !important;
+            }
+
+            [data-testid="stMetric"] {
+                background: linear-gradient(145deg, var(--moto-surface-raised), var(--moto-surface));
+                border: 1px solid var(--moto-border);
+                border-radius: 12px;
+                padding: 14px;
+            }
+
+            [data-testid="stMetricLabel"] {
+                color: var(--moto-muted) !important;
+            }
+
+            [data-testid="stMetricValue"] {
+                color: var(--moto-orange-hover) !important;
+            }
+
+            [data-testid="stDataFrame"],
+            [data-testid="stTable"] {
+                border: 1px solid var(--moto-border);
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            [data-testid="stDataFrame"] *,
+            [data-testid="stTable"] * {
+                color: var(--moto-text);
+            }
+
+            [data-testid="stDataEditor"] {
+                border: 1px solid var(--moto-border);
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            [data-testid="stFileUploaderDropzone"] {
+                background-color: var(--moto-surface) !important;
+                border: 1px dashed var(--moto-border) !important;
+                border-radius: 12px !important;
+            }
+
+            [data-testid="stSlider"] [role="slider"] {
+                background-color: var(--moto-orange) !important;
+                border-color: var(--moto-orange) !important;
+            }
+
+            [data-testid="stProgress"] [data-testid="stProgressBar"] > div {
+                background-color: var(--moto-orange) !important;
+            }
+
+            [data-testid="stAlert"] {
+                border-radius: 12px !important;
+                border: 1px solid var(--moto-border) !important;
+                background-color: var(--moto-surface) !important;
+            }
+
+            [data-testid="stCheckbox"] label,
+            [data-testid="stRadio"] label {
+                color: var(--moto-text) !important;
+            }
+
+            [data-testid="stCheckbox"] input:checked + div,
+            [data-testid="stRadio"] input:checked + div {
+                background-color: var(--moto-orange) !important;
+                border-color: var(--moto-orange) !important;
+            }
+
             @media (max-width: 768px) {
                 .block-container {
                     max-width: 100% !important;
@@ -208,13 +384,6 @@ def aplicar_estilos():
                     line-height: 1.2 !important;
                 }
 
-                .user-box {
-                    font-size: 12px !important;
-                    padding: 6px 6px !important;
-                    min-height: 34px !important;
-                    margin-bottom: 4px !important;
-                }
-
                 div[data-testid="stButton"] > button {
                     min-height: 42px !important;
                     padding: 8px 8px !important;
@@ -226,17 +395,10 @@ def aplicar_estilos():
                     font-weight: 800 !important;
                 }
 
-                div.st-key-descargar_historial_excel
-                div[data-testid="stDownloadButton"] > button {
-                    min-height: 48px !important;
-                    padding: 10px 14px !important;
-                }
-
-                div.st-key-descargar_historial_excel
-                div[data-testid="stDownloadButton"] > button p,
-                div.st-key-descargar_historial_excel
-                div[data-testid="stDownloadButton"] > button span {
-                    font-size: 15px !important;
+                .user-box {
+                    font-size: 12px !important;
+                    padding: 6px !important;
+                    min-height: 34px !important;
                 }
             }
         </style>
@@ -449,7 +611,12 @@ def navbar():
             if st.button(
                 etiqueta,
                 use_container_width=True,
-                key=f"nav_{clave}"
+                key=f"nav_{clave}",
+                type=(
+                    "primary"
+                    if st.session_state.vista == clave
+                    else "secondary"
+                )
             ):
                 st.session_state.vista = clave
                 st.rerun()

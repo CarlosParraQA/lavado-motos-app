@@ -31,13 +31,13 @@ def aplicar_estilos_lavadas():
             ========================= */
 
             .tabla-header-lavadas {
-                background-color: #111827;
-                border-top: 1px solid #374151;
-                border-bottom: 1px solid #374151;
+                background-color: var(--moto-surface-raised);
+                border-top: 2px solid var(--moto-orange);
+                border-bottom: 1px solid var(--moto-border);
                 padding: 10px 8px;
                 font-size: 12px;
                 font-weight: 800;
-                color: #9ca3af;
+                color: var(--moto-muted);
                 min-height: 42px;
                 display: flex;
                 align-items: center;
@@ -53,8 +53,8 @@ def aplicar_estilos_lavadas():
                 padding: 8px 8px;
                 font-size: 14px;
                 font-weight: 600;
-                color: #f9fafb;
-                border-bottom: 1px solid #1f2937;
+                color: var(--moto-text);
+                border-bottom: 1px solid var(--moto-border);
                 word-break: break-word;
             }
 
@@ -64,10 +64,10 @@ def aplicar_estilos_lavadas():
                 align-items: center;
                 justify-content: center;
                 padding: 4px;
-                color: #22c55e;
+                color: var(--moto-success);
                 font-size: 22px;
                 font-weight: 900;
-                border-bottom: 1px solid #1f2937;
+                border-bottom: 1px solid var(--moto-border);
             }
 
             .coin-no {
@@ -76,39 +76,10 @@ def aplicar_estilos_lavadas():
                 align-items: center;
                 justify-content: center;
                 padding: 4px;
-                color: #ef4444;
+                color: var(--moto-danger);
                 font-size: 22px;
                 font-weight: 900;
-                border-bottom: 1px solid #1f2937;
-            }
-
-            /* =========================
-               BOTÓN MODIFICAR
-            ========================= */
-
-            div[data-testid="stButton"] > button[kind="primary"] {
-                background-color: #8F3221 !important;
-                color: white !important;
-                border: 1px solid #8F3221 !important;
-                border-radius: 1px !important;
-                min-height: 34px !important;
-                padding: 6px 10px !important;
-                font-weight: 900 !important;
-                box-shadow: none !important;
-                margin-top: 4px !important;
-            }
-
-            div[data-testid="stButton"] > button[kind="primary"]:hover {
-                background-color: #ea580c !important;
-                border-color: #ea580c !important;
-                color: white !important;
-            }
-
-            div[data-testid="stButton"] > button[kind="primary"] p,
-            div[data-testid="stButton"] > button[kind="primary"] span {
-                font-size: 13px !important;
-                font-weight: 900 !important;
-                line-height: 1 !important;
+                border-bottom: 1px solid var(--moto-border);
             }
 
             /* Botones dentro del modal */

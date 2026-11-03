@@ -213,7 +213,7 @@ def mostrar_selector_acceso():
 
             .subtitulo-acceso {
                 font-size: 18px;
-                color: #666;
+                color: var(--moto-muted);
                 margin-bottom: 30px;
             }
 
@@ -222,9 +222,9 @@ def mostrar_selector_acceso():
                 min-height: 260px !important;
                 height: 260px !important;
                 border-radius: 16px !important;
-                border: 1px solid #374151 !important;
-                background-color: #374151 !important;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+                border: 1px solid var(--moto-border) !important;
+                background: linear-gradient(145deg, var(--moto-surface-raised), var(--moto-surface)) !important;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.28) !important;
                 transition: all 0.2s ease-in-out !important;
                 display: flex !important;
                 align-items: center !important;
@@ -234,14 +234,14 @@ def mostrar_selector_acceso():
 
             div.stButton > button:hover {
                 transform: translateY(-4px) !important;
-                border-color: #FF7A00 !important;
-                box-shadow: 0 12px 28px rgba(0,0,0,0.14) !important;
+                border-color: var(--moto-orange) !important;
+                box-shadow: 0 12px 28px rgba(241,90,36,0.18) !important;
             }
 
             div.stButton > button p {
                 font-size: 58px !important;
                 font-weight: 900 !important;
-                color: white !important;
+                color: var(--moto-text) !important;
                 line-height: 1.1 !important;
                 white-space: pre-line !important;
                 text-align: center !important;
