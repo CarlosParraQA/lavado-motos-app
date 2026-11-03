@@ -18,248 +18,250 @@ from database import (
 from utils import formato_pesos
 
 
-def mostrar_administracion():
-    st.markdown("### Administración")
+@st.dialog("Administrar lavadores", width="large")
+def mostrar_modal_lavadores():
+    st.caption(
+        "Agregar, modificar o retirar lavadores. Los cambios no alteran "
+        "el historial de lavadas."
+    )
 
-    with st.expander("Administrar lavadores y precios", expanded=False):
-        st.caption(
-            "Los cambios de nombre y precios aplican a nuevos registros; "
-            "el historial de lavadas se conserva."
+    with st.form("form_agregar_lavador"):
+        nombre_nuevo = st.text_input(
+            "Nombre del lavador",
+            placeholder="Ejemplo: Juan Pérez"
+        )
+        agregar_lavador = st.form_submit_button(
+            "Agregar lavador",
+            use_container_width=True
         )
 
-        st.subheader("Lavadores")
-        try:
-            operadores = obtener_operadores_admin()
-        except Exception as error:
-            st.error("No se pudo cargar la lista de lavadores.")
-            st.exception(error)
-            operadores = []
-
-        if operadores:
-            operadores_por_id = {
-                int(operador["id"]): operador
-                for operador in operadores
-            }
-            id_operador = st.selectbox(
-                "Lavador",
-                options=list(operadores_por_id),
-                format_func=lambda id_actual: (
-                    f"{operadores_por_id[id_actual]['nombre']} "
-                    f"({'Activo' if operadores_por_id[id_actual]['activo'] else 'Inactivo'})"
-                ),
-                key="admin_operador_seleccionado"
-            )
-            operador = operadores_por_id[id_operador]
-
-            with st.form(f"form_editar_operador_{id_operador}"):
-                nuevo_nombre = st.text_input(
-                    "Nombre",
-                    value=operador["nombre"],
-                    key=f"nombre_operador_{id_operador}"
-                )
-                guardar_operador_cambios = st.form_submit_button(
-                    "Guardar cambios",
-                    use_container_width=True
-                )
-
-            if guardar_operador_cambios:
-                try:
-                    actualizar_operador(id_operador, nuevo_nombre)
-                    st.success("Lavador actualizado correctamente.")
-                    st.rerun()
-                except Exception as error:
-                    st.error("No se pudo actualizar el lavador.")
-                    st.exception(error)
-
-            if operador["activo"]:
-                confirmar_desactivacion = st.checkbox(
-                    f"Confirmo retirar a {operador['nombre']} de la lista.",
-                    key=f"confirmar_desactivar_operador_{id_operador}"
-                )
-                if st.button(
-                    "Eliminar lavador de la lista",
-                    disabled=not confirmar_desactivacion,
-                    key=f"desactivar_operador_{id_operador}"
-                ):
-                    try:
-                        desactivar_operador(id_operador)
-                        st.success("Lavador retirado de la lista.")
-                        st.rerun()
-                    except Exception as error:
-                        st.error("No se pudo retirar el lavador.")
-                        st.exception(error)
-            else:
-                if st.button(
-                    "Reactivar lavador",
-                    key=f"reactivar_operador_{id_operador}"
-                ):
-                    try:
-                        reactivar_operador(id_operador)
-                        st.success("Lavador reactivado correctamente.")
-                        st.rerun()
-                    except Exception as error:
-                        st.error("No se pudo reactivar el lavador.")
-                        st.exception(error)
+    if agregar_lavador:
+        if not nombre_nuevo.strip():
+            st.error("Debes ingresar el nombre del lavador.")
         else:
-            st.info("No hay lavadores registrados para administrar.")
-
-        st.divider()
-        st.subheader("Precios de lavadas")
-        try:
-            precios = obtener_precios_lavada(solo_activos=False)
-        except Exception as error:
-            st.error(
-                "No se pudieron cargar los precios. "
-                "Verifica que la tabla precios_lavada esté creada en Supabase."
-            )
-            st.exception(error)
-            precios = []
-
-        if precios:
-            precios_por_id = {
-                int(precio["id"]): precio
-                for precio in precios
-            }
-            id_precio = st.selectbox(
-                "Precio configurado",
-                options=list(precios_por_id),
-                format_func=lambda id_actual: (
-                    f"{formato_pesos(precios_por_id[id_actual]['valor'])} "
-                    f"({'Activo' if precios_por_id[id_actual]['activo'] else 'Inactivo'})"
-                ),
-                key="admin_precio_seleccionado"
-            )
-            precio = precios_por_id[id_precio]
-
-            with st.form(f"form_editar_precio_{id_precio}"):
-                nuevo_precio = st.number_input(
-                    "Valor",
-                    min_value=1,
-                    step=1000,
-                    value=int(precio["valor"]),
-                    key=f"valor_precio_{id_precio}"
-                )
-                guardar_precio_cambios = st.form_submit_button(
-                    "Guardar precio",
-                    use_container_width=True
-                )
-
-            if guardar_precio_cambios:
-                try:
-                    actualizar_precio_lavada(id_precio, nuevo_precio)
-                    st.success("Precio actualizado correctamente.")
-                    st.rerun()
-                except Exception as error:
-                    st.error("No se pudo actualizar el precio.")
-                    st.exception(error)
-
-            if precio["activo"]:
-                confirmar_eliminacion_precio = st.checkbox(
-                    f"Confirmo retirar el precio {formato_pesos(precio['valor'])}.",
-                    key=f"confirmar_desactivar_precio_{id_precio}"
-                )
-                if st.button(
-                    "Eliminar precio de la lista",
-                    disabled=not confirmar_eliminacion_precio,
-                    key=f"desactivar_precio_{id_precio}"
-                ):
-                    try:
-                        desactivar_precio_lavada(id_precio)
-                        st.success("Precio retirado de la lista.")
-                        st.rerun()
-                    except Exception as error:
-                        st.error("No se pudo retirar el precio.")
-                        st.exception(error)
-            else:
-                if st.button(
-                    "Reactivar precio",
-                    key=f"reactivar_precio_{id_precio}"
-                ):
-                    try:
-                        reactivar_precio_lavada(id_precio)
-                        st.success("Precio reactivado correctamente.")
-                        st.rerun()
-                    except Exception as error:
-                        st.error("No se pudo reactivar el precio.")
-                        st.exception(error)
-        else:
-            st.info("Aún no hay precios configurados.")
-
-        with st.form("form_agregar_precio"):
-            precio_nuevo = st.number_input(
-                "Agregar precio",
-                min_value=1,
-                step=1000,
-                value=8000,
-                key="admin_nuevo_precio"
-            )
-            agregar_precio = st.form_submit_button(
-                "Agregar precio",
-                use_container_width=True
-            )
-
-        if agregar_precio:
             try:
-                guardar_precio_lavada(precio_nuevo)
-                st.success("Precio agregado correctamente.")
+                guardar_operador(nombre_nuevo)
+                st.success("Lavador agregado correctamente.")
                 st.rerun()
             except Exception as error:
-                st.error("No se pudo agregar el precio.")
+                st.error("No se pudo agregar el lavador.")
                 st.exception(error)
+
+    st.divider()
+    try:
+        operadores = obtener_operadores_admin()
+    except Exception as error:
+        st.error("No se pudo cargar la lista de lavadores.")
+        st.exception(error)
+        return
+
+    if not operadores:
+        st.info("No hay lavadores registrados.")
+        return
+
+    operadores_por_id = {
+        int(operador["id"]): operador
+        for operador in operadores
+    }
+    id_operador = st.selectbox(
+        "Lavador registrado",
+        options=list(operadores_por_id),
+        format_func=lambda id_actual: (
+            f"{operadores_por_id[id_actual]['nombre']} "
+            f"({'Activo' if operadores_por_id[id_actual]['activo'] else 'Inactivo'})"
+        ),
+        key="admin_operador_seleccionado"
+    )
+    operador = operadores_por_id[id_operador]
+
+    with st.form(f"form_editar_operador_{id_operador}"):
+        nuevo_nombre = st.text_input(
+            "Modificar nombre",
+            value=operador["nombre"],
+            key=f"nombre_operador_{id_operador}"
+        )
+        guardar_operador_cambios = st.form_submit_button(
+            "Guardar cambios",
+            use_container_width=True
+        )
+
+    if guardar_operador_cambios:
+        try:
+            actualizar_operador(id_operador, nuevo_nombre)
+            st.success("Lavador actualizado correctamente.")
+            st.rerun()
+        except Exception as error:
+            st.error("No se pudo actualizar el lavador.")
+            st.exception(error)
+
+    if operador["activo"]:
+        confirmar_desactivacion = st.checkbox(
+            f"Confirmo retirar a {operador['nombre']} de la lista.",
+            key=f"confirmar_desactivar_operador_{id_operador}"
+        )
+        if st.button(
+            "Eliminar lavador de la lista",
+            disabled=not confirmar_desactivacion,
+            key=f"desactivar_operador_{id_operador}",
+            use_container_width=True
+        ):
+            try:
+                desactivar_operador(id_operador)
+                st.success("Lavador retirado de la lista.")
+                st.rerun()
+            except Exception as error:
+                st.error("No se pudo retirar el lavador.")
+                st.exception(error)
+    elif st.button(
+        "Reactivar lavador",
+        key=f"reactivar_operador_{id_operador}",
+        use_container_width=True
+    ):
+        try:
+            reactivar_operador(id_operador)
+            st.success("Lavador reactivado correctamente.")
+            st.rerun()
+        except Exception as error:
+            st.error("No se pudo reactivar el lavador.")
+            st.exception(error)
+
+
+@st.dialog("Administrar precios", width="large")
+def mostrar_modal_precios():
+    st.caption(
+        "Agregar, modificar o retirar precios. Los cambios aplican a nuevas "
+        "lavadas y no alteran el historial."
+    )
+
+    with st.form("form_agregar_precio"):
+        precio_nuevo = st.number_input(
+            "Nuevo precio",
+            min_value=1,
+            step=1000,
+            value=8000,
+            key="admin_nuevo_precio"
+        )
+        agregar_precio = st.form_submit_button(
+            "Agregar precio",
+            use_container_width=True
+        )
+
+    if agregar_precio:
+        try:
+            guardar_precio_lavada(precio_nuevo)
+            st.success("Precio agregado correctamente.")
+            st.rerun()
+        except Exception as error:
+            st.error("No se pudo agregar el precio.")
+            st.exception(error)
+
+    st.divider()
+    try:
+        precios = obtener_precios_lavada(solo_activos=False)
+    except Exception as error:
+        st.error(
+            "No se pudieron cargar los precios. "
+            "Verifica que la tabla precios_lavada esté creada en Supabase."
+        )
+        st.exception(error)
+        return
+
+    if not precios:
+        st.info("Aún no hay precios configurados.")
+        return
+
+    precios_por_id = {
+        int(precio["id"]): precio
+        for precio in precios
+    }
+    id_precio = st.selectbox(
+        "Precio registrado",
+        options=list(precios_por_id),
+        format_func=lambda id_actual: (
+            f"{formato_pesos(precios_por_id[id_actual]['valor'])} "
+            f"({'Activo' if precios_por_id[id_actual]['activo'] else 'Inactivo'})"
+        ),
+        key="admin_precio_seleccionado"
+    )
+    precio = precios_por_id[id_precio]
+
+    with st.form(f"form_editar_precio_{id_precio}"):
+        nuevo_precio = st.number_input(
+            "Modificar valor",
+            min_value=1,
+            step=1000,
+            value=int(precio["valor"]),
+            key=f"valor_precio_{id_precio}"
+        )
+        guardar_precio_cambios = st.form_submit_button(
+            "Guardar cambios",
+            use_container_width=True
+        )
+
+    if guardar_precio_cambios:
+        try:
+            actualizar_precio_lavada(id_precio, nuevo_precio)
+            st.success("Precio actualizado correctamente.")
+            st.rerun()
+        except Exception as error:
+            st.error("No se pudo actualizar el precio.")
+            st.exception(error)
+
+    if precio["activo"]:
+        confirmar_eliminacion_precio = st.checkbox(
+            f"Confirmo retirar el precio {formato_pesos(precio['valor'])}.",
+            key=f"confirmar_desactivar_precio_{id_precio}"
+        )
+        if st.button(
+            "Eliminar precio de la lista",
+            disabled=not confirmar_eliminacion_precio,
+            key=f"desactivar_precio_{id_precio}",
+            use_container_width=True
+        ):
+            try:
+                desactivar_precio_lavada(id_precio)
+                st.success("Precio retirado de la lista.")
+                st.rerun()
+            except Exception as error:
+                st.error("No se pudo retirar el precio.")
+                st.exception(error)
+    elif st.button(
+        "Reactivar precio",
+        key=f"reactivar_precio_{id_precio}",
+        use_container_width=True
+    ):
+        try:
+            reactivar_precio_lavada(id_precio)
+            st.success("Precio reactivado correctamente.")
+            st.rerun()
+        except Exception as error:
+            st.error("No se pudo reactivar el precio.")
+            st.exception(error)
+
+
+def mostrar_administracion():
+    st.markdown("### Administración")
+    col_lavadores, col_precios = st.columns(2)
+
+    with col_lavadores:
+        if st.button(
+            "Administrar lavadores",
+            key="abrir_modal_lavadores",
+            use_container_width=True
+        ):
+            mostrar_modal_lavadores()
+
+    with col_precios:
+        if st.button(
+            "Administrar precios",
+            key="abrir_modal_precios",
+            use_container_width=True
+        ):
+            mostrar_modal_precios()
 
 
 def mostrar_registrar_lavada():
     st.header("Registrar nueva lavada")
-
-    # =========================
-    # MENSAJE AL AGREGAR OPERADOR
-    # =========================
-
-    if "mensaje_operador" in st.session_state:
-        st.success(st.session_state["mensaje_operador"])
-        del st.session_state["mensaje_operador"]
-
-    # =========================
-    # AGREGAR OPERADOR
-    # =========================
-
-    st.markdown("### 👤 Colaboradores")
-
-    with st.expander("➕ Agregar colaborador a la lista", expanded=False):
-        st.info(
-            "Agrega el colaborador una sola vez. Luego aparecerá en la lista "
-            "para seleccionarlo al registrar nuevas lavadas."
-        )
-
-        nuevo_operador = st.text_input(
-            "Nombre del nuevo colaborador",
-            placeholder="Ejemplo: Juan Pérez",
-            key="nuevo_operador"
-        )
-
-        if st.button(
-            "Guardar colaborador",
-            use_container_width=True,
-            key="btn_guardar_operador"
-        ):
-            nuevo_operador_normalizado = nuevo_operador.strip().title()
-
-            if not nuevo_operador_normalizado:
-                st.error("Debes ingresar el nombre del operador.")
-                return
-
-            try:
-                guardar_operador(nuevo_operador_normalizado)
-
-                st.session_state["mensaje_operador"] = (
-                    f"Operador {nuevo_operador_normalizado} agregado correctamente."
-                )
-
-                st.rerun()
-
-            except Exception as error:
-                st.error("No se pudo guardar el operador.")
-                st.exception(error)
 
     rol_actual = (
         st.session_state.get("rol")
